@@ -9,8 +9,8 @@ var GamePlayScene = function(game, stage)
   var dragger;
   var cur_dragging;
 
-  var w = 60;
-  var h = 30;
+  var w = 60*2;
+  var h = 30*2;
 
   var vfield;
   var charges;
@@ -90,11 +90,18 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    vfield.draw();
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = "#000000";
+    ctx.beginPath();
+    ctx.moveTo(mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2);
+    ctx.lineTo(mag.shandle.x+mag.shandle.w/2,mag.shandle.y+mag.shandle.h/2);
+    ctx.stroke();
+    ctx.lineWidth = 1;
     ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
     ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
     for(var i = 0; i < sings.length; i++)
       ctx.strokeRect(sings[i].x,sings[i].y,sings[i].w,sings[i].h);
+    vfield.draw();
   };
 
   self.cleanup = function()
@@ -140,7 +147,7 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function()
     {
-      ctx.lineWidth = 1.0;
+      ctx.lineWidth = 1;
 
       for(var i = 0; i < self.dh; i++)
       {
@@ -152,15 +159,15 @@ var GamePlayScene = function(game, stage)
 
           d2 = self.dx[index]*self.dx[index] + self.dy[index]*self.dy[index];
                if(d2 > 100) ctx.strokeStyle = "#FF0000";
-          else if(d2 >  81) ctx.strokeStyle = "#BB4400";
-          else if(d2 >  72) ctx.strokeStyle = "#888800";
-          else if(d2 >  63) ctx.strokeStyle = "#44BB00";
-          else if(d2 >  54) ctx.strokeStyle = "#00FF00";
-          else if(d2 >  45) ctx.strokeStyle = "#00BB44";
-          else if(d2 >  36) ctx.strokeStyle = "#008888";
-          else if(d2 >  27) ctx.strokeStyle = "#0044BB";
-          else if(d2 >  18) ctx.strokeStyle = "#0000FF";
-          else if(d2 >   9) ctx.strokeStyle = "#4400BB";
+          else if(d2 >  90) ctx.strokeStyle = "#BB4400";
+          else if(d2 >  80) ctx.strokeStyle = "#888800";
+          else if(d2 >  70) ctx.strokeStyle = "#44BB00";
+          else if(d2 >  60) ctx.strokeStyle = "#00FF00";
+          else if(d2 >  50) ctx.strokeStyle = "#00BB44";
+          else if(d2 >  40) ctx.strokeStyle = "#008888";
+          else if(d2 >  30) ctx.strokeStyle = "#0044BB";
+          else if(d2 >  20) ctx.strokeStyle = "#0000FF";
+          else if(d2 >  10) ctx.strokeStyle = "#4400BB";
           else             ctx.strokeStyle = "#880088";
           ctx.fillStyle = ctx.strokeStyle;
           ctx.fillRect(x-1,y-1,2,2);
