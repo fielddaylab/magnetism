@@ -136,12 +136,11 @@ var GamePlayScene = function(game, stage)
     //temp vars for drawing
     var x;
     var y;
+    var d2;
 
     self.draw = function()
     {
       ctx.lineWidth = 1.0;
-      ctx.strokeStyle = "#FF00FF";
-      ctx.fillStyle = "#550055";
 
       for(var i = 0; i < self.dh; i++)
       {
@@ -150,11 +149,22 @@ var GamePlayScene = function(game, stage)
           y = self.y + y_space*i+(y_space/2);
           x = self.x + x_space*j+(x_space/2);
           index = self.iFor(j,i);
-          if(abs(self.dx[index]) > 0.1 && abs(self.dy[index]) > 0.1)
-          {
-            ctx.fillRect(x-1,y-1,2,2);
-            canv.drawLine(x,y,x+self.dx[index]*vec_length,y+self.dy[index]*vec_length);
-          }
+
+          d2 = self.dx[index]*self.dx[index] + self.dy[index]*self.dy[index];
+               if(d2 > 100) ctx.strokeStyle = "#FF0000";
+          else if(d2 >  81) ctx.strokeStyle = "#BB4400";
+          else if(d2 >  72) ctx.strokeStyle = "#888800";
+          else if(d2 >  63) ctx.strokeStyle = "#44BB00";
+          else if(d2 >  54) ctx.strokeStyle = "#00FF00";
+          else if(d2 >  45) ctx.strokeStyle = "#00BB44";
+          else if(d2 >  36) ctx.strokeStyle = "#008888";
+          else if(d2 >  27) ctx.strokeStyle = "#0044BB";
+          else if(d2 >  18) ctx.strokeStyle = "#0000FF";
+          else if(d2 >   9) ctx.strokeStyle = "#4400BB";
+          else             ctx.strokeStyle = "#880088";
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.fillRect(x-1,y-1,2,2);
+          canv.drawLine(x,y,x+self.dx[index]*vec_length,y+self.dy[index]*vec_length);
         }
       }
 
