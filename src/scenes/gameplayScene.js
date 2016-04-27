@@ -7,23 +7,33 @@ var GamePlayScene = function(game, stage)
   var ctx = canv.context;
 
   var dragger;
+  var cur_dragging;
 
-  var w = 30;
+  var w = 60;
   var h = 30;
 
   var vfield;
   var charges;
   var mag;
+  var sings = [];
 
   self.ready = function()
   {
     dragger = new Dragger({source:stage.dispCanv.canvas});
 
     vfield = new VecField(0,0,canv.width,canv.height,w,h)
-    mag = new Magnet(-0.1,0.,0.1,0.,vfield);
     charges = [];
+
+    mag = new Magnet(-0.1,0.,0.1,0.,vfield);
     charges[0] = mag.n;
     charges[1] = mag.s;
+    for(var i = 0; i < 2; i++)
+    {
+      //sings[sings.length] = new Singlet(rand0()/2.,rand0()/2.,(randBool()-0.5)*2,vfield);
+      sings[sings.length] = new Singlet(rand0()/2.,rand0()/2.,(i-0.5)*2,vfield);
+      charges[charges.length] = sings[sings.length-1].charge;
+      dragger.register(sings[sings.length-1]);
+    }
 
     dragger.register(mag.nhandle);
     dragger.register(mag.shandle);
@@ -83,6 +93,8 @@ var GamePlayScene = function(game, stage)
     vfield.draw();
     ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
     ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+    for(var i = 0; i < sings.length; i++)
+      ctx.strokeRect(sings[i].x,sings[i].y,sings[i].w,sings[i].h);
   };
 
   self.cleanup = function()
@@ -171,13 +183,13 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!self.ohandle.dragging)
-        self.dragging = true;
+      if(!cur_dragging) self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
     {
       if(!self.dragging) return;
+      cur_dragging = true;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
 
@@ -194,6 +206,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
+      if(self.dragging) cur_dragging = false;
       self.dragging = false;
     }
   }
@@ -212,6 +225,38 @@ var GamePlayScene = function(game, stage)
     self.nhandle.ohandle = self.shandle;
     self.shandle.ocharge = self.n;
     self.shandle.ohandle = self.nhandle;
+  }
+  var Singlet = function(x,y,v,field)
+  {
+    var self = this;
+    self.charge = new Charge(x,y,v);
+
+    self.w = 10;
+    self.h = 10;
+    self.x = field.xFSpaceToScreen(self.charge.x)-self.w/2;
+    self.y = field.yFSpaceToScreen(self.charge.y)-self.h/2;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      if(!cur_dragging) self.dragging = true;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      if(!self.dragging) return;
+      cur_dragging = true;
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+
+      self.charge.x = field.xScreenToFSpace(evt.doX);
+      self.charge.y = field.yScreenToFSpace(evt.doY);
+    }
+    self.dragFinish = function()
+    {
+      if(self.dragging) cur_dragging = false;
+      self.dragging = false;
+    }
   }
 };
 

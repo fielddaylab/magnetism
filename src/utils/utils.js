@@ -331,6 +331,10 @@ function randIntBelow(n)
 {
   return Math.floor(Math.random()*n);
 }
+function randBool()
+{
+  return randIntBelow(2);
+}
 function rand0()
 {
   return (Math.random()*2)-1;
