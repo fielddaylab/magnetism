@@ -18,7 +18,7 @@ var GamePlayScene = function(game, stage)
   var vfield;
   var charges;
   var mags;
-  var sings;
+  var nonmags;
 
   var new_pos_btn;
   var new_neg_btn;
@@ -33,23 +33,23 @@ var GamePlayScene = function(game, stage)
 
     vfield = new VecField(0,0,canv.width,canv.height,w,h)
     charges = [];
-    sings = [];
+    nonmags = [];
     mags = [];
 
 /*
     genMagnet();
     for(var i = 0; i < 2; i++)
     {
-      //genSingle((randBool()-0.5)*2);
-      genSingle((i-0.5)*2);
+      //genHandle((randBool()-0.5)*2);
+      genHandle((i-0.5)*2);
     }
 */
 
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ genSingle(1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ genSingle(-1); });
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ genHandle(1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ genHandle(-1); });
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ genMagnet(); });
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(cur_selected) cur_selected.physics = !cur_selected.physics; });
-    del_btn        = new ButtonBox(10,130,20,20,function(){ delMagnet(cur_selected); delSingle(cur_selected); });
+    del_btn        = new ButtonBox(10,130,20,20,function(){ delMagnet(cur_selected); delHandle(cur_selected); });
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
@@ -57,23 +57,24 @@ var GamePlayScene = function(game, stage)
     clicker.register(phys_btn);
     clicker.register(del_btn);
   };
-  var genSingle = function(charge_v)
+  var genHandle = function(charge_v)
   {
-    var s = new Singlet(rand0()/2.,rand0()/2.,charge_v,vfield)
+    var c = new Charge(rand0()/2.,rand0()/2.,charge_v);
+    var s = new Handle(c,vfield)
     charges[charges.length] = s.charge;
     dragger.register(s);
     cur_selected = s.charge;
-    sings[sings.length] = s;
+    nonmags[nonmags.length] = s;
   }
-  var delSingle = function(charge)
+  var delHandle = function(charge)
   {
-    for(var i = 0; i < sings.length; i++)
+    for(var i = 0; i < nonmags.length; i++)
     {
-      if(charge == sings[i].charge)
+      if(charge == nonmags[i].charge)
       {
-        dragger.unregister(sings[i]);
+        dragger.unregister(nonmags[i]);
         delCharge(charge);
-        sings.splice(i,1);
+        nonmags.splice(i,1);
       }
     }
   }
@@ -117,24 +118,24 @@ var GamePlayScene = function(game, stage)
 
     vfield.tick();
 
-    var sing;
-    for(var i = 0; i < sings.length; i++)
+    var charge;
+    for(var i = 0; i < charges.length; i++)
     {
-      sing = sings[i];
-      if(sing.charge.physics)
+      charge = charges[i];
+      if(charge.physics)
       {
-        if(sing.dragging)
+        if(charge.dragging)
         {
-          sing.charge.xv = 0;
-          sing.charge.yv = 0;
+          charge.xv = 0;
+          charge.yv = 0;
         }
         else
         {
           //gravity
-          //sing.charge.yv += 0.001;
+          charge.yv += 0.001;
 
           //magnetism
-          var charge;
+          var ocharge;
           var yd;
           var xd;
           var r2;
@@ -142,66 +143,79 @@ var GamePlayScene = function(game, stage)
           var mind = 0.1;
           for(var j = 0; j < charges.length; j++)
           {
-            charge = charges[j];
-            if(charge != sing.charge)
+            ocharge = charges[j];
+            if(charge == ocharge) continue;
+            yd = ocharge.y-charge.y;
+            xd = ocharge.x-charge.x;
+            r2 = (xd*xd)+(yd*yd);
+            if(r2 == 0)
             {
-              yd = charge.y-sing.charge.y;
-              xd = charge.x-sing.charge.x;
-              r2 = (xd*xd)+(yd*yd);
-              if(r2 == 0)
-              {
-                charge.x      += mind/2;
-                sing.charge.x -= mind/2;
-              }
-              else
-              {
-                f = ((charge.v*sing.charge.v)/r2)/10000;
-                r = sqrt(r2);
-                yd /= r;
-                xd /= r;
-                sing.charge.yv -= f*yd;
-                sing.charge.xv -= f*xd;
+              ocharge.x += mind/2;
+              charge.x  -= mind/2;
+            }
+            else
+            {
+              f = ((ocharge.v*charge.v)/r2)/10000;
+              r = sqrt(r2);
+              yd /= r;
+              xd /= r;
+              charge.yv -= f*yd;
+              charge.xv -= f*xd;
 
-                //collision
-                if(r < mind)
-                {
-                  sing.charge.y -= (mind-r)*yd;
-                  sing.charge.x -= (mind-r)*xd;
+              //collision
+              if(r < mind)
+              {
+                charge.y -= (mind-r)*yd;
+                charge.x -= (mind-r)*xd;
 
-                  var a = (sing.charge.xv*xd)+(sing.charge.yv*yd);
-                  a *= 0.99;
-                  sing.charge.xv -= a*xd;
-                  sing.charge.yv -= a*yd;
-                  charge.xv += a*xd;
-                  charge.yv += a*yd;
-                }
+                var a = (charge.xv*xd)+(charge.yv*yd);
+                a *= 0.99;
+                charge.xv -= a*xd;
+                charge.yv -= a*yd;
+                ocharge.xv += a*xd;
+                ocharge.yv += a*yd;
               }
             }
           }
 
           //clamp
-          sing.charge.xv = clamp(-0.02,0.02,sing.charge.xv);
-          sing.charge.yv = clamp(-0.02,0.02,sing.charge.yv);
+          charge.xv = clamp(-0.02,0.02,charge.xv);
+          charge.yv = clamp(-0.02,0.02,charge.yv);
 
           //propagate
-          sing.charge.x += sing.charge.xv;
-          sing.charge.y += sing.charge.yv;
+          charge.x += charge.xv;
+          charge.y += charge.yv;
 
-          //correct
-          if(sing.charge.x < -0.5) { sing.charge.x = -0.5; if(sing.charge.xv < 0) sing.charge.xv *= -1; }
-          if(sing.charge.x >  0.5) { sing.charge.x =  0.5; if(sing.charge.xv > 0) sing.charge.xv *= -1; }
-          if(sing.charge.y < -0.5) { sing.charge.y = -0.5; if(sing.charge.yv < 0) sing.charge.yv *= -1; }
-          if(sing.charge.y >  0.5) { sing.charge.y =  0.5; if(sing.charge.yv > 0) sing.charge.yv *= -1; }
+          //box in
+          if(charge.x < -0.5) { charge.x = -0.5; if(charge.xv < 0) charge.xv *= -1; }
+          if(charge.x >  0.5) { charge.x =  0.5; if(charge.xv > 0) charge.xv *= -1; }
+          if(charge.y < -0.5) { charge.y = -0.5; if(charge.yv < 0) charge.yv *= -1; }
+          if(charge.y >  0.5) { charge.y =  0.5; if(charge.yv > 0) charge.yv *= -1; }
 
           //dampen
-          sing.charge.xv *= 0.9;
-          sing.charge.yv *= 0.9;
-
-          //translate
-          sing.x = vfield.xFSpaceToScreen(sing.charge.x)-sing.w/2;
-          sing.y = vfield.yFSpaceToScreen(sing.charge.y)-sing.h/2;
+          charge.xv *= 0.9;
+          charge.yv *= 0.9;
         }
       }
+    }
+
+    var nonmag;
+    for(var i = 0; i < nonmags.length; i++)
+    {
+      nonmag = nonmags[i];
+      nonmag.x = vfield.xFSpaceToScreen(nonmag.charge.x)-nonmag.w/2;
+      nonmag.y = vfield.yFSpaceToScreen(nonmag.charge.y)-nonmag.h/2;
+    }
+
+    var mag;
+    for(var i = 0; i < mags.length; i++)
+    {
+      mag = mags[i];
+      mag.tick();
+      mag.nhandle.x = vfield.xFSpaceToScreen(mag.nhandle.charge.x)-mag.nhandle.w/2;
+      mag.nhandle.y = vfield.yFSpaceToScreen(mag.nhandle.charge.y)-mag.nhandle.h/2;
+      mag.shandle.x = vfield.xFSpaceToScreen(mag.shandle.charge.x)-mag.shandle.w/2;
+      mag.shandle.y = vfield.yFSpaceToScreen(mag.shandle.charge.y)-mag.shandle.h/2;
     }
   };
 
@@ -236,19 +250,19 @@ var GamePlayScene = function(game, stage)
       ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
       ctx.fillText("-",mag.nhandle.x+5,mag.nhandle.y+mag.nhandle.h-5);
     }
-    var sing;
-    for(var i = 0; i < sings.length; i++)
+    var nonmag;
+    for(var i = 0; i < nonmags.length; i++)
     {
-      sing = sings[i];
-      if(sing.charge == cur_selected)
+      nonmag = nonmags[i];
+      if(nonmag.charge == cur_selected)
       {
         ctx.fillStyle = "#FFFF00";
-        ctx.fillRect(sing.x,sing.y,sing.w,sing.h);
+        ctx.fillRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
         ctx.fillStyle = "#000000";
       }
-      ctx.strokeRect(sing.x,sing.y,sing.w,sing.h);
-      if(sing.charge.v > 0) ctx.fillText("+",sing.x+5,sing.y+sing.h-5);
-      if(sing.charge.v < 0) ctx.fillText("-",sing.x+5,sing.y+sing.h-5);
+      ctx.strokeRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
+      if(nonmag.charge.v > 0) ctx.fillText("+",nonmag.x+5,nonmag.y+nonmag.h-5);
+      if(nonmag.charge.v < 0) ctx.fillText("-",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
     vfield.draw();
 
@@ -392,24 +406,24 @@ var GamePlayScene = function(game, stage)
     this.v = v;
   }
 
-  var Handle = function(charge,allowed_d,field)
+  var Handle = function(charge,field)
   {
     var self = this;
+    self.charge = charge;
 
     self.w = 20;
     self.h = 20;
     self.x = field.xFSpaceToScreen(charge.x)-self.w/2;
     self.y = field.yFSpaceToScreen(charge.y)-self.h/2;
 
-    self.magnet;
-    self.charge = charge;
-    self.ohandle;
-    self.ocharge;
-
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!cur_dragging) self.dragging = true;
+      if(!cur_dragging)
+      {
+        self.dragging = true;
+        self.charge.dragging = true;
+      }
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -422,19 +436,12 @@ var GamePlayScene = function(game, stage)
 
       self.charge.x = field.xScreenToFSpace(evt.doX);
       self.charge.y = field.yScreenToFSpace(evt.doY);
-      var dx = self.ocharge.x-self.charge.x;
-      var dy = self.ocharge.y-self.charge.y;
-      var d = sqrt(dx*dx+dy*dy);
-      if(d == 0){ dx = 1; dy = 0; d = 1; }
-      self.ocharge.x = self.charge.x+((dx/d)*allowed_d);
-      self.ocharge.y = self.charge.y+((dy/d)*allowed_d);
-      self.ohandle.x = field.xFSpaceToScreen(self.ocharge.x)-self.ohandle.w/2;
-      self.ohandle.y = field.yFSpaceToScreen(self.ocharge.y)-self.ohandle.h/2;
     }
     self.dragFinish = function()
     {
       if(self.dragging) cur_dragging = false;
       self.dragging = false;
+      self.charge.dragging = false;
     }
   }
   var Magnet = function(nx,ny,sx,sy,field)
@@ -442,50 +449,37 @@ var GamePlayScene = function(game, stage)
     var self = this;
     var dx = nx-sx;
     var dy = ny-sy;
-    var d = sqrt(dx*dx+dy*dy);
+    var allowed_d = sqrt(dx*dx+dy*dy);
     self.n = new Charge(nx,ny,-1);
     self.s = new Charge(sx,sy, 1);
 
-    self.nhandle = new Handle(self.n,d,field);
-    self.shandle = new Handle(self.s,d,field);
+    self.nhandle = new Handle(self.n,field);
+    self.shandle = new Handle(self.s,field);
     self.nhandle.magnet = self;
     self.nhandle.ocharge = self.s;
     self.nhandle.ohandle = self.shandle;
     self.shandle.magnet = self;
     self.shandle.ocharge = self.n;
     self.shandle.ohandle = self.nhandle;
-  }
-  var Singlet = function(x,y,v,field)
-  {
-    var self = this;
-    self.charge = new Charge(x,y,v);
 
-    self.w = 20;
-    self.h = 20;
-    self.x = field.xFSpaceToScreen(self.charge.x)-self.w/2;
-    self.y = field.yFSpaceToScreen(self.charge.y)-self.h/2;
+    var master;
+    var servant;
+    self.tick = function() //just holds magnet together
+    {
+      master = self.nhandle;
+      servant = self.shandle;
+      if(self.shandle.charge == cur_selected)
+      {
+        master = self.shandle;
+        servant = self.nhandle;
+      }
 
-    self.dragging = false;
-    self.dragStart = function(evt)
-    {
-      if(!cur_dragging) self.dragging = true;
-      self.drag(evt);
-    }
-    self.drag = function(evt)
-    {
-      if(!self.dragging) return;
-      cur_dragging = true;
-      cur_selected = self.charge;
-      self.x = evt.doX-self.w/2;
-      self.y = evt.doY-self.h/2;
-
-      self.charge.x = field.xScreenToFSpace(evt.doX);
-      self.charge.y = field.yScreenToFSpace(evt.doY);
-    }
-    self.dragFinish = function()
-    {
-      if(self.dragging) cur_dragging = false;
-      self.dragging = false;
+      var dx = servant.charge.x-master.charge.x;
+      var dy = servant.charge.y-master.charge.y;
+      var d = sqrt(dx*dx+dy*dy);
+      if(d == 0){ dx = 1; dy = 0; d = 1; }
+      servant.charge.x = master.charge.x+((dx/d)*allowed_d);
+      servant.charge.y = master.charge.y+((dy/d)*allowed_d);
     }
   }
 
