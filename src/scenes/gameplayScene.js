@@ -7,82 +7,199 @@ var GamePlayScene = function(game, stage)
   var ctx = canv.context;
 
   var dragger;
+  var clicker;
   var cur_dragging;
+  var cur_selected;
 
-  var w = 60*2;
-  var h = 30*2;
+  var res = 30;
+  var w = 2*res;
+  var h = 1*res;
 
   var vfield;
   var charges;
-  var mag;
-  var sings = [];
+  var mags;
+  var sings;
+
+  var new_pos_btn;
+  var new_neg_btn;
+  var new_magnet_btn;
+  var phys_btn;
+  var del_btn;
 
   self.ready = function()
   {
     dragger = new Dragger({source:stage.dispCanv.canvas});
+    clicker = new Clicker({source:stage.dispCanv.canvas});
 
     vfield = new VecField(0,0,canv.width,canv.height,w,h)
     charges = [];
+    sings = [];
+    mags = [];
 
-    mag = new Magnet(-0.1,0.,0.1,0.,vfield);
-    charges[0] = mag.n;
-    charges[1] = mag.s;
+/*
+    genMagnet();
     for(var i = 0; i < 2; i++)
     {
-      //sings[sings.length] = new Singlet(rand0()/2.,rand0()/2.,(randBool()-0.5)*2,vfield);
-      sings[sings.length] = new Singlet(rand0()/2.,rand0()/2.,(i-0.5)*2,vfield);
-      charges[charges.length] = sings[sings.length-1].charge;
-      dragger.register(sings[sings.length-1]);
+      //genSingle((randBool()-0.5)*2);
+      genSingle((i-0.5)*2);
     }
+*/
 
-    dragger.register(mag.nhandle);
-    dragger.register(mag.shandle);
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ genSingle(1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ genSingle(-1); });
+    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ genMagnet(); });
+    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(cur_selected) cur_selected.physics = !cur_selected.physics; });
+    del_btn        = new ButtonBox(10,130,20,20,function(){ delMagnet(cur_selected); delSingle(cur_selected); });
+
+    clicker.register(new_pos_btn);
+    clicker.register(new_neg_btn);
+    clicker.register(new_magnet_btn);
+    clicker.register(phys_btn);
+    clicker.register(del_btn);
   };
+  var genSingle = function(charge_v)
+  {
+    var s = new Singlet(rand0()/2.,rand0()/2.,charge_v,vfield)
+    charges[charges.length] = s.charge;
+    dragger.register(s);
+    cur_selected = s.charge;
+    sings[sings.length] = s;
+  }
+  var delSingle = function(charge)
+  {
+    for(var i = 0; i < sings.length; i++)
+    {
+      if(charge == sings[i].charge)
+      {
+        dragger.unregister(sings[i]);
+        delCharge(charge);
+        sings.splice(i,1);
+      }
+    }
+  }
+  var genMagnet = function()
+  {
+    var m = new Magnet(-0.1,0.,0.1,0.,vfield)
+    charges[charges.length] = m.n;
+    charges[charges.length] = m.s;
+    dragger.register(m.nhandle);
+    dragger.register(m.shandle);
+    cur_selected = m.nhandle.charge;
+    mags[mags.length] = m;
+  }
+  var delMagnet = function(charge)
+  {
+    for(var i = 0; i < mags.length; i++)
+    {
+      if(charge == mags[i].n || charge == mags[i].s)
+      {
+        dragger.unregister(mags[i].nhandle);
+        dragger.unregister(mags[i].shandle);
+        delCharge(mags[i].n);
+        delCharge(mags[i].s);
+        mags.splice(i,1);
+      }
+    }
+  }
+  var delCharge = function(charge)
+  {
+    for(var i = 0; i < charges.length; i++)
+    {
+      if(charge == charges[i])
+        charges.splice(i,1);
+    }
+  }
 
   self.tick = function()
   {
     dragger.flush();
+    clicker.flush();
 
-    var index;
-    var x;
-    var y;
-    var xd;
-    var yd;
-    var r2;
-    var r;
-    var f;
-    var maxlen = 10;
-    for(var i = 0; i < vfield.dh; i++)
+    vfield.tick();
+
+    var sing;
+    for(var i = 0; i < sings.length; i++)
     {
-      y = vfield.yIndexToFSpace(i);
-      for(var j = 0; j < vfield.dw; j++)
+      sing = sings[i];
+      if(sing.charge.physics)
       {
-        index = vfield.iFor(j,i);
-        x = vfield.xIndexToFSpace(j);
-
-        vfield.dy[index] = 0;
-        vfield.dx[index] = 0;
-        for(var k = 0; k < charges.length; k++)
+        if(sing.dragging)
         {
-          yd = y-charges[k].y;
-          xd = x-charges[k].x;
-          r2 = (xd*xd)+(yd*yd);
-          if(r2 == 0) f = 0;
-          else        f = charges[k].v/r2;
-          r = sqrt(r2);
-          vfield.dy[index] += f*yd/r;
-          vfield.dx[index] += f*xd/r;
+          sing.charge.xv = 0;
+          sing.charge.yv = 0;
         }
-
-        //repurposing variables- just making sure vector is < some length
-        yd = vfield.dy[index];
-        xd = vfield.dx[index];
-        r2 = (xd*xd)+(yd*yd);
-        if(r2 > maxlen*maxlen)
+        else
         {
-          r = sqrt(r2);
-          vfield.dy[index] = yd/r*maxlen;
-          vfield.dx[index] = xd/r*maxlen;
+          //gravity
+          //sing.charge.yv += 0.001;
+
+          //magnetism
+          var charge;
+          var yd;
+          var xd;
+          var r2;
+          var f;
+          var mind = 0.1;
+          for(var j = 0; j < charges.length; j++)
+          {
+            charge = charges[j];
+            if(charge != sing.charge)
+            {
+              yd = charge.y-sing.charge.y;
+              xd = charge.x-sing.charge.x;
+              r2 = (xd*xd)+(yd*yd);
+              if(r2 == 0)
+              {
+                charge.x      += mind/2;
+                sing.charge.x -= mind/2;
+              }
+              else
+              {
+                f = ((charge.v*sing.charge.v)/r2)/10000;
+                r = sqrt(r2);
+                yd /= r;
+                xd /= r;
+                sing.charge.yv -= f*yd;
+                sing.charge.xv -= f*xd;
+
+                //collision
+                if(r < mind)
+                {
+                  sing.charge.y -= (mind-r)*yd;
+                  sing.charge.x -= (mind-r)*xd;
+
+                  var a = (sing.charge.xv*xd)+(sing.charge.yv*yd);
+                  a *= 0.99;
+                  sing.charge.xv -= a*xd;
+                  sing.charge.yv -= a*yd;
+                  charge.xv += a*xd;
+                  charge.yv += a*yd;
+                }
+              }
+            }
+          }
+
+          //clamp
+          sing.charge.xv = clamp(-0.02,0.02,sing.charge.xv);
+          sing.charge.yv = clamp(-0.02,0.02,sing.charge.yv);
+
+          //propagate
+          sing.charge.x += sing.charge.xv;
+          sing.charge.y += sing.charge.yv;
+
+          //correct
+          if(sing.charge.x < -0.5) { sing.charge.x = -0.5; if(sing.charge.xv < 0) sing.charge.xv *= -1; }
+          if(sing.charge.x >  0.5) { sing.charge.x =  0.5; if(sing.charge.xv > 0) sing.charge.xv *= -1; }
+          if(sing.charge.y < -0.5) { sing.charge.y = -0.5; if(sing.charge.yv < 0) sing.charge.yv *= -1; }
+          if(sing.charge.y >  0.5) { sing.charge.y =  0.5; if(sing.charge.yv > 0) sing.charge.yv *= -1; }
+
+          //dampen
+          sing.charge.xv *= 0.9;
+          sing.charge.yv *= 0.9;
+
+          //translate
+          sing.x = vfield.xFSpaceToScreen(sing.charge.x)-sing.w/2;
+          sing.y = vfield.yFSpaceToScreen(sing.charge.y)-sing.h/2;
         }
       }
     }
@@ -90,18 +207,56 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    ctx.lineWidth = 20;
     ctx.strokeStyle = "#000000";
-    ctx.beginPath();
-    ctx.moveTo(mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2);
-    ctx.lineTo(mag.shandle.x+mag.shandle.w/2,mag.shandle.y+mag.shandle.h/2);
-    ctx.stroke();
-    ctx.lineWidth = 1;
-    ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
-    ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+    ctx.fillStyle = "#000000";
+    var mag;
+    for(var i = 0; i < mags.length; i++)
+    {
+      mag = mags[i];
+      ctx.lineWidth = 20;
+      ctx.beginPath();
+      ctx.moveTo(mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2);
+      ctx.lineTo(mag.shandle.x+mag.shandle.w/2,mag.shandle.y+mag.shandle.h/2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      if(mag.nhandle.charge == cur_selected)
+      {
+        ctx.fillStyle = "#FFFF00";
+        ctx.fillRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
+        ctx.fillStyle = "#000000";
+      }
+      ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
+      ctx.fillText("+",mag.shandle.x+5,mag.shandle.y+mag.shandle.h-5);
+      if(mag.shandle.charge == cur_selected)
+      {
+        ctx.fillStyle = "#FFFF00";
+        ctx.fillRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+        ctx.fillStyle = "#000000";
+      }
+      ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+      ctx.fillText("-",mag.nhandle.x+5,mag.nhandle.y+mag.nhandle.h-5);
+    }
+    var sing;
     for(var i = 0; i < sings.length; i++)
-      ctx.strokeRect(sings[i].x,sings[i].y,sings[i].w,sings[i].h);
+    {
+      sing = sings[i];
+      if(sing.charge == cur_selected)
+      {
+        ctx.fillStyle = "#FFFF00";
+        ctx.fillRect(sing.x,sing.y,sing.w,sing.h);
+        ctx.fillStyle = "#000000";
+      }
+      ctx.strokeRect(sing.x,sing.y,sing.w,sing.h);
+      if(sing.charge.v > 0) ctx.fillText("+",sing.x+5,sing.y+sing.h-5);
+      if(sing.charge.v < 0) ctx.fillText("-",sing.x+5,sing.y+sing.h-5);
+    }
     vfield.draw();
+
+    new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("+",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
+    new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("-",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
+    new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("m",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
+    phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("p",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
+    del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("d",del_btn.x+5,del_btn.y+del_btn.h-5);
   };
 
   self.cleanup = function()
@@ -145,6 +300,55 @@ var GamePlayScene = function(game, stage)
     var y;
     var d2;
 
+    self.tick = function()
+    {
+      var index;
+      var x;
+      var y;
+      var xd;
+      var yd;
+      var r2;
+      var r;
+      var f;
+      var maxlen = 10;
+      for(var i = 0; i < self.dh; i++)
+      {
+        y = self.yIndexToFSpace(i);
+        for(var j = 0; j < self.dw; j++)
+        {
+          index = self.iFor(j,i);
+          x = self.xIndexToFSpace(j);
+
+          self.dy[index] = 0;
+          self.dx[index] = 0;
+          for(var k = 0; k < charges.length; k++)
+          {
+            yd = y-charges[k].y;
+            xd = x-charges[k].x;
+            r2 = (xd*xd)+(yd*yd);
+            if(r2 != 0)
+            {
+              f = charges[k].v/r2;
+              r = sqrt(r2);
+              self.dy[index] += f*yd/r;
+              self.dx[index] += f*xd/r;
+            }
+          }
+
+          //repurposing variables- just making sure vector is < some length
+          yd = self.dy[index];
+          xd = self.dx[index];
+          r2 = (xd*xd)+(yd*yd);
+          if(r2 > maxlen*maxlen)
+          {
+            r = sqrt(r2);
+            self.dy[index] = yd/r*maxlen;
+            self.dx[index] = xd/r*maxlen;
+          }
+        }
+      }
+    }
+
     self.draw = function()
     {
       ctx.lineWidth = 1;
@@ -182,6 +386,9 @@ var GamePlayScene = function(game, stage)
   {
     this.x = x;
     this.y = y;
+    this.physics = false;
+    this.xv = 0;
+    this.yv = 0;
     this.v = v;
   }
 
@@ -189,11 +396,13 @@ var GamePlayScene = function(game, stage)
   {
     var self = this;
 
-    self.w = 10;
-    self.h = 10;
+    self.w = 20;
+    self.h = 20;
     self.x = field.xFSpaceToScreen(charge.x)-self.w/2;
     self.y = field.yFSpaceToScreen(charge.y)-self.h/2;
 
+    self.magnet;
+    self.charge = charge;
     self.ohandle;
     self.ocharge;
 
@@ -207,17 +416,18 @@ var GamePlayScene = function(game, stage)
     {
       if(!self.dragging) return;
       cur_dragging = true;
+      cur_selected = self.charge;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
 
-      charge.x = field.xScreenToFSpace(evt.doX);
-      charge.y = field.yScreenToFSpace(evt.doY);
-      var dx = self.ocharge.x-charge.x;
-      var dy = self.ocharge.y-charge.y;
+      self.charge.x = field.xScreenToFSpace(evt.doX);
+      self.charge.y = field.yScreenToFSpace(evt.doY);
+      var dx = self.ocharge.x-self.charge.x;
+      var dy = self.ocharge.y-self.charge.y;
       var d = sqrt(dx*dx+dy*dy);
       if(d == 0){ dx = 1; dy = 0; d = 1; }
-      self.ocharge.x = charge.x+((dx/d)*allowed_d);
-      self.ocharge.y = charge.y+((dy/d)*allowed_d);
+      self.ocharge.x = self.charge.x+((dx/d)*allowed_d);
+      self.ocharge.y = self.charge.y+((dy/d)*allowed_d);
       self.ohandle.x = field.xFSpaceToScreen(self.ocharge.x)-self.ohandle.w/2;
       self.ohandle.y = field.yFSpaceToScreen(self.ocharge.y)-self.ohandle.h/2;
     }
@@ -238,8 +448,10 @@ var GamePlayScene = function(game, stage)
 
     self.nhandle = new Handle(self.n,d,field);
     self.shandle = new Handle(self.s,d,field);
+    self.nhandle.magnet = self;
     self.nhandle.ocharge = self.s;
     self.nhandle.ohandle = self.shandle;
+    self.shandle.magnet = self;
     self.shandle.ocharge = self.n;
     self.shandle.ohandle = self.nhandle;
   }
@@ -248,8 +460,8 @@ var GamePlayScene = function(game, stage)
     var self = this;
     self.charge = new Charge(x,y,v);
 
-    self.w = 10;
-    self.h = 10;
+    self.w = 20;
+    self.h = 20;
     self.x = field.xFSpaceToScreen(self.charge.x)-self.w/2;
     self.y = field.yFSpaceToScreen(self.charge.y)-self.h/2;
 
@@ -263,6 +475,7 @@ var GamePlayScene = function(game, stage)
     {
       if(!self.dragging) return;
       cur_dragging = true;
+      cur_selected = self.charge;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
 
@@ -275,5 +488,6 @@ var GamePlayScene = function(game, stage)
       self.dragging = false;
     }
   }
+
 };
 
