@@ -250,7 +250,7 @@ var GamePlayScene = function(game, stage)
           var xd;
           var r2;
           var f;
-          var mind = 0.1;
+          var mind = 0.08;
           for(var j = 0; j < charges.length; j++)
           {
             ocharge = charges[j];
@@ -353,7 +353,8 @@ var GamePlayScene = function(game, stage)
         ctx.fillRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
         ctx.fillStyle = "#000000";
       }
-      ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
+      //ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
+      ctx.drawImage(Circle,mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
       ctx.fillText("+",mag.shandle.x+5,mag.shandle.y+mag.shandle.h-5);
       if(mag.shandle.charge == cur_selected)
       {
@@ -361,7 +362,8 @@ var GamePlayScene = function(game, stage)
         ctx.fillRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
         ctx.fillStyle = "#000000";
       }
-      ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+      //ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+      ctx.drawImage(Circle,mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
       ctx.fillText("-",mag.nhandle.x+5,mag.nhandle.y+mag.nhandle.h-5);
     }
     var nonmag;
@@ -374,7 +376,8 @@ var GamePlayScene = function(game, stage)
         ctx.fillRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
         ctx.fillStyle = "#000000";
       }
-      ctx.strokeRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
+      //ctx.strokeRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
+      ctx.drawImage(Circle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       if(nonmag.charge.v > 0) ctx.fillText("+",nonmag.x+5,nonmag.y+nonmag.h-5);
       if(nonmag.charge.v < 0) ctx.fillText("-",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
@@ -615,6 +618,13 @@ var GamePlayScene = function(game, stage)
     this.draw = draw;
     this.test = test;
   }
+
+  var Circle = GenIcon(100,100);
+  Circle.context.strokeStyle = "#000000";
+  Circle.context.lineWidth = 5;
+  Circle.context.beginPath();
+  Circle.context.arc(Circle.width/2,Circle.height/2,Circle.width/2,0,2*Math.PI);
+  Circle.context.stroke();
 
 };
 
