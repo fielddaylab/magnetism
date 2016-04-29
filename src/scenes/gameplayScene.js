@@ -6,8 +6,17 @@ var GamePlayScene = function(game, stage)
   var canvas = canv.canvas;
   var ctx = canv.context;
 
+  ENUM = 0;
+  var IGNORE_INPUT = ENUM; ENUM++;
+  var RESUME_INPUT = ENUM; ENUM++;
+  var input_state;
+
   var dragger;
   var clicker;
+  var domclicker;
+  var dom;
+  var bmwrangler;
+
   var cur_dragging;
   var cur_selected;
 
@@ -28,8 +37,12 @@ var GamePlayScene = function(game, stage)
 
   self.ready = function()
   {
+    input_state = RESUME_INPUT;
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
+    domclicker = new Clicker({source:stage.dispCanv.canvas});
+    dom = new CanvDom(canv);
+    bmwrangler = new BottomMessageWrangler();
 
     vfield = new VecField(0,0,canv.width,canv.height,w,h)
     charges = [];
@@ -56,6 +69,8 @@ var GamePlayScene = function(game, stage)
     clicker.register(new_magnet_btn);
     clicker.register(phys_btn);
     clicker.register(del_btn);
+
+    setTimeout(function(){pop(['test']);},10);
   };
   var genHandle = function(charge_v)
   {
@@ -113,8 +128,17 @@ var GamePlayScene = function(game, stage)
 
   self.tick = function()
   {
-    dragger.flush();
-    clicker.flush();
+    if(input_state == IGNORE_INPUT)
+    {
+      dragger.ignore();
+      clicker.ignore();
+    }
+    else
+    {
+      dragger.flush();
+      clicker.flush();
+    }
+    bmwrangler.tick();
 
     vfield.tick();
 
@@ -276,6 +300,9 @@ var GamePlayScene = function(game, stage)
   self.cleanup = function()
   {
   };
+
+  var pop = function(msg,callback) { if(!callback) callback = dismissed; input_state = IGNORE_INPUT; bmwrangler.popMessage(msg,callback); }
+  var dismissed = function() { input_state = RESUME_INPUT; }
 
   var VecField = function(x,y,w,h,dw,dh)
   {
