@@ -58,6 +58,10 @@ function begin()
   shadow.style.width           = w;
   debug_div.style.width        = w; debug_div.style.height        = w;
 
+  document.getElementById("bottom_text").style.width =
+    document.getElementById("bottom_display").offsetWidth-
+    (document.getElementById("bottom_button").offsetWidth+(20*3));
+
   d = new Debugger({source:debug_div});
   g = new Game({width:w,height:h,container:"stage_container"});
   g.begin();

@@ -34,6 +34,10 @@ var GamePlayScene = function(game, stage)
   var new_magnet_btn;
   var phys_btn;
   var del_btn;
+  var ready_btn; var ready_btn_clicked;
+
+  var steps;
+  var cur_step;
 
   self.ready = function()
   {
@@ -49,32 +53,114 @@ var GamePlayScene = function(game, stage)
     nonmags = [];
     mags = [];
 
-/*
-    genMagnet();
-    for(var i = 0; i < 2; i++)
-    {
-      //genHandle((randBool()-0.5)*2);
-      genHandle((i-0.5)*2);
-    }
-*/
-
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ genHandle(1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ genHandle(-1); });
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ genHandle(rand0()/2.,rand0()/2., 1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ genHandle(rand0()/2.,rand0()/2.,-1); });
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ genMagnet(); });
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(cur_selected) cur_selected.physics = !cur_selected.physics; });
     del_btn        = new ButtonBox(10,130,20,20,function(){ delMagnet(cur_selected); delHandle(cur_selected); });
+    ready_btn      = new ButtonBox(10,160,20,20,function(){ ready_btn_clicked = true; });
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
     clicker.register(new_magnet_btn);
     clicker.register(phys_btn);
     clicker.register(del_btn);
+    clicker.register(ready_btn);
 
-    setTimeout(function(){pop(['test']);},10);
+    //STEPS
+    steps = [];
+
+    steps.push(new Step(
+      function(){
+        pop([
+        "Hey there!",
+        "This is a magnetic field.",
+        "It doesn't look very interesting right now.",
+        "But that's OK.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        genHandle(-0.1,0,-1);
+        pop([
+        "This is an *electric charge*.",
+        "Electric charges *invisibly* affect the area around them.",
+        "(Here, this effect is visualized by *directional lines*.)",
+        "Click and drag it around to see how its affect moves with the charge.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        genHandle(0.1,0,1);
+        pop([
+        "Here's another *electric charge*, but this one's *different*",
+        "The first charge is a *negative charge*, but this one is a *positive charge*.",
+        "See how they affect the surrounding visualized lines when they are *near* each other, and when they are *far away*.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        genHandle(0,0,-1);
+        cur_selected.physics = true;
+        pop([
+        "Here's one more *charge* (this one's positive), but this one is allowed to float freely.",
+        "See how it is *attracted* to one of the charges, but *repelled* by another?",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+
+    cur_step = -1;
+    self.nextStep();
+
   };
-  var genHandle = function(charge_v)
+  self.nextStep = function()
   {
-    var c = new Charge(rand0()/2.,rand0()/2.,charge_v);
+    cur_step = (cur_step+1)%steps.length;
+    steps[cur_step].begin();
+  }
+
+  var genHandle = function(x,y,charge_v)
+  {
+    var c = new Charge(x,y,charge_v);
     var s = new Handle(c,vfield)
     charges[charges.length] = s.charge;
     dragger.register(s);
@@ -241,6 +327,10 @@ var GamePlayScene = function(game, stage)
       mag.shandle.x = vfield.xFSpaceToScreen(mag.shandle.charge.x)-mag.shandle.w/2;
       mag.shandle.y = vfield.yFSpaceToScreen(mag.shandle.charge.y)-mag.shandle.h/2;
     }
+
+    steps[cur_step].tick();
+    if(steps[cur_step].test()) self.nextStep();
+    ready_btn_clicked = false;
   };
 
   self.draw = function()
@@ -295,6 +385,9 @@ var GamePlayScene = function(game, stage)
     new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("m",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
     phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("p",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
     del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("d",del_btn.x+5,del_btn.y+del_btn.h-5);
+    ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+
+    steps[cur_step].draw();
   };
 
   self.cleanup = function()
@@ -416,7 +509,12 @@ var GamePlayScene = function(game, stage)
           else             ctx.strokeStyle = "#880088";
           ctx.fillStyle = ctx.strokeStyle;
           ctx.fillRect(x-1,y-1,2,2);
-          canv.drawLine(x,y,x+self.dx[index]*vec_length,y+self.dy[index]*vec_length);
+          canv.drawLine(
+            x-(self.dx[index]*vec_length/2),
+            y-(self.dy[index]*vec_length/2),
+            x+(self.dx[index]*vec_length/2),
+            y+(self.dy[index]*vec_length/2)
+          );
         }
       }
 
@@ -508,6 +606,14 @@ var GamePlayScene = function(game, stage)
       servant.charge.x = master.charge.x+((dx/d)*allowed_d);
       servant.charge.y = master.charge.y+((dy/d)*allowed_d);
     }
+  }
+
+  var Step = function(begin,tick,draw,test)
+  {
+    this.begin = begin;
+    this.tick = tick;
+    this.draw = draw;
+    this.test = test;
   }
 
 };
