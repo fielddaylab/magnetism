@@ -141,6 +141,41 @@ var GamePlayScene = function(game, stage)
     //FIND
     steps.push(new Step(
       function(){
+        //set up game
+          //compasses
+        for(var i = 0; i < comps.length; i++)
+        {
+          comps[i].fx = lerp(-0.5,0.5,i/(comps.length-1));
+          comps[i].fy = -0.2;
+          comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
+          comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
+        }
+
+          //guessed
+        guessed_pos.charge.x = -0.1;
+        guessed_pos.charge.y = -0.2;
+        guessed_pos.x = vfield.xFSpaceToScreen(guessed_pos.charge.x)-guessed_pos.w/2;
+        guessed_pos.y = vfield.yFSpaceToScreen(guessed_pos.charge.y)-guessed_pos.h/2;
+
+        guessed_neg.charge.x =  0.1;
+        guessed_neg.charge.y = -0.2;
+        guessed_neg.x = vfield.xFSpaceToScreen(guessed_neg.charge.x)-guessed_neg.w/2;
+        guessed_neg.y = vfield.yFSpaceToScreen(guessed_neg.charge.y)-guessed_neg.h/2;
+
+        //window
+        wind.x = 20;
+        wind.y = 20;
+
+        //magnet
+        if(hidden_mag)
+        {
+          delMagnet(hidden_mag.n);
+          hidden_mag = genMagnet(
+            -2,rand0()/2,rand0()/2,
+             2,rand0()/2,rand0()/2
+          );
+        }
+
         pop([
         "Find The Magnet!",
         "Your first step is to place these <b>compasses</b> around the <b>magnetic field</b>.",
@@ -233,7 +268,13 @@ var GamePlayScene = function(game, stage)
       noop,
       noop,
       noop,
-      function() { return ready_btn_clicked; }
+      function() {
+        if(ready_btn_clicked)
+        {
+          cur_step = -1;
+          return true;
+        }
+        return false; }
     ));
 
     //EXPOSITION
@@ -542,22 +583,13 @@ var GamePlayScene = function(game, stage)
       ctx.lineTo(mag.shandle.x+mag.shandle.w/2,mag.shandle.y+mag.shandle.h/2);
       ctx.stroke();
       ctx.lineWidth = 1;
+      ctx.fillStyle = "#000000";
       if(mag.nhandle.charge == cur_selected)
-      {
-        ctx.fillStyle = "#FFFF00";
         ctx.drawImage(HCircle,mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
-        ctx.fillStyle = "#000000";
-      }
-      //ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
       ctx.drawImage(Circle,mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
       ctx.fillText("+",mag.shandle.x+5,mag.shandle.y+mag.shandle.h-5);
       if(mag.shandle.charge == cur_selected)
-      {
-        ctx.fillStyle = "#FFFF00";
         ctx.drawImage(HCircle,mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
-        ctx.fillStyle = "#000000";
-      }
-      //ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
       ctx.drawImage(Circle,mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
       ctx.fillText("-",mag.nhandle.x+5,mag.nhandle.y+mag.nhandle.h-5);
     }
@@ -567,8 +599,8 @@ var GamePlayScene = function(game, stage)
       nonmag = nonmags[i];
       if(nonmag.charge == cur_selected)
         ctx.drawImage(HCircle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
-      //ctx.strokeRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       ctx.drawImage(Circle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
+      ctx.fillStyle = "#000000";
       if(nonmag.charge.v > 0) ctx.fillText("+",nonmag.x+5,nonmag.y+nonmag.h-5);
       if(nonmag.charge.v < 0) ctx.fillText("-",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
@@ -618,6 +650,7 @@ var GamePlayScene = function(game, stage)
 
       if(cur_step >= first_guess_step-1)
       {
+        ctx.fillStyle = "#000000";
         ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
         ctx.fillText("+?",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5);
 
@@ -626,7 +659,7 @@ var GamePlayScene = function(game, stage)
       }
 
     }
-    ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    ready_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
 
     steps[cur_step].draw();
   };
