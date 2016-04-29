@@ -37,6 +37,8 @@ var GamePlayScene = function(game, stage)
   var nonmags;
 
   var hidden_mag;
+  var guessed_pos;
+  var guessed_neg;
   var wind;
   var comps;
 
@@ -72,7 +74,14 @@ var GamePlayScene = function(game, stage)
     );
     wind = new Window(30,30,200,200);
     comps = [];
-    comps[comps.length] = new Compass(0,0,30,vfield);
+    for(var i = 0; i < 5; i++)
+    {
+      comps[comps.length] = new Compass(0,0,30,vfield);
+    }
+    var nullNegCharge = new Charge(0,0,-1);
+    var nullPosCharge = new Charge(0,0,1);
+    guessed_neg = new Handle(nullNegCharge,vfield);
+    guessed_pos = new Handle(nullPosCharge,vfield);
 
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
@@ -84,6 +93,8 @@ var GamePlayScene = function(game, stage)
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
       dragger.register(comps[i]);
+    dragger.register(guessed_neg);
+    dragger.register(guessed_pos);
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
@@ -399,6 +410,7 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < mags.length; i++)
     {
       mag = mags[i];
+      if(mag == hidden_mag) continue;
       ctx.lineWidth = 20;
       ctx.beginPath();
       ctx.moveTo(mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2);
@@ -429,11 +441,7 @@ var GamePlayScene = function(game, stage)
     {
       nonmag = nonmags[i];
       if(nonmag.charge == cur_selected)
-      {
-        ctx.fillStyle = "#FFFF00";
         ctx.drawImage(HCircle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
-        ctx.fillStyle = "#000000";
-      }
       //ctx.strokeRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       ctx.drawImage(Circle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       if(nonmag.charge.v > 0) ctx.fillText("+",nonmag.x+5,nonmag.y+nonmag.h-5);
@@ -452,6 +460,12 @@ var GamePlayScene = function(game, stage)
     }
     else if(mode == FIND_MODE)
     {
+      ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
+      ctx.fillText("+?",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5);
+
+      ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
+      ctx.fillText("-?",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5);
+
       vfield.draw(wind);
       ctx.strokeStyle = "#000000";
       ctx.lineWidth = 2;
