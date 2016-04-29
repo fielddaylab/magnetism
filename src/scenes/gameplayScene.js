@@ -72,6 +72,7 @@ var GamePlayScene = function(game, stage)
     );
     wind = new Window(30,30,200,200);
     comps = [];
+    comps[comps.length] = new Compass(0,0,30,vfield);
 
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
@@ -81,6 +82,8 @@ var GamePlayScene = function(game, stage)
     ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode != EXPOSITION_MODE) return; ready_btn_clicked = true; });
 
     dragger.register(wind);
+    for(var i = 0; i < comps.length; i++)
+      dragger.register(comps[i]);
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
@@ -378,6 +381,11 @@ var GamePlayScene = function(game, stage)
       mag.shandle.y = vfield.yFSpaceToScreen(mag.shandle.charge.y)-mag.shandle.h/2;
     }
 
+    for(var i = 0; i < comps.length; i++)
+    {
+      comps[i].tick();
+    }
+
     steps[cur_step].tick();
     if(steps[cur_step].test()) self.nextStep();
     ready_btn_clicked = false;
@@ -433,21 +441,36 @@ var GamePlayScene = function(game, stage)
     }
 
     if(mode == EXPOSITION_MODE)
+    {
       vfield.draw();
-    else if(mode == FIND_MODE)
-    {
-      vfield.draw(wind);
-      ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
-    }
-
-    if(mode == EXPOSITION_MODE)
-    {
       new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("+",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
       new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("-",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
       new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("m",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
       phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("p",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("d",del_btn.x+5,del_btn.y+del_btn.h-5);
       ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    }
+    else if(mode == FIND_MODE)
+    {
+      vfield.draw(wind);
+      ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
+      var comp;
+      for(var i = 0; i < comps.length; i++)
+      {
+        comp = comps[i];
+        ctx.drawImage(Circle,comps[i].x,comps[i].y,comps[i].w,comps[i].h);
+        var r = (comp.dx*comp.dx)+(comp.dy*comp.dy);
+        if(r > 0.001)
+        {
+          r = sqrt(r);
+          canv.drawLine(
+            comp.x+comp.w/2,
+            comp.y+comp.h/2,
+            comp.x+comp.w/2+(comp.dx/r)*comp.r,
+            comp.y+comp.h/2+(comp.dy/r)*comp.r
+          );
+        }
+      }
     }
 
     steps[cur_step].draw();
@@ -732,14 +755,48 @@ var GamePlayScene = function(game, stage)
       self.dragging = true;
     }
   }
-  var Compass = function(x,y,r)
+  var Compass = function(x,y,r,field)
   {
     var self = this;
-    self.x = x;
-    self.y = y;
+
+    self.fx = x;
+    self.fy = y;
+
     self.w = 2*r;
     self.h = 2*r;
     self.r = r;
+
+    self.x = vfield.xFSpaceToScreen(self.fx)-self.w/2;
+    self.y = vfield.yFSpaceToScreen(self.fy)-self.h/2;
+
+    self.dx = 0;
+    self.dy = 0;
+
+    self.tick = function()
+    {
+      var index;
+      var xd;
+      var yd;
+      var r2;
+      var r;
+      var f;
+
+      self.dy = 0;
+      self.dx = 0;
+      for(var k = 0; k < charges.length; k++)
+      {
+        yd = self.fy-charges[k].y;
+        xd = self.fx-charges[k].x;
+        r2 = (xd*xd)+(yd*yd);
+        if(r2 != 0)
+        {
+          f = charges[k].v/r2;
+          r = sqrt(r2);
+          self.dy += f*yd/r;
+          self.dx += f*xd/r;
+        }
+      }
+    }
 
     self.dragging = false;
     self.dragStart = function(evt)
@@ -751,6 +808,8 @@ var GamePlayScene = function(game, stage)
     {
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
+      self.fx = field.xScreenToFSpace(evt.doX);
+      self.fy = field.yScreenToFSpace(evt.doY);
     }
     self.dragFinish = function()
     {
