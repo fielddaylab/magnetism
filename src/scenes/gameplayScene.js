@@ -51,6 +51,11 @@ var GamePlayScene = function(game, stage)
 
   var steps;
   var cur_step;
+  var place_dead_compass_step;
+  var first_guess_step;
+  var place_dead_window_step;
+  var second_guess_step;
+  var reveal_step;
 
   self.ready = function()
   {
@@ -88,7 +93,7 @@ var GamePlayScene = function(game, stage)
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != EXPOSITION_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != EXPOSITION_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
     del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != EXPOSITION_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
-    ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode != EXPOSITION_MODE) return; ready_btn_clicked = true; });
+    ready_btn      = new ButtonBox(10,160,20,20,function(){ ready_btn_clicked = true; });
 
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
@@ -106,12 +111,106 @@ var GamePlayScene = function(game, stage)
     //STEPS
     steps = [];
 
+
+    //FIND
+    steps.push(new Step(
+      function(){
+        pop([
+        "Find The Magnet!",
+        "Your first step is to place these <b>compasses</b> around the <b>magnetic field</b>.",
+        "(Just place them all around- <b>don't worry if you don't understand what's going on right now</b>- you'll figure it out after a couple plays!)",
+        "Click \"ready\" when you're satisfied with their placements.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    place_dead_compass_step = steps.length;
     steps.push(new Step(
       noop,
       noop,
       noop,
-      function() { return false; }
+      function() { return ready_btn_clicked; }
     ));
+    steps.push(new Step(
+      function(){
+        pop([
+        "Now that we're showing <b>where the compasses point</b>,",
+        "place a guess <b>where you think the positive terminal of the magnet is located</b>,",
+        "and <b>where you think the negative terminal of the magnet is located</b>.",
+        "Click \"ready\" when you're satisfied with your guess.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    first_guess_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        pop([
+        "Now we'll give you a <b>window to visualize the magnetic field</b>.",
+        "Place it where you think it will best help you <b>find the location of the magnet</b>.",
+        "Click \"ready\" when you're satisfied with your placement.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    place_dead_window_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        pop([
+        "Now that you can see <b>a window into the magnetic field</b>,",
+        "<b>update your guesses</b> of <b>where the positive and negative magnetic terminals are located</b>.",
+        "Click \"ready\" when you're satisfied with your guess.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    second_guess_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        pop([
+        "Good guesses!",
+        "Click \"ready\" to play again!",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    reveal_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
+
+    //EXPOSITION
     steps.push(new Step(
       function(){
         pop([
@@ -456,7 +555,6 @@ var GamePlayScene = function(game, stage)
       new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
       phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
-      ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
     }
     else if(mode == FIND_MODE)
     {
@@ -490,6 +588,7 @@ var GamePlayScene = function(game, stage)
         }
       }
     }
+    ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
 
     steps[cur_step].draw();
   };
