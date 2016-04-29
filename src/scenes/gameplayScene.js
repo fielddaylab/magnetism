@@ -119,7 +119,7 @@ var GamePlayScene = function(game, stage)
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != EXPOSITION_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != EXPOSITION_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
     del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != EXPOSITION_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
-    ready_btn      = new ButtonBox(10,160,20,20,function(){ ready_btn_clicked = true; });
+    ready_btn      = new ButtonBox(10,160,20,20,function(){ wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
 
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
@@ -191,7 +191,11 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       noop,
       noop,
-      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Place the compasses where you think they'll be most useful!",20,50);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,70);
+      },
       function() { return ready_btn_clicked; }
     ));
     steps.push(new Step(
@@ -211,7 +215,12 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       noop,
       noop,
-      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Drag the + and - guesses to the place you think",20,50);
+        ctx.fillText("corresponds with the magnet's + and - terminals.",20,70);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+      },
       function() { return ready_btn_clicked; }
     ));
     steps.push(new Step(
@@ -230,7 +239,11 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       noop,
       noop,
-      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Drag the window to where you think it'll be most useful!",20,50);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,70);
+      },
       function() { return ready_btn_clicked; }
     ));
     steps.push(new Step(
@@ -249,7 +262,12 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       noop,
       noop,
-      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Update your guesses of where you think the",20,50);
+        ctx.fillText("magnet's + and - terminals are located!",20,70);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+      },
       function() { return ready_btn_clicked; }
     ));
     steps.push(new Step(
@@ -267,7 +285,12 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       noop,
       noop,
-      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Feel free to drag around the compasses, the window,",20,50);
+        ctx.fillText("or even the magnet's terminals!",20,70);
+        ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,90);
+      },
       function() {
         if(ready_btn_clicked)
         {
@@ -855,11 +878,19 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!cur_dragging)
-      {
-        self.dragging = true;
-        self.charge.dragging = true;
-      }
+      if(
+        cur_dragging ||
+        (
+          (
+            hidden_mag.nhandle == self ||
+            hidden_mag.shandle == self
+          ) &&
+          cur_step != reveal_step
+        )
+      )
+        return;
+      self.dragging = true;
+      self.charge.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
