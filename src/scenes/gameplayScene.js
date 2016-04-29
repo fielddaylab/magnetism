@@ -27,7 +27,7 @@ var GamePlayScene = function(game, stage)
   var cur_dragging;
   var cur_selected;
 
-  var res = 30;
+  var res = 60;
   var w = 2*res;
   var h = 1*res;
 
@@ -273,7 +273,10 @@ var GamePlayScene = function(game, stage)
     }
     bmwrangler.tick();
 
-    vfield.tick();
+    if(mode == EXPOSITION_MODE)
+      vfield.tick();
+    else if(mode == FIND_MODE)
+      vfield.tick(wind);
 
     var charge;
     for(var i = 0; i < charges.length; i++)
@@ -494,7 +497,7 @@ var GamePlayScene = function(game, stage)
     var y;
     var d2;
 
-    self.tick = function()
+    self.tick = function(wind)
     {
       var index;
       var x;
@@ -505,6 +508,20 @@ var GamePlayScene = function(game, stage)
       var r;
       var f;
       var maxlen = 10;
+
+      var wx;
+      var wx;
+      var ww;
+      var wh;
+
+      if(wind)
+      {
+        wx = self.xScreenToFSpace(wind.x);
+        wy = self.yScreenToFSpace(wind.y);
+        ww = self.xScreenToFSpace(wind.x+wind.w)-wx;
+        wh = self.yScreenToFSpace(wind.y+wind.h)-wy;
+      }
+
       for(var i = 0; i < self.dh; i++)
       {
         y = self.yIndexToFSpace(i);
@@ -512,6 +529,16 @@ var GamePlayScene = function(game, stage)
         {
           index = self.iFor(j,i);
           x = self.xIndexToFSpace(j);
+
+          if(wind &&
+              (
+                x < wx    ||
+                x > wx+ww ||
+                y < wy    ||
+                y > wy+wh
+              )
+            )
+            continue;
 
           self.dy[index] = 0;
           self.dx[index] = 0;
@@ -703,7 +730,6 @@ var GamePlayScene = function(game, stage)
     self.dragFinish = function()
     {
       self.dragging = true;
-
     }
   }
   var Compass = function(x,y,r)
@@ -711,7 +737,25 @@ var GamePlayScene = function(game, stage)
     var self = this;
     self.x = x;
     self.y = y;
+    self.w = 2*r;
+    self.h = 2*r;
     self.r = r;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      self.dragging = true;
+
+    }
+    self.drag = function(evt)
+    {
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+    }
+    self.dragFinish = function()
+    {
+      self.dragging = true;
+    }
   }
 
   var Step = function(begin,tick,draw,test)
