@@ -443,16 +443,18 @@ var GamePlayScene = function(game, stage)
     if(mode == EXPOSITION_MODE)
     {
       vfield.draw();
-      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("+",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
-      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("-",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
-      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("m",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
-      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("p",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
-      del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("d",del_btn.x+5,del_btn.y+del_btn.h-5);
+      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (+)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
+      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (-)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
+      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
+      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
+      del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
       ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
     }
     else if(mode == FIND_MODE)
     {
       vfield.draw(wind);
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 2;
       ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
       var comp;
       for(var i = 0; i < comps.length; i++)
@@ -463,6 +465,8 @@ var GamePlayScene = function(game, stage)
         if(r > 0.001)
         {
           r = sqrt(r);
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 2;
           canv.drawLine(
             comp.x+comp.w/2,
             comp.y+comp.h/2,
@@ -742,17 +746,20 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      self.dragging = true;
-
+      if(!cur_dragging) self.dragging = true;
+      self.drag(evt);
     }
     self.drag = function(evt)
     {
+      if(!self.dragging) return;
+      cur_dragging = true;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
     }
     self.dragFinish = function()
     {
-      self.dragging = true;
+      if(self.dragging) cur_dragging = false;
+      self.dragging = false;
     }
   }
   var Compass = function(x,y,r,field)
@@ -801,11 +808,13 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      self.dragging = true;
-
+      if(!cur_dragging) self.dragging = true;
+      self.drag(evt);
     }
     self.drag = function(evt)
     {
+      if(!self.dragging) return;
+      cur_dragging = true;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
       self.fx = field.xScreenToFSpace(evt.doX);
@@ -813,7 +822,8 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      self.dragging = true;
+      if(self.dragging) cur_dragging = false;
+      self.dragging = false;
     }
   }
 
