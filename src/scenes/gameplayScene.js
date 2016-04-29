@@ -86,7 +86,33 @@ var GamePlayScene = function(game, stage)
     var nullNegCharge = new Charge(0,0,-1);
     var nullPosCharge = new Charge(0,0,1);
     guessed_neg = new Handle(nullNegCharge,vfield);
+    guessed_neg.dragStart = function(evt)
+    {
+      if(
+        cur_dragging ||
+        (
+          cur_step != first_guess_step &&
+          cur_step != second_guess_step
+        )
+      )
+        return;
+      guessed_neg.dragging = true;
+      guessed_neg.drag(evt);
+    }
     guessed_pos = new Handle(nullPosCharge,vfield);
+    guessed_pos.dragStart = function(evt)
+    {
+      if(
+        cur_dragging ||
+        (
+          cur_step != first_guess_step &&
+          cur_step != second_guess_step
+        )
+      )
+        return;
+      guessed_pos.dragging = true;
+      guessed_pos.drag(evt);
+    }
 
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
@@ -509,7 +535,7 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < mags.length; i++)
     {
       mag = mags[i];
-      if(mag == hidden_mag) continue;
+      if(cur_step < reveal_step-1 && mag == hidden_mag) continue;
       ctx.lineWidth = 20;
       ctx.beginPath();
       ctx.moveTo(mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2);
@@ -558,35 +584,47 @@ var GamePlayScene = function(game, stage)
     }
     else if(mode == FIND_MODE)
     {
-      ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
-      ctx.fillText("+?",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5);
+      if(cur_step >= second_guess_step-1)
+        vfield.draw(wind);
+      if(cur_step >= place_dead_window_step-1)
+      {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
+      }
 
-      ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
-      ctx.fillText("-?",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5);
-
-      vfield.draw(wind);
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
       var comp;
       for(var i = 0; i < comps.length; i++)
       {
         comp = comps[i];
         ctx.drawImage(Circle,comps[i].x,comps[i].y,comps[i].w,comps[i].h);
-        var r = (comp.dx*comp.dx)+(comp.dy*comp.dy);
-        if(r > 0.001)
+        if(cur_step >= first_guess_step-1)
         {
-          r = sqrt(r);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          canv.drawLine(
-            comp.x+comp.w/2,
-            comp.y+comp.h/2,
-            comp.x+comp.w/2+(comp.dx/r)*comp.r,
-            comp.y+comp.h/2+(comp.dy/r)*comp.r
-          );
+          var r = (comp.dx*comp.dx)+(comp.dy*comp.dy);
+          if(r > 0.001)
+          {
+            r = sqrt(r);
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 2;
+            canv.drawLine(
+              comp.x+comp.w/2,
+              comp.y+comp.h/2,
+              comp.x+comp.w/2+(comp.dx/r)*comp.r,
+              comp.y+comp.h/2+(comp.dy/r)*comp.r
+            );
+          }
         }
       }
+
+      if(cur_step >= first_guess_step-1)
+      {
+        ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
+        ctx.fillText("+?",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5);
+
+        ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
+        ctx.fillText("-?",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5);
+      }
+
     }
     ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
 
@@ -859,7 +897,15 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!cur_dragging) self.dragging = true;
+      if(
+        cur_dragging ||
+        (
+          cur_step != place_dead_window_step &&
+          cur_step != reveal_step
+        )
+      )
+        return;
+      self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -921,7 +967,15 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!cur_dragging) self.dragging = true;
+      if(
+        cur_dragging ||
+        (
+          cur_step != place_dead_compass_step &&
+          cur_step != reveal_step
+        )
+      )
+        return;
+      self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
