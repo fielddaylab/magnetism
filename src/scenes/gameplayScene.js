@@ -6,10 +6,17 @@ var GamePlayScene = function(game, stage)
   var canvas = canv.canvas;
   var ctx = canv.context;
 
+  var ENUM;
+
   ENUM = 0;
   var IGNORE_INPUT = ENUM; ENUM++;
   var RESUME_INPUT = ENUM; ENUM++;
   var input_state;
+
+  ENUM = 0;
+  var EXPOSITION_MODE = ENUM; ENUM++;
+  var FIND_MODE       = ENUM; ENUM++;
+  var mode;
 
   var dragger;
   var clicker;
@@ -29,6 +36,10 @@ var GamePlayScene = function(game, stage)
   var mags;
   var nonmags;
 
+  var hidden_mag;
+  var wind;
+  var comps;
+
   var new_pos_btn;
   var new_neg_btn;
   var new_magnet_btn;
@@ -42,6 +53,8 @@ var GamePlayScene = function(game, stage)
   self.ready = function()
   {
     input_state = RESUME_INPUT;
+    mode = FIND_MODE;
+
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
     domclicker = new Clicker({source:stage.dispCanv.canvas});
@@ -53,12 +66,21 @@ var GamePlayScene = function(game, stage)
     nonmags = [];
     mags = [];
 
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ genHandle(rand0()/2.,rand0()/2., 1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ genHandle(rand0()/2.,rand0()/2.,-1); });
-    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ genMagnet(); });
-    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(cur_selected) cur_selected.physics = !cur_selected.physics; });
-    del_btn        = new ButtonBox(10,130,20,20,function(){ delMagnet(cur_selected); delHandle(cur_selected); });
-    ready_btn      = new ButtonBox(10,160,20,20,function(){ ready_btn_clicked = true; });
+    hidden_mag = genMagnet(
+      -2,rand0()/2,rand0()/2,
+       2,rand0()/2,rand0()/2
+    );
+    wind = new Window(30,30,200,200);
+    comps = [];
+
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
+    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != EXPOSITION_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
+    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != EXPOSITION_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
+    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != EXPOSITION_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
+    ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode != EXPOSITION_MODE) return; ready_btn_clicked = true; });
+
+    dragger.register(wind);
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
@@ -71,12 +93,17 @@ var GamePlayScene = function(game, stage)
     steps = [];
 
     steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return false; }
+    ));
+    steps.push(new Step(
       function(){
         pop([
         "Hey there!",
         "This is a magnetic field.",
         "It doesn't look very interesting right now.",
-        "But that's OK.",
         ]);
       },
       noop,
@@ -147,6 +174,24 @@ var GamePlayScene = function(game, stage)
       noop,
       function() { return ready_btn_clicked; }
     ));
+    steps.push(new Step(
+      function(){
+        genHandle(0,0,-1);
+        cur_selected.physics = true;
+        pop([
+        "",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      function() { return ready_btn_clicked; }
+    ));
 
     cur_step = -1;
     self.nextStep();
@@ -161,11 +206,12 @@ var GamePlayScene = function(game, stage)
   var genHandle = function(x,y,charge_v)
   {
     var c = new Charge(x,y,charge_v);
-    var s = new Handle(c,vfield)
-    charges[charges.length] = s.charge;
-    dragger.register(s);
-    cur_selected = s.charge;
-    nonmags[nonmags.length] = s;
+    var h = new Handle(c,vfield)
+    charges[charges.length] = h.charge;
+    dragger.register(h);
+    cur_selected = h.charge;
+    nonmags[nonmags.length] = h;
+    return h;
   }
   var delHandle = function(charge)
   {
@@ -179,15 +225,16 @@ var GamePlayScene = function(game, stage)
       }
     }
   }
-  var genMagnet = function()
+  var genMagnet = function(n,nx,ny,s,sx,sy)
   {
-    var m = new Magnet(-0.1,0.,0.1,0.,vfield)
+    var m = new Magnet(n,nx,ny,s,sx,sy,vfield)
     charges[charges.length] = m.n;
     charges[charges.length] = m.s;
     dragger.register(m.nhandle);
     dragger.register(m.shandle);
     cur_selected = m.nhandle.charge;
     mags[mags.length] = m;
+    return m;
   }
   var delMagnet = function(charge)
   {
@@ -350,7 +397,7 @@ var GamePlayScene = function(game, stage)
       if(mag.nhandle.charge == cur_selected)
       {
         ctx.fillStyle = "#FFFF00";
-        ctx.fillRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
+        ctx.drawImage(HCircle,mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
         ctx.fillStyle = "#000000";
       }
       //ctx.strokeRect(mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
@@ -359,7 +406,7 @@ var GamePlayScene = function(game, stage)
       if(mag.shandle.charge == cur_selected)
       {
         ctx.fillStyle = "#FFFF00";
-        ctx.fillRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
+        ctx.drawImage(HCircle,mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
         ctx.fillStyle = "#000000";
       }
       //ctx.strokeRect(mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
@@ -373,7 +420,7 @@ var GamePlayScene = function(game, stage)
       if(nonmag.charge == cur_selected)
       {
         ctx.fillStyle = "#FFFF00";
-        ctx.fillRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
+        ctx.drawImage(HCircle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
         ctx.fillStyle = "#000000";
       }
       //ctx.strokeRect(nonmag.x,nonmag.y,nonmag.w,nonmag.h);
@@ -381,14 +428,24 @@ var GamePlayScene = function(game, stage)
       if(nonmag.charge.v > 0) ctx.fillText("+",nonmag.x+5,nonmag.y+nonmag.h-5);
       if(nonmag.charge.v < 0) ctx.fillText("-",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
-    vfield.draw();
 
-    new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("+",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
-    new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("-",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
-    new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("m",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
-    phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("p",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
-    del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("d",del_btn.x+5,del_btn.y+del_btn.h-5);
-    ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    if(mode == EXPOSITION_MODE)
+      vfield.draw();
+    else if(mode == FIND_MODE)
+    {
+      vfield.draw(wind);
+      ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
+    }
+
+    if(mode == EXPOSITION_MODE)
+    {
+      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("+",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
+      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("-",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
+      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("m",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
+      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("p",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
+      del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("d",del_btn.x+5,del_btn.y+del_btn.h-5);
+      ready_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    }
 
     steps[cur_step].draw();
   };
@@ -486,7 +543,7 @@ var GamePlayScene = function(game, stage)
       }
     }
 
-    self.draw = function()
+    self.draw = function(wind)
     {
       ctx.lineWidth = 1;
 
@@ -494,8 +551,20 @@ var GamePlayScene = function(game, stage)
       {
         for(var j = 0; j < self.dw; j++)
         {
+
           y = self.y + y_space*i+(y_space/2);
           x = self.x + x_space*j+(x_space/2);
+
+          if(wind &&
+              (
+                x < wind.x ||
+                x > wind.x+wind.w ||
+                y < wind.y ||
+                y > wind.y+wind.h
+              )
+            )
+            continue;
+
           index = self.iFor(j,i);
 
           d2 = self.dx[index]*self.dx[index] + self.dy[index]*self.dy[index];
@@ -518,6 +587,7 @@ var GamePlayScene = function(game, stage)
             x+(self.dx[index]*vec_length/2),
             y+(self.dy[index]*vec_length/2)
           );
+
         }
       }
 
@@ -572,14 +642,14 @@ var GamePlayScene = function(game, stage)
       self.charge.dragging = false;
     }
   }
-  var Magnet = function(nx,ny,sx,sy,field)
+  var Magnet = function(n,nx,ny,s,sx,sy,field)
   {
     var self = this;
     var dx = nx-sx;
     var dy = ny-sy;
     var allowed_d = sqrt(dx*dx+dy*dy);
-    self.n = new Charge(nx,ny,-1);
-    self.s = new Charge(sx,sy, 1);
+    self.n = new Charge(nx,ny,n);
+    self.s = new Charge(sx,sy,s);
 
     self.nhandle = new Handle(self.n,field);
     self.shandle = new Handle(self.s,field);
@@ -611,6 +681,39 @@ var GamePlayScene = function(game, stage)
     }
   }
 
+  var Window = function(x,y,w,h)
+  {
+    var self = this;
+    self.x = x;
+    self.y = y;
+    self.w = w;
+    self.h = h;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      self.dragging = true;
+
+    }
+    self.drag = function(evt)
+    {
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+    }
+    self.dragFinish = function()
+    {
+      self.dragging = true;
+
+    }
+  }
+  var Compass = function(x,y,r)
+  {
+    var self = this;
+    self.x = x;
+    self.y = y;
+    self.r = r;
+  }
+
   var Step = function(begin,tick,draw,test)
   {
     this.begin = begin;
@@ -625,6 +728,12 @@ var GamePlayScene = function(game, stage)
   Circle.context.beginPath();
   Circle.context.arc(Circle.width/2,Circle.height/2,Circle.width/2,0,2*Math.PI);
   Circle.context.stroke();
+
+  var HCircle = GenIcon(100,100);
+  HCircle.context.fillStyle = "#FFFF00";
+  HCircle.context.beginPath();
+  HCircle.context.arc(HCircle.width/2,HCircle.height/2,HCircle.width/2,0,2*Math.PI);
+  HCircle.context.fill();
 
 };
 
