@@ -95,6 +95,7 @@ var GamePlayScene = function(game, stage)
       if(
         cur_dragging ||
         (
+          cur_step < playground_step &&
           cur_step != first_guess_step &&
           cur_step != second_guess_step
         )
@@ -109,6 +110,7 @@ var GamePlayScene = function(game, stage)
       if(
         cur_dragging ||
         (
+          cur_step < playground_step &&
           cur_step != first_guess_step &&
           cur_step != second_guess_step
         )
@@ -693,7 +695,7 @@ var GamePlayScene = function(game, stage)
         }
       }
 
-      if(cur_step >= first_guess_step-1)
+      if(cur_step >= first_guess_step-1 && cur_step < reveal_step+1)
       {
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 20;
@@ -914,7 +916,7 @@ var GamePlayScene = function(game, stage)
             hidden_mag.nhandle == self ||
             hidden_mag.shandle == self
           ) &&
-          cur_step != reveal_step
+          cur_step < reveal_step
         )
       )
         return;
@@ -1001,7 +1003,7 @@ var GamePlayScene = function(game, stage)
         cur_dragging ||
         (
           hidden_mag == self &&
-          cur_step != reveal_step
+          cur_step < reveal_step
         )
       )
         return;
@@ -1070,7 +1072,7 @@ var GamePlayScene = function(game, stage)
         cur_dragging ||
         (
           cur_step != place_dead_window_step &&
-          cur_step != reveal_step
+          cur_step < reveal_step
         )
       )
         return;
@@ -1140,7 +1142,7 @@ var GamePlayScene = function(game, stage)
         cur_dragging ||
         (
           cur_step != place_dead_compass_step &&
-          cur_step != reveal_step
+          cur_step < reveal_step
         )
       )
         return;
