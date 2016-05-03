@@ -10,11 +10,14 @@ var Game = function(init)
   var self = this;
   doMapInitDefaults(init,init,default_init);
 
+  self.start = 0;
+
   var stage = new Stage({width:init.width,height:init.height,container:init.container});
   var scenes = [
     new NullScene(self, stage),
     new LoadingScene(self, stage),
     //new TestScene(self, stage),
+    new ChooseScene(self, stage),
     new GamePlayScene(self, stage),
   ];
   var cur_scene = 0;
@@ -41,9 +44,14 @@ var Game = function(init)
 
   self.nextScene = function()
   {
-    scenes[cur_scene].cleanup();
-    cur_scene++;
-    scenes[cur_scene].ready();
+    self.setScene(cur_scene+1);
   };
+
+  self.setScene = function(i)
+  {
+    scenes[cur_scene].cleanup();
+    cur_scene = i;
+    scenes[cur_scene].ready();
+  }
 };
 

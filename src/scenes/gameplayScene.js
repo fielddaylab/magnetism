@@ -202,8 +202,8 @@ var GamePlayScene = function(game, stage)
       function(){
         pop([
         "Now that we're showing <b>where the compasses point</b>,",
-        "place a guess <b>where you think the positive terminal of the magnet is located</b>,",
-        "and <b>where you think the negative terminal of the magnet is located</b>.",
+        "place a guess <b>where you think the North terminal of the magnet is located</b>,",
+        "and <b>where you think the South terminal of the magnet is located</b>.",
         "Click \"ready\" when you're satisfied with your guess.",
         ]);
       },
@@ -217,8 +217,8 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Drag the + and - guesses to the place you think",20,50);
-        ctx.fillText("corresponds with the magnet's + and - terminals.",20,70);
+        ctx.fillText("Drag the N and S guesses to the place you think",20,50);
+        ctx.fillText("corresponds with the magnet's N and S terminals.",20,70);
         ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
       },
       function() { return ready_btn_clicked; }
@@ -250,7 +250,7 @@ var GamePlayScene = function(game, stage)
       function(){
         pop([
         "Now that you can see <b>a window into the magnetic field</b>,",
-        "<b>update your guesses</b> of <b>where the positive and negative magnetic terminals are located</b>.",
+        "<b>update your guesses</b> of <b>where the North and South magnetic terminals are located</b>.",
         "Click \"ready\" when you're satisfied with your guess.",
         ]);
       },
@@ -265,7 +265,7 @@ var GamePlayScene = function(game, stage)
       function() {
         ctx.fillStyle = "#000000";
         ctx.fillText("Update your guesses of where you think the",20,50);
-        ctx.fillText("magnet's + and - terminals are located!",20,70);
+        ctx.fillText("magnet's N and S terminals are located!",20,70);
         ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
       },
       function() { return ready_btn_clicked; }
@@ -397,7 +397,7 @@ var GamePlayScene = function(game, stage)
     ));
 
     cur_step = -1;
-    cur_step = reveal_step-1;
+    //cur_step = reveal_step-1;
     self.nextStep();
 
   };
@@ -604,20 +604,20 @@ var GamePlayScene = function(game, stage)
       mag = mags[i];
       if(cur_step < reveal_step-1 && mag == hidden_mag) continue;
       ctx.lineWidth = 20;
-      ctx.beginPath();
-      ctx.moveTo(mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2);
-      ctx.lineTo(mag.shandle.x+mag.shandle.w/2,mag.shandle.y+mag.shandle.h/2);
-      ctx.stroke();
+      canv.drawLine(
+        mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2,
+        mag.shandle.x+mag.shandle.w/2,mag.shandle.y+mag.shandle.h/2
+      );
       ctx.lineWidth = 1;
       ctx.fillStyle = "#000000";
       if(mag.nhandle.charge == cur_selected)
         ctx.drawImage(HCircle,mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
       ctx.drawImage(Circle,mag.nhandle.x,mag.nhandle.y,mag.nhandle.w,mag.nhandle.h);
-      ctx.fillText("+",mag.shandle.x+5,mag.shandle.y+mag.shandle.h-5);
+      canv.outlineText("N",mag.nhandle.x+5,mag.nhandle.y+mag.nhandle.h-5,"#FFFFFF","#000000");
       if(mag.shandle.charge == cur_selected)
         ctx.drawImage(HCircle,mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
       ctx.drawImage(Circle,mag.shandle.x,mag.shandle.y,mag.shandle.w,mag.shandle.h);
-      ctx.fillText("-",mag.nhandle.x+5,mag.nhandle.y+mag.nhandle.h-5);
+      canv.outlineText("S",mag.shandle.x+5,mag.shandle.y+mag.shandle.h-5,"#FFFFFF","#000000");
     }
     var nonmag;
     for(var i = 0; i < nonmags.length; i++)
@@ -627,15 +627,15 @@ var GamePlayScene = function(game, stage)
         ctx.drawImage(HCircle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       ctx.drawImage(Circle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       ctx.fillStyle = "#000000";
-      if(nonmag.charge.v > 0) ctx.fillText("+",nonmag.x+5,nonmag.y+nonmag.h-5);
-      if(nonmag.charge.v < 0) ctx.fillText("-",nonmag.x+5,nonmag.y+nonmag.h-5);
+      if(nonmag.charge.v < 0) ctx.fillText("N",nonmag.x+5,nonmag.y+nonmag.h-5);
+      if(nonmag.charge.v > 0) ctx.fillText("S",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
 
     if(mode == EXPOSITION_MODE)
     {
       vfield.draw();
-      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (+)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
-      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (-)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
+      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
+      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (N)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
       new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
       phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
@@ -676,12 +676,19 @@ var GamePlayScene = function(game, stage)
 
       if(cur_step >= first_guess_step-1)
       {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 20;
+        canv.drawLine(
+          guessed_pos.x+guessed_pos.w/2,guessed_pos.y+guessed_pos.h/2,
+          guessed_neg.x+guessed_neg.w/2,guessed_neg.y+guessed_neg.h/2
+        );
+        ctx.lineWidth = 1;
         ctx.fillStyle = "#000000";
         ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
-        ctx.fillText("+?",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5);
+        canv.outlineText("S",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5,"#FFFFFF","#000000");
 
         ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
-        ctx.fillText("-?",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5);
+        canv.outlineText("N",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5,"#FFFFFF","#000000");
       }
 
     }
@@ -990,9 +997,7 @@ var GamePlayScene = function(game, stage)
       var dist =
         abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) /
         sqrt(pow((y2-y1),2) + pow((x2-x1),2));
-      d.log(dist);
-      if(dist > 10)
-        return;
+      if(dist > 10) return;
 
       self.dragging = true;
       self.grabbed_x = evt.doX;
@@ -1103,8 +1108,8 @@ var GamePlayScene = function(game, stage)
         {
           f = charges[k].v/r2;
           r = sqrt(r2);
-          self.dy += f*yd/r;
-          self.dx += f*xd/r;
+          self.dy -= f*yd/r;
+          self.dx -= f*xd/r;
         }
       }
     }
