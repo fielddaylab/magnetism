@@ -42,6 +42,7 @@ var GamePlayScene = function(game, stage)
   var guessed_neg;
   var wind;
   var comps;
+  var best_closeness;
   var witnessed_instructs;
 
   var new_pos_btn;
@@ -171,7 +172,7 @@ var GamePlayScene = function(game, stage)
         guessed_neg.x = vfield.xFSpaceToScreen(guessed_neg.charge.x)-guessed_neg.w/2;
         guessed_neg.y = vfield.yFSpaceToScreen(guessed_neg.charge.y)-guessed_neg.h/2;
         //window
-        wind.x = 20;
+        wind.x = 60;
         wind.y = 20;
         //magnet
         if(hidden_mag)
@@ -282,13 +283,32 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
+        var sdist = tldist(guessed_pos,hidden_mag.shandle)/canv.height;
+        var ndist = tldist(guessed_neg,hidden_mag.nhandle)/canv.height;
+        var closeness = ndist+sdist;
+        if(closeness < best_closeness) best_closeness = closeness;
         pop([
-        "Good guesses!",
+        "S-Closeness rating:"+fdisp(sdist,4),
+        "N-Closeness rating:"+fdisp(ndist,4),
+        "Total closeness:"+fdisp(closeness,4),
+        closeness < 0.4 ? "Good guesses!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
       noop,
-      noop,
+      function()
+      {
+        ctx.strokeStyle = "#FF0000";
+        ctx.lineWidth = 2;
+        canv.drawLine(
+          guessed_pos.x+guessed_pos.w/2,guessed_pos.y+guessed_pos.h/2,
+          hidden_mag.shandle.x+hidden_mag.shandle.w/2,hidden_mag.shandle.y+hidden_mag.shandle.h/2
+        );
+        canv.drawLine(
+          guessed_neg.x+guessed_neg.w/2,guessed_neg.y+guessed_neg.h/2,
+          hidden_mag.nhandle.x+hidden_mag.nhandle.w/2,hidden_mag.nhandle.y+hidden_mag.nhandle.h/2
+        );
+      },
       function() { return input_state == RESUME_INPUT; }
     ));
     reveal_step = steps.length;
@@ -420,6 +440,7 @@ var GamePlayScene = function(game, stage)
       ffunc
     ));
 
+    best_closeness = 2;
     witnessed_instructs = false;
 
     switch(game.start)
@@ -726,6 +747,11 @@ var GamePlayScene = function(game, stage)
           }
         }
       }
+    }
+
+    if(mode == FIND_MODE)
+    {
+      if(best_closeness < 2) ctx.fillText("best closeness:"+fdisp(best_closeness,4),canv.width/2,20);
     }
 
     steps[cur_step].draw();
