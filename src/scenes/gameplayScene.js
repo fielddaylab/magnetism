@@ -397,6 +397,7 @@ var GamePlayScene = function(game, stage)
     ));
 
     cur_step = -1;
+    cur_step = reveal_step-1;
     self.nextStep();
 
   };
@@ -435,6 +436,7 @@ var GamePlayScene = function(game, stage)
     charges[charges.length] = m.s;
     dragger.register(m.nhandle);
     dragger.register(m.shandle);
+    dragger.register(m);
     cur_selected = m.nhandle.charge;
     mags[mags.length] = m;
     return m;
@@ -445,10 +447,11 @@ var GamePlayScene = function(game, stage)
     {
       if(charge == mags[i].n || charge == mags[i].s)
       {
-        dragger.unregister(mags[i].nhandle);
+        dragger.unregister(mags[i]);
         dragger.unregister(mags[i].shandle);
-        delCharge(mags[i].n);
+        dragger.unregister(mags[i].nhandle);
         delCharge(mags[i].s);
+        delCharge(mags[i].n);
         mags.splice(i,1);
       }
     }
@@ -841,7 +844,7 @@ var GamePlayScene = function(game, stage)
           else if(d2 >  10) ctx.strokeStyle = "#4400BB";
           else             ctx.strokeStyle = "#880088";
           ctx.fillStyle = ctx.strokeStyle;
-          ctx.fillRect(x-1,y-1,2,2);
+          //ctx.fillRect(x-1,y-1,2,2);
           canv.drawLine(
             x-(self.dx[index]*vec_length/2),
             y-(self.dy[index]*vec_length/2),
@@ -920,6 +923,11 @@ var GamePlayScene = function(game, stage)
     self.n = new Charge(nx,ny,n);
     self.s = new Charge(sx,sy,s);
 
+    self.x = 0;
+    self.y = 0;
+    self.w = 0;
+    self.h = 0;
+
     self.nhandle = new Handle(self.n,field);
     self.shandle = new Handle(self.s,field);
     self.nhandle.magnet = self;
@@ -947,6 +955,60 @@ var GamePlayScene = function(game, stage)
       if(d == 0){ dx = 1; dy = 0; d = 1; }
       servant.charge.x = master.charge.x+((dx/d)*allowed_d);
       servant.charge.y = master.charge.y+((dy/d)*allowed_d);
+
+      self.x = min(self.nhandle.x,self.shandle.x);
+      self.y = min(self.nhandle.y,self.shandle.y);
+      self.w = (max(self.nhandle.x,self.shandle.x)+self.nhandle.w)-self.x;
+      self.h = (max(self.nhandle.y,self.shandle.y)+self.nhandle.w)-self.y;
+    }
+
+    self.dragging = false;
+    self.grabbed_x;
+    self.grabbed_y;
+    self.dragStart = function(evt)
+    {
+      if(
+        cur_dragging ||
+        (
+          hidden_mag == self &&
+          cur_step != reveal_step
+        )
+      )
+        return;
+      self.dragging = true;
+      self.grabbed_x = evt.doX;
+      self.grabbed_y = evt.doY;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      if(!self.dragging) return;
+      cur_dragging = true;
+      cur_selected = self.nhandle.charge;
+      self.nhandle.charge.dragging = true;
+      self.shandle.charge.dragging = true;
+
+      var dx = evt.doX-self.grabbed_x;
+      var dy = evt.doY-self.grabbed_y;
+
+      self.nhandle.x += dx;
+      self.nhandle.y += dy;
+      self.nhandle.charge.x = field.xScreenToFSpace(self.nhandle.x+self.nhandle.w/2);
+      self.nhandle.charge.y = field.yScreenToFSpace(self.nhandle.y+self.nhandle.h/2);
+      self.shandle.x += dx;
+      self.shandle.y += dy;
+      self.shandle.charge.x = field.xScreenToFSpace(self.shandle.x+self.shandle.w/2);
+      self.shandle.charge.y = field.yScreenToFSpace(self.shandle.y+self.shandle.h/2);
+
+      self.grabbed_x = evt.doX;
+      self.grabbed_y = evt.doY;
+    }
+    self.dragFinish = function()
+    {
+      if(self.dragging) cur_dragging = false;
+      self.dragging = false;
+      self.nhandle.charge.dragging = false;
+      self.shandle.charge.dragging = false;
     }
   }
 
