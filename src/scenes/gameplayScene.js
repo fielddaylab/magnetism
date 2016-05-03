@@ -25,7 +25,7 @@ var GamePlayScene = function(game, stage)
   var dom;
   var bmwrangler;
 
-  var cur_dragging;
+  var is_cur_dragging;
   var cur_selected;
 
   var res = 60;
@@ -97,7 +97,7 @@ var GamePlayScene = function(game, stage)
     guessed_neg.dragStart = function(evt)
     {
       if(
-        cur_dragging ||
+        is_cur_dragging ||
         (
           cur_step < playground_step &&
           cur_step != first_guess_step &&
@@ -112,7 +112,7 @@ var GamePlayScene = function(game, stage)
     guessed_pos.dragStart = function(evt)
     {
       if(
-        cur_dragging ||
+        is_cur_dragging ||
         (
           cur_step < playground_step &&
           cur_step != first_guess_step &&
@@ -146,7 +146,6 @@ var GamePlayScene = function(game, stage)
 
     //STEPS
     steps = [];
-
 
     //FIND
     begin_step = steps.length;
@@ -681,6 +680,30 @@ var GamePlayScene = function(game, stage)
         ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
       }
 
+      if(cur_step >= first_guess_step-1 && cur_step < reveal_step+1)
+      {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 20;
+        canv.drawLine(
+          guessed_pos.x+guessed_pos.w/2,guessed_pos.y+guessed_pos.h/2,
+          guessed_neg.x+guessed_neg.w/2,guessed_neg.y+guessed_neg.h/2
+        );
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "#000000";
+        ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
+        canv.outlineText("S",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5,"#FFFFFF","#000000");
+
+        ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
+        canv.outlineText("N",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5,"#FFFFFF","#000000");
+      }
+
+    }
+    if(mode != PLAYGROUND_MODE)
+    {
+      ready_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    }
+    if(mode != EXPOSITION_MODE)
+    {
       var comp;
       for(var i = 0; i < comps.length; i++)
       {
@@ -703,28 +726,6 @@ var GamePlayScene = function(game, stage)
           }
         }
       }
-
-      if(cur_step >= first_guess_step-1 && cur_step < reveal_step+1)
-      {
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 20;
-        canv.drawLine(
-          guessed_pos.x+guessed_pos.w/2,guessed_pos.y+guessed_pos.h/2,
-          guessed_neg.x+guessed_neg.w/2,guessed_neg.y+guessed_neg.h/2
-        );
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "#000000";
-        ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
-        canv.outlineText("S",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5,"#FFFFFF","#000000");
-
-        ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
-        canv.outlineText("N",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5,"#FFFFFF","#000000");
-      }
-
-    }
-    if(mode != PLAYGROUND_MODE)
-    {
-      ready_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
     }
 
     steps[cur_step].draw();
@@ -922,7 +923,7 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(
-        cur_dragging ||
+        is_cur_dragging ||
         (
           (
             hidden_mag.nhandle == self ||
@@ -939,7 +940,7 @@ var GamePlayScene = function(game, stage)
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      cur_dragging = true;
+      is_cur_dragging = true;
       cur_selected = self.charge;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
@@ -949,7 +950,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      if(self.dragging) cur_dragging = false;
+      if(self.dragging) is_cur_dragging = false;
       self.dragging = false;
       self.charge.dragging = false;
     }
@@ -1012,7 +1013,7 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(
-        cur_dragging ||
+        is_cur_dragging ||
         (
           hidden_mag == self &&
           cur_step < reveal_step
@@ -1040,7 +1041,7 @@ var GamePlayScene = function(game, stage)
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      cur_dragging = true;
+      is_cur_dragging = true;
       cur_selected = self.nhandle.charge;
       self.nhandle.charge.dragging = true;
       self.shandle.charge.dragging = true;
@@ -1062,7 +1063,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      if(self.dragging) cur_dragging = false;
+      if(self.dragging) is_cur_dragging = false;
       self.dragging = false;
       self.nhandle.charge.dragging = false;
       self.shandle.charge.dragging = false;
@@ -1081,7 +1082,8 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(
-        cur_dragging ||
+        mode != FIND_MODE ||
+        is_cur_dragging ||
         (
           cur_step != place_dead_window_step &&
           cur_step < reveal_step
@@ -1094,13 +1096,13 @@ var GamePlayScene = function(game, stage)
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      cur_dragging = true;
+      is_cur_dragging = true;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
     }
     self.dragFinish = function()
     {
-      if(self.dragging) cur_dragging = false;
+      if(self.dragging) is_cur_dragging = false;
       self.dragging = false;
     }
   }
@@ -1151,7 +1153,7 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(
-        cur_dragging ||
+        is_cur_dragging ||
         (
           cur_step != place_dead_compass_step &&
           cur_step < reveal_step
@@ -1164,7 +1166,7 @@ var GamePlayScene = function(game, stage)
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      cur_dragging = true;
+      is_cur_dragging = true;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
       self.fx = field.xScreenToFSpace(evt.doX);
@@ -1172,7 +1174,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      if(self.dragging) cur_dragging = false;
+      if(self.dragging) is_cur_dragging = false;
       self.dragging = false;
     }
   }
