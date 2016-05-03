@@ -14,8 +14,9 @@ var GamePlayScene = function(game, stage)
   var input_state;
 
   ENUM = 0;
-  var EXPOSITION_MODE = ENUM; ENUM++;
   var FIND_MODE       = ENUM; ENUM++;
+  var EXPOSITION_MODE = ENUM; ENUM++;
+  var PLAYGROUND_MODE = ENUM; ENUM++;
   var mode;
 
   var dragger;
@@ -72,7 +73,10 @@ var GamePlayScene = function(game, stage)
     dom = new CanvDom(canv);
     bmwrangler = new BottomMessageWrangler();
 
-    vfield = new VecField(0,0,canv.width,canv.height,w,h)
+    if(game.start == 0)
+      vfield = new VecField(0,0,canv.width,canv.height,w/2,h/2)
+    else
+      vfield = new VecField(0,0,canv.width,canv.height,w,h)
     charges = [];
     nonmags = [];
     mags = [];
@@ -120,12 +124,12 @@ var GamePlayScene = function(game, stage)
       guessed_pos.drag(evt);
     }
 
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != EXPOSITION_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
-    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != EXPOSITION_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
-    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != EXPOSITION_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
-    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != EXPOSITION_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
-    ready_btn      = new ButtonBox(10,160,20,20,function(){ wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode == FIND_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode == FIND_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
+    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode == FIND_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
+    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode == FIND_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
+    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode == FIND_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
+    ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
 
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
@@ -149,6 +153,7 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       function(){
         //set up game
+        mode = FIND_MODE;
           //compasses
         for(var i = 0; i < comps.length; i++)
         {
@@ -310,6 +315,7 @@ var GamePlayScene = function(game, stage)
     //EXPOSITION
     steps.push(new Step(
       function(){
+        mode = EXPOSITION_MODE;
         pop([
         "Hey there!",
         "This is a magnetic field.",
@@ -406,7 +412,10 @@ var GamePlayScene = function(game, stage)
     //PLAYGROUND
     playground_step = steps.length;
     steps.push(new Step(
-      noop,
+      function()
+      {
+        mode = PLAYGROUND_MODE;
+      },
       noop,
       noop,
       ffunc
@@ -500,7 +509,7 @@ var GamePlayScene = function(game, stage)
     }
     bmwrangler.tick();
 
-    if(mode == EXPOSITION_MODE)
+    if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
       vfield.tick();
     else if(mode == FIND_MODE)
       vfield.tick(wind);
@@ -652,7 +661,7 @@ var GamePlayScene = function(game, stage)
       if(nonmag.charge.v > 0) ctx.fillText("S",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
 
-    if(mode == EXPOSITION_MODE)
+    if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
     {
       vfield.draw();
       new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
@@ -713,7 +722,10 @@ var GamePlayScene = function(game, stage)
       }
 
     }
-    ready_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    if(mode != PLAYGROUND_MODE)
+    {
+      ready_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+    }
 
     steps[cur_step].draw();
   };
