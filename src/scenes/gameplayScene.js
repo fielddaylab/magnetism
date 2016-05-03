@@ -582,8 +582,8 @@ var GamePlayScene = function(game, stage)
           charge.y += charge.yv;
 
           //box in
-          if(charge.x < -0.5) { charge.x = -0.5; if(charge.xv < 0) charge.xv *= -1; }
-          if(charge.x >  0.5) { charge.x =  0.5; if(charge.xv > 0) charge.xv *= -1; }
+          if(charge.x < -1.0) { charge.x = -1.0; if(charge.xv < 0) charge.xv *= -1; }
+          if(charge.x >  1.0) { charge.x =  1.0; if(charge.xv > 0) charge.xv *= -1; }
           if(charge.y < -0.5) { charge.y = -0.5; if(charge.yv < 0) charge.yv *= -1; }
           if(charge.y >  0.5) { charge.y =  0.5; if(charge.yv > 0) charge.yv *= -1; }
 
