@@ -41,6 +41,7 @@ var GamePlayScene = function(game, stage)
   var guessed_neg;
   var wind;
   var comps;
+  var witnessed_instructs;
 
   var new_pos_btn;
   var new_neg_btn;
@@ -175,7 +176,7 @@ var GamePlayScene = function(game, stage)
              2,rand0()/2,rand0()/2
           );
         }
-
+        if(!witnessed_instructs)
         pop([
         "Find The Magnet!",
         "Your first step is to place these <b>compasses</b> around the <b>magnetic field</b>.",
@@ -200,6 +201,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
+        if(!witnessed_instructs)
         pop([
         "Now that we're showing <b>where the compasses point</b>,",
         "place a guess <b>where you think the North terminal of the magnet is located</b>,",
@@ -225,6 +227,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
+        if(!witnessed_instructs)
         pop([
         "Now we'll give you a <b>window to visualize the magnetic field</b>.",
         "Place it where you think it will best help you <b>find the location of the magnet</b>.",
@@ -248,6 +251,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
+        if(!witnessed_instructs)
         pop([
         "Now that you can see <b>a window into the magnetic field</b>,",
         "<b>update your guesses</b> of <b>where the North and South magnetic terminals are located</b>.",
@@ -294,6 +298,7 @@ var GamePlayScene = function(game, stage)
       function() {
         if(ready_btn_clicked)
         {
+          witnessed_instructs = true;
           cur_step = -1;
           return true;
         }
@@ -395,6 +400,8 @@ var GamePlayScene = function(game, stage)
       noop,
       function() { return ready_btn_clicked; }
     ));
+
+    witnessed_instructs = false;
 
     cur_step = -1;
     //cur_step = reveal_step-1;
