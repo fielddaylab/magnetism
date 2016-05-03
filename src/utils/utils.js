@@ -351,6 +351,7 @@ var ceil = Math.ceil;
 var abs = Math.abs;
 var min = Math.min;
 var max = Math.max;
+var pow = Math.pow;
 var sqrt = Math.sqrt;
 var sin = Math.sin;
 var cos = Math.cos;

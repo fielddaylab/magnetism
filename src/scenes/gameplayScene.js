@@ -928,6 +928,7 @@ var GamePlayScene = function(game, stage)
     self.w = 0;
     self.h = 0;
 
+    self.stretchable = true;
     self.nhandle = new Handle(self.n,field);
     self.shandle = new Handle(self.s,field);
     self.nhandle.magnet = self;
@@ -941,20 +942,23 @@ var GamePlayScene = function(game, stage)
     var servant;
     self.tick = function() //just holds magnet together
     {
-      master = self.nhandle;
-      servant = self.shandle;
-      if(self.shandle.charge == cur_selected)
+      if(!self.stretchable)
       {
-        master = self.shandle;
-        servant = self.nhandle;
-      }
+        master = self.nhandle;
+        servant = self.shandle;
+        if(self.shandle.charge == cur_selected)
+        {
+          master = self.shandle;
+          servant = self.nhandle;
+        }
 
-      var dx = servant.charge.x-master.charge.x;
-      var dy = servant.charge.y-master.charge.y;
-      var d = sqrt(dx*dx+dy*dy);
-      if(d == 0){ dx = 1; dy = 0; d = 1; }
-      servant.charge.x = master.charge.x+((dx/d)*allowed_d);
-      servant.charge.y = master.charge.y+((dy/d)*allowed_d);
+        var dx = servant.charge.x-master.charge.x;
+        var dy = servant.charge.y-master.charge.y;
+        var d = sqrt(dx*dx+dy*dy);
+        if(d == 0){ dx = 1; dy = 0; d = 1; }
+        servant.charge.x = master.charge.x+((dx/d)*allowed_d);
+        servant.charge.y = master.charge.y+((dy/d)*allowed_d);
+      }
 
       self.x = min(self.nhandle.x,self.shandle.x);
       self.y = min(self.nhandle.y,self.shandle.y);
@@ -975,6 +979,21 @@ var GamePlayScene = function(game, stage)
         )
       )
         return;
+
+      var x0 = evt.doX;
+      var y0 = evt.doY;
+      var x1 = self.nhandle.x+self.nhandle.w/2;
+      var y1 = self.nhandle.y+self.nhandle.h/2;
+      var x2 = self.shandle.x+self.shandle.w/2;
+      var y2 = self.shandle.y+self.shandle.h/2;
+      //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+      var dist =
+        abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) /
+        sqrt(pow((y2-y1),2) + pow((x2-x1),2));
+      d.log(dist);
+      if(dist > 10)
+        return;
+
       self.dragging = true;
       self.grabbed_x = evt.doX;
       self.grabbed_y = evt.doY;
