@@ -13,8 +13,8 @@ var ChooseScene = function(game, stage)
   {
     clicker = new Clicker({source:stage.dispCanv.canvas});
 
-    btn_playground = new ButtonBox(10, 10,dc.width/2-15,30,function(evt){ game.start = 0; game.setScene(3); });
-    btn_game       = new ButtonBox(10, 50,dc.width/2-15,30,function(evt){ game.start = 1; game.setScene(3); });
+    btn_playground = new ButtonBox(10,10,dc.width/2-15,30,function(evt){ game.start = 0; game.setScene(3); });
+    btn_game       = new ButtonBox(10,50,dc.width/2-15,30,function(evt){ game.start = 1; game.setScene(3); });
 
     clicker.register(btn_playground);
     clicker.register(btn_game);

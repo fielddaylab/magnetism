@@ -52,11 +52,14 @@ var GamePlayScene = function(game, stage)
 
   var steps;
   var cur_step;
+
+  var begin_step;
   var place_dead_compass_step;
   var first_guess_step;
   var place_dead_window_step;
   var second_guess_step;
   var reveal_step;
+  var playground_step;
 
   self.ready = function()
   {
@@ -140,6 +143,7 @@ var GamePlayScene = function(game, stage)
 
 
     //FIND
+    begin_step = steps.length;
     steps.push(new Step(
       function(){
         //set up game
@@ -151,22 +155,18 @@ var GamePlayScene = function(game, stage)
           comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
         }
-
           //guessed
         guessed_pos.charge.x = -0.1;
         guessed_pos.charge.y = -0.2;
         guessed_pos.x = vfield.xFSpaceToScreen(guessed_pos.charge.x)-guessed_pos.w/2;
         guessed_pos.y = vfield.yFSpaceToScreen(guessed_pos.charge.y)-guessed_pos.h/2;
-
         guessed_neg.charge.x =  0.1;
         guessed_neg.charge.y = -0.2;
         guessed_neg.x = vfield.xFSpaceToScreen(guessed_neg.charge.x)-guessed_neg.w/2;
         guessed_neg.y = vfield.yFSpaceToScreen(guessed_neg.charge.y)-guessed_neg.h/2;
-
         //window
         wind.x = 20;
         wind.y = 20;
-
         //magnet
         if(hidden_mag)
         {
@@ -401,12 +401,24 @@ var GamePlayScene = function(game, stage)
       function() { return ready_btn_clicked; }
     ));
 
+    //PLAYGROUND
+    playground_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      noop,
+      ffunc
+    ));
+
     witnessed_instructs = false;
 
-    cur_step = -1;
-    //cur_step = reveal_step-1;
-    self.nextStep();
+    switch(game.start)
+    {
+      case 1: cur_step = begin_step-1; break;
+      case 0: cur_step = playground_step-1; break;
+    }
 
+    self.nextStep();
   };
   self.nextStep = function()
   {
