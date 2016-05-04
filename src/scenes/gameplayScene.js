@@ -104,10 +104,6 @@ var GamePlayScene = function(game, stage)
 
     wind = new Window(30,30,200,200);
     comps = [];
-    for(var i = 0; i < 5; i++)
-    {
-      comps[comps.length] = new Compass(0,0,30,vfield);
-    }
 
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8, 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8,-1); });
@@ -118,8 +114,6 @@ var GamePlayScene = function(game, stage)
     ready_btn      = new ButtonBox(10,190,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
 
     dragger.register(wind);
-    for(var i = 0; i < comps.length; i++)
-      dragger.register(comps[i]);
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
@@ -139,9 +133,10 @@ var GamePlayScene = function(game, stage)
         //set up game
         mode = FIND_MAGNET_MODE;
           //compasses
-        for(var i = 0; i < comps.length; i++)
+        for(var i = 0; i < 5; i++)
         {
-          comps[i].fx = lerp(-0.5,0.5,i/(comps.length-1));
+          if(!comps[i]) genComp();
+          comps[i].fx = lerp(-0.5,0.5,i/(5-1));
           comps[i].fy = -0.2;
           comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
@@ -170,8 +165,8 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Place the compasses where you think they'll be most useful!",20,50);
-        ctx.fillText("When ready, hit the \"ready\" button below.",20,70);
+        canv.outlineText("Place the compasses where you think they'll be most useful!",20,50);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,70);
       },
       function() { return ready_btn_clicked; }
     ));
@@ -195,9 +190,9 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Drag the N and S guesses to the place you think",20,50);
-        ctx.fillText("corresponds with the magnet's N and S terminals.",20,70);
-        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+        canv.outlineText("Drag the N and S guesses to the place you think",20,50);
+        canv.outlineText("corresponds with the magnet's N and S terminals.",20,70);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,90);
       },
       function() { return ready_btn_clicked; }
     ));
@@ -220,8 +215,8 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Drag the window to where you think it'll be most useful!",20,50);
-        ctx.fillText("When ready, hit the \"ready\" button below.",20,70);
+        canv.outlineText("Drag the window to where you think it'll be most useful!",20,50);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,70);
       },
       function() { return ready_btn_clicked; }
     ));
@@ -244,9 +239,9 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Update your guesses of where you think the",20,50);
-        ctx.fillText("magnet's N and S terminals are located!",20,70);
-        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+        canv.outlineText("Update your guesses of where you think the",20,50);
+        canv.outlineText("magnet's N and S terminals are located!",20,70);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,90);
       },
       function() { return ready_btn_clicked; }
     ));
@@ -260,7 +255,7 @@ var GamePlayScene = function(game, stage)
         "S-Closeness rating:"+fdisp(sdist,4),
         "N-Closeness rating:"+fdisp(ndist,4),
         "Total closeness:"+fdisp(closeness,4),
-        closeness < 0.4 ? "Good guesses!" : "Better luck next time!",
+        closeness < 0.4 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
@@ -277,9 +272,9 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Feel free to drag around the compasses, the window,",20,50);
-        ctx.fillText("or even the magnet's terminals!",20,70);
-        ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,90);
+        canv.outlineText("Feel free to drag around the compasses, the window,",20,50);
+        canv.outlineText("or even the magnet's terminals!",20,70);
+        canv.outlineText("When ready to play again, hit the \"ready\" button below.",20,90);
       },
       function() {
         if(ready_btn_clicked)
@@ -298,8 +293,9 @@ var GamePlayScene = function(game, stage)
         //set up game
         mode = TIME_MAGNET_MODE;
           //compasses
-        for(var i = 0; i < comps.length; i++)
+        for(var i = 0; i < 10; i++)
         {
+          if(!comps[i]) genComp();
           var tooclose = true;
           while(tooclose)
           {
@@ -321,7 +317,7 @@ var GamePlayScene = function(game, stage)
         pop([
         "Your goal is to <b>place the magnet</b> in a spot that reflects <b>the displayed orientation of the compasses</b>.",
         "Your first step is to simply place your best guess.",
-        "(Just place them all around- <b>don't worry if you don't understand what's going on right now</b>- you'll figure it out after a couple plays!)",
+        "(<b>Don't worry if you don't understand what's going on right now</b>- just place it wherever, and you'll figure it out after a couple plays!)",
         "Click \"ready\" when you're satisfied with your placement.",
         ]);
       },
@@ -335,9 +331,9 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Place a guess where you think the magnet will need to be located",20,50);
-        ctx.fillText("to have the displayed effect on the compasses.",20,70);
-        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+        canv.outlineText("Place a guess where you think the magnet will need to be located",20,50);
+        canv.outlineText("to have the displayed effect on the compasses.",20,70);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,90);
       },
       function() { return ready_btn_clicked; }
     ));
@@ -366,10 +362,10 @@ var GamePlayScene = function(game, stage)
       function()
       {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Place the magnet to match the shown compass needles.",20,50);
-        ctx.fillText("Get as close as you can, as fast as you can.",20,70);
-        ctx.fillText("Hit \"submit\" when you're satisfied with your guess.",20,90);
-        ctx.fillText("Current time:"+time,20,110);
+        canv.outlineText("Place the magnet to match the shown compass needles.",20,50);
+        canv.outlineText("Get as close as you can, as fast as you can.",20,70);
+        canv.outlineText("Hit \"submit\" when you're satisfied with your guess.",20,90);
+        canv.outlineText("Current time:"+time,20,110);
 
         drawInertCompasses();
       },
@@ -389,7 +385,7 @@ var GamePlayScene = function(game, stage)
         "Closeness rating: "+fdisp(closeness,4)+"<br />"+
         "Time: "+time+"<br />"+
         "Score: "+score,
-        score > 0.4 ? "Good guesses!" : "Better luck next time!",
+        score > 0.4 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
@@ -407,8 +403,8 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Feel free to drag around the compasses or magnets.",20,50);
-        ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,70);
+        canv.outlineText("Feel free to drag around the compasses or magnets.",20,50);
+        canv.outlineText("When ready to play again, hit the \"ready\" button below.",20,70);
 
         drawInertCompasses();
       },
@@ -524,6 +520,14 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       function()
       {
+        for(var i = 0; i < 5; i++)
+        {
+          if(!comps[i]) genComp();
+          comps[i].fx = lerp(-0.5,0.5,i/(5-1));
+          comps[i].fy = -0.2;
+          comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
+          comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
+        }
         mode = PLAYGROUND_MODE;
       },
       noop,
@@ -571,6 +575,23 @@ var GamePlayScene = function(game, stage)
         dragger.unregister(nonmags[i]);
         delCharge(charge);
         nonmags.splice(i,1);
+      }
+    }
+  }
+  var genComp = function()
+  {
+    var c = new Compass(0,0,30,vfield);
+    dragger.register(c);
+    comps[comps.length] = c;
+  }
+  var delComp = function(c)
+  {
+    for(var i = 0; i < comps.length; i++)
+    {
+      if(c == comps[i])
+      {
+        dragger.unregister(c);
+        comps.splice(i,1);
       }
     }
   }
@@ -886,9 +907,7 @@ var GamePlayScene = function(game, stage)
     }
 
     for(var i = 0; i < comps.length; i++)
-    {
       comps[i].tick();
-    }
 
     steps[cur_step].tick();
     if(steps[cur_step].test()) self.nextStep();
@@ -936,19 +955,19 @@ var GamePlayScene = function(game, stage)
         ctx.drawImage(HCircle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       ctx.drawImage(Circle,nonmag.x,nonmag.y,nonmag.w,nonmag.h);
       ctx.fillStyle = "#000000";
-      if(nonmag.charge.v < 0) ctx.fillText("N",nonmag.x+5,nonmag.y+nonmag.h-5);
-      if(nonmag.charge.v > 0) ctx.fillText("S",nonmag.x+5,nonmag.y+nonmag.h-5);
+      if(nonmag.charge.v < 0) canv.outlineText("N",nonmag.x+5,nonmag.y+nonmag.h-5);
+      if(nonmag.charge.v > 0) canv.outlineText("S",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
 
     if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
     {
       vfield.draw();
-      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
-      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; ctx.fillText("create charge (N)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
-      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
-      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
-      del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
-      earth_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
+      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
+      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (N)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
+      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
+      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; canv.outlineText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
+      del_btn.draw(canv);        ctx.fillStyle = "#000000"; canv.outlineText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
+      earth_btn.draw(canv);      ctx.fillStyle = "#000000"; canv.outlineText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
     }
     else if(mode == FIND_MAGNET_MODE)
     {
@@ -963,7 +982,7 @@ var GamePlayScene = function(game, stage)
     }
     if(mode != PLAYGROUND_MODE)
     {
-      ready_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
+      ready_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("ready",ready_btn.x+5,ready_btn.y+ready_btn.h-5);
     }
     if(mode != EXPOSITION_MODE)
     {
@@ -991,11 +1010,11 @@ var GamePlayScene = function(game, stage)
 
     if(mode == FIND_MAGNET_MODE)
     {
-      if(best_closeness < 2) ctx.fillText("best closeness:"+fdisp(best_closeness,4),canv.width/2,20);
+      if(best_closeness < 2) canv.outlineText("best closeness:"+fdisp(best_closeness,4),canv.width/2,20);
     }
     if(mode == TIME_MAGNET_MODE)
     {
-      if(best_time < 2) ctx.fillText("best time:"+fdisp(best_time,4),canv.width/2,20);
+      if(best_time < 2) canv.outlineText("best time:"+fdisp(best_time,4),canv.width/2,20);
     }
 
     steps[cur_step].draw();
