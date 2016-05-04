@@ -39,9 +39,8 @@ var GamePlayScene = function(game, stage)
   var mags;
   var nonmags;
 
-  var hidden_mag;
-  var guessed_pos;
-  var guessed_neg;
+  var special_mag;
+  var inert_mag;
   var wind;
   var comps;
   var best_closeness;
@@ -57,12 +56,13 @@ var GamePlayScene = function(game, stage)
   var steps;
   var cur_step;
 
-  var begin_step;
-  var place_dead_compass_step;
-  var first_guess_step;
-  var place_dead_window_step;
-  var second_guess_step;
-  var reveal_step;
+  var find_begin_step;
+  var find_place_dead_compass_step;
+  var find_first_guess_step;
+  var find_place_dead_window_step;
+  var find_second_guess_step;
+  var find_reveal_step;
+
   var playground_step;
 
   self.ready = function()
@@ -90,47 +90,17 @@ var GamePlayScene = function(game, stage)
     {
       comps[comps.length] = new Compass(0,0,30,vfield);
     }
-    var nullNegCharge = new Charge(0,0,-1);
-    var nullPosCharge = new Charge(0,0,1);
-    guessed_neg = new Handle(nullNegCharge,vfield);
-    guessed_pos = new Handle(nullPosCharge,vfield);
 
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
-    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
-    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
-    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
+    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
+    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != PLAYGROUND_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
+    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != PLAYGROUND_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
     ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
-
-    //CUSTOM DRAGS
-    guessed_neg.dragStart = function(evt)
-    {
-      if(mode != FIND_MAGNET_MODE) return;
-      if(cur_dragging) return;
-      if(
-        cur_step != first_guess_step &&
-        cur_step != second_guess_step
-      ) return;
-      guessed_neg.dragging = true;
-      guessed_neg.drag(evt);
-    }
-    guessed_pos.dragStart = function(evt)
-    {
-      if(mode != FIND_MAGNET_MODE) return;
-      if(cur_dragging) return;
-      if(
-        cur_step != first_guess_step &&
-        cur_step != second_guess_step
-      ) return;
-      guessed_pos.dragging = true;
-      guessed_pos.drag(evt);
-    }
 
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
       dragger.register(comps[i]);
-    dragger.register(guessed_neg);
-    dragger.register(guessed_pos);
 
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
@@ -143,7 +113,7 @@ var GamePlayScene = function(game, stage)
     steps = [];
 
     //FIND
-    begin_step = steps.length;
+    find_begin_step = steps.length;
     steps.push(new Step(
       function(){
         //set up game
@@ -156,20 +126,180 @@ var GamePlayScene = function(game, stage)
           comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
         }
-          //guessed
-        guessed_pos.charge.x = -0.1;
-        guessed_pos.charge.y = -0.2;
-        guessed_pos.x = vfield.xFSpaceToScreen(guessed_pos.charge.x)-guessed_pos.w/2;
-        guessed_pos.y = vfield.yFSpaceToScreen(guessed_pos.charge.y)-guessed_pos.h/2;
-        guessed_neg.charge.x =  0.1;
-        guessed_neg.charge.y = -0.2;
-        guessed_neg.x = vfield.xFSpaceToScreen(guessed_neg.charge.x)-guessed_neg.w/2;
-        guessed_neg.y = vfield.yFSpaceToScreen(guessed_neg.charge.y)-guessed_neg.h/2;
         //window
         wind.x = 60;
         wind.y = 20;
         //magnet
-        genHiddenMagnet();
+        genSpecialMagnet();
+        genInertMagnet();
+        if(!witnessed_instructs)
+        pop([
+        "Find The Magnet!",
+        "Your first step is to place these <b>compasses</b> around the <b>magnetic field</b>.",
+        "(Just place them all around- <b>don't worry if you don't understand what's going on right now</b>- you'll figure it out after a couple plays!)",
+        "Click \"ready\" when you're satisfied with their placements.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    find_place_dead_compass_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Place the compasses where you think they'll be most useful!",20,50);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,70);
+      },
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        if(!witnessed_instructs)
+        pop([
+        "Now that we're showing <b>where the compasses point</b>,",
+        "place a guess <b>where you think the North terminal of the magnet is located</b>,",
+        "and <b>where you think the South terminal of the magnet is located</b>.",
+        "Click \"ready\" when you're satisfied with your guess.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    find_first_guess_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Drag the N and S guesses to the place you think",20,50);
+        ctx.fillText("corresponds with the magnet's N and S terminals.",20,70);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+      },
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        if(!witnessed_instructs)
+        pop([
+        "Now we'll give you a <b>window to visualize the magnetic field</b>.",
+        "Place it where you think it will best help you <b>find the location of the magnet</b>.",
+        "Click \"ready\" when you're satisfied with your placement.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    find_place_dead_window_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Drag the window to where you think it'll be most useful!",20,50);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,70);
+      },
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        if(!witnessed_instructs)
+        pop([
+        "Now that you can see <b>a window into the magnetic field</b>,",
+        "<b>update your guesses</b> of <b>where the North and South magnetic terminals are located</b>.",
+        "Click \"ready\" when you're satisfied with your guess.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    find_second_guess_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Update your guesses of where you think the",20,50);
+        ctx.fillText("magnet's N and S terminals are located!",20,70);
+        ctx.fillText("When ready, hit the \"ready\" button below.",20,90);
+      },
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
+        var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
+        var closeness = ndist+sdist;
+        if(closeness < best_closeness) best_closeness = closeness;
+        pop([
+        "S-Closeness rating:"+fdisp(sdist,4),
+        "N-Closeness rating:"+fdisp(ndist,4),
+        "Total closeness:"+fdisp(closeness,4),
+        closeness < 0.4 ? "Good guesses!" : "Better luck next time!",
+        "Click \"ready\" to play again!",
+        ]);
+      },
+      noop,
+      function()
+      {
+        ctx.strokeStyle = "#FF0000";
+        ctx.lineWidth = 2;
+        canv.drawLine(
+          inert_mag.shandle.x+inert_mag.shandle.w/2,inert_mag.shandle.y+inert_mag.shandle.h/2,
+          special_mag.shandle.x+special_mag.shandle.w/2,special_mag.shandle.y+special_mag.shandle.h/2
+        );
+        canv.drawLine(
+          inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
+          special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
+        );
+      },
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    find_reveal_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Feel free to drag around the compasses, the window,",20,50);
+        ctx.fillText("or even the magnet's terminals!",20,70);
+        ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,90);
+      },
+      function() {
+        if(ready_btn_clicked)
+        {
+          witnessed_instructs = true;
+          cur_step = -1;
+          return true;
+        }
+        return false; }
+    ));
+
+    //PLACE
+    place_begin_step = steps.length;
+    steps.push(new Step(
+      function(){
+        //set up game
+        mode = PLACE_MAGNET_MODE;
+          //compasses
+        for(var i = 0; i < comps.length; i++)
+        {
+          comps[i].fx = lerp(-0.5,0.5,i/(comps.length-1));
+          comps[i].fy = -0.2;
+          comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
+          comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
+        }
+        //window
+        wind.x = 60;
+        wind.y = 20;
+        //magnet
+        genSpecialMagnet();
+        genInertMagnet();
         if(!witnessed_instructs)
         pop([
         "Find The Magnet!",
@@ -207,7 +337,7 @@ var GamePlayScene = function(game, stage)
       noop,
       function() { return input_state == RESUME_INPUT; }
     ));
-    first_guess_step = steps.length;
+    place_first_guess_step = steps.length;
     steps.push(new Step(
       noop,
       noop,
@@ -256,7 +386,7 @@ var GamePlayScene = function(game, stage)
       noop,
       function() { return input_state == RESUME_INPUT; }
     ));
-    second_guess_step = steps.length;
+    place_second_guess_step = steps.length;
     steps.push(new Step(
       noop,
       noop,
@@ -270,8 +400,8 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        var sdist = tldist(guessed_pos,hidden_mag.shandle)/canv.height;
-        var ndist = tldist(guessed_neg,hidden_mag.nhandle)/canv.height;
+        var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
+        var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
         var closeness = ndist+sdist;
         if(closeness < best_closeness) best_closeness = closeness;
         pop([
@@ -288,17 +418,17 @@ var GamePlayScene = function(game, stage)
         ctx.strokeStyle = "#FF0000";
         ctx.lineWidth = 2;
         canv.drawLine(
-          guessed_pos.x+guessed_pos.w/2,guessed_pos.y+guessed_pos.h/2,
-          hidden_mag.shandle.x+hidden_mag.shandle.w/2,hidden_mag.shandle.y+hidden_mag.shandle.h/2
+          inert_mag.shandle.x+inert_mag.shandle.w/2,inert_mag.shandle.y+inert_mag.shandle.h/2,
+          special_mag.shandle.x+special_mag.shandle.w/2,special_mag.shandle.y+special_mag.shandle.h/2
         );
         canv.drawLine(
-          guessed_neg.x+guessed_neg.w/2,guessed_neg.y+guessed_neg.h/2,
-          hidden_mag.nhandle.x+hidden_mag.nhandle.w/2,hidden_mag.nhandle.y+hidden_mag.nhandle.h/2
+          inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
+          special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
         );
       },
       function() { return input_state == RESUME_INPUT; }
     ));
-    reveal_step = steps.length;
+    place_reveal_step = steps.length;
     steps.push(new Step(
       noop,
       noop,
@@ -317,6 +447,7 @@ var GamePlayScene = function(game, stage)
         }
         return false; }
     ));
+
 
     //EXPOSITION
     steps.push(new Step(
@@ -432,7 +563,7 @@ var GamePlayScene = function(game, stage)
 
     switch(game.start)
     {
-      case 1: cur_step = begin_step-1; break;
+      case 1: cur_step = find_begin_step-1; break;
       case 0: cur_step = playground_step-1; break;
     }
 
@@ -478,54 +609,113 @@ var GamePlayScene = function(game, stage)
     mags[mags.length] = m;
     return m;
   }
-  var genHiddenMagnet = function()
+  var genInertMagnet = function()
   {
-    if(hidden_mag)
-      delMagnet(hidden_mag.n);
-    hidden_mag = genMagnet(
+    if(inert_mag)
+      delMagnet(inert_mag.n);
+    inert_mag = genMagnet(
       -2,rand0()/2,rand0()/2,
        2,rand0()/2,rand0()/2
     );
-    hidden_mag.dragStart = function(evt)
+    inert_mag.dragStart = function(evt)
     {
       if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
-      if(cur_step < reveal_step) return;
+      if(
+        cur_step != find_first_guess_step &&
+        cur_step != find_second_guess_step
+      ) return;
 
       var x0 = evt.doX;
       var y0 = evt.doY;
-      var x1 = hidden_mag.nhandle.x+hidden_mag.nhandle.w/2;
-      var y1 = hidden_mag.nhandle.y+hidden_mag.nhandle.h/2;
-      var x2 = hidden_mag.shandle.x+hidden_mag.shandle.w/2;
-      var y2 = hidden_mag.shandle.y+hidden_mag.shandle.h/2;
+      var x1 = inert_mag.nhandle.x+inert_mag.nhandle.w/2;
+      var y1 = inert_mag.nhandle.y+inert_mag.nhandle.h/2;
+      var x2 = inert_mag.shandle.x+inert_mag.shandle.w/2;
+      var y2 = inert_mag.shandle.y+inert_mag.shandle.h/2;
       //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
       var dist =
         abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) /
         sqrt(pow((y2-y1),2) + pow((x2-x1),2));
       if(dist > 10) return;
 
-      hidden_mag.dragging = true;
-      hidden_mag.grabbed_x = evt.doX;
-      hidden_mag.grabbed_y = evt.doY;
-      hidden_mag.drag(evt);
+      inert_mag.dragging = true;
+      inert_mag.grabbed_x = evt.doX;
+      inert_mag.grabbed_y = evt.doY;
+      inert_mag.drag(evt);
     }
-    hidden_mag.nhandle.dragStart = function(evt)
+    inert_mag.nhandle.dragStart = function(evt)
     {
       if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
-      if(cur_step < reveal_step) return;
-      hidden_mag.nhandle.dragging = true;
-      hidden_mag.nhandle.charge.dragging = true;
-      hidden_mag.nhandle.drag(evt);
+      if(
+        cur_step != find_first_guess_step &&
+        cur_step != find_second_guess_step
+      ) return;
+      inert_mag.nhandle.dragging = true;
+      inert_mag.nhandle.charge.dragging = true;
+      inert_mag.nhandle.drag(evt);
     }
-    hidden_mag.shandle.dragStart = function(evt)
+    inert_mag.shandle.dragStart = function(evt)
     {
       if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
-      if(cur_step < reveal_step) return;
-      hidden_mag.shandle.dragging = true;
-      hidden_mag.shandle.charge.dragging = true;
-      hidden_mag.shandle.drag(evt);
+      if(
+        cur_step != find_first_guess_step &&
+        cur_step != find_second_guess_step
+      ) return;
+      inert_mag.shandle.dragging = true;
+      inert_mag.shandle.charge.dragging = true;
+      inert_mag.shandle.drag(evt);
+    }
+  }
+  var genSpecialMagnet = function()
+  {
+    if(special_mag)
+      delMagnet(special_mag.n);
+    special_mag = genMagnet(
+      -2,rand0()/2,rand0()/2,
+       2,rand0()/2,rand0()/2
+    );
+    special_mag.dragStart = function(evt)
+    {
+      if(mode != FIND_MAGNET_MODE) return;
+      if(cur_dragging) return;
+      if(cur_step < find_reveal_step) return;
+
+      var x0 = evt.doX;
+      var y0 = evt.doY;
+      var x1 = special_mag.nhandle.x+special_mag.nhandle.w/2;
+      var y1 = special_mag.nhandle.y+special_mag.nhandle.h/2;
+      var x2 = special_mag.shandle.x+special_mag.shandle.w/2;
+      var y2 = special_mag.shandle.y+special_mag.shandle.h/2;
+      //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+      var dist =
+        abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) /
+        sqrt(pow((y2-y1),2) + pow((x2-x1),2));
+      if(dist > 10) return;
+
+      special_mag.dragging = true;
+      special_mag.grabbed_x = evt.doX;
+      special_mag.grabbed_y = evt.doY;
+      special_mag.drag(evt);
+    }
+    special_mag.nhandle.dragStart = function(evt)
+    {
+      if(mode != FIND_MAGNET_MODE) return;
+      if(cur_dragging) return;
+      if(cur_step < find_reveal_step) return;
+      special_mag.nhandle.dragging = true;
+      special_mag.nhandle.charge.dragging = true;
+      special_mag.nhandle.drag(evt);
+    }
+    special_mag.shandle.dragStart = function(evt)
+    {
+      if(mode != FIND_MAGNET_MODE) return;
+      if(cur_dragging) return;
+      if(cur_step < find_reveal_step) return;
+      special_mag.shandle.dragging = true;
+      special_mag.shandle.charge.dragging = true;
+      special_mag.shandle.drag(evt);
     }
 
   }
@@ -690,7 +880,8 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < mags.length; i++)
     {
       mag = mags[i];
-      if(mode == FIND_MAGNET_MODE && cur_step < reveal_step-1 && mag == hidden_mag) continue;
+      if(mode == FIND_MAGNET_MODE && cur_step < find_reveal_step-1 && mag == special_mag) continue;
+      if(mode == FIND_MAGNET_MODE && cur_step < find_first_guess_step && mag == inert_mag) continue;
       ctx.lineWidth = 20;
       canv.drawLine(
         mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2,
@@ -730,30 +921,30 @@ var GamePlayScene = function(game, stage)
     }
     else if(mode == FIND_MAGNET_MODE)
     {
-      if(cur_step >= second_guess_step-1)
+      if(cur_step >= find_second_guess_step-1)
         vfield.draw(wind);
-      if(cur_step >= place_dead_window_step-1)
+      if(cur_step >= find_place_dead_window_step-1)
       {
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         ctx.strokeRect(wind.x,wind.y,wind.w,wind.h);
       }
 
-      if(cur_step >= first_guess_step-1 && cur_step < reveal_step+1)
+      if(cur_step >= find_first_guess_step-1 && cur_step < find_reveal_step+1)
       {
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 20;
         canv.drawLine(
-          guessed_pos.x+guessed_pos.w/2,guessed_pos.y+guessed_pos.h/2,
-          guessed_neg.x+guessed_neg.w/2,guessed_neg.y+guessed_neg.h/2
+          inert_mag.shandle.x+inert_mag.shandle.w/2,inert_mag.shandle.y+inert_mag.shandle.h/2,
+          inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2
         );
         ctx.lineWidth = 1;
         ctx.fillStyle = "#000000";
-        ctx.drawImage(Circle,guessed_pos.x,guessed_pos.y,guessed_pos.w,guessed_pos.h);
-        canv.outlineText("S",guessed_pos.x+5,guessed_pos.y+guessed_pos.h-5,"#FFFFFF","#000000");
+        ctx.drawImage(Circle,inert_mag.shandle.x,inert_mag.shandle.y,inert_mag.shandle.w,inert_mag.shandle.h);
+        canv.outlineText("S",inert_mag.shandle.x+5,inert_mag.shandle.y+inert_mag.shandle.h-5,"#FFFFFF","#000000");
 
-        ctx.drawImage(Circle,guessed_neg.x,guessed_neg.y,guessed_neg.w,guessed_neg.h);
-        canv.outlineText("N",guessed_neg.x+5,guessed_neg.y+guessed_neg.h-5,"#FFFFFF","#000000");
+        ctx.drawImage(Circle,inert_mag.nhandle.x,inert_mag.nhandle.y,inert_mag.nhandle.w,inert_mag.nhandle.h);
+        canv.outlineText("N",inert_mag.nhandle.x+5,inert_mag.nhandle.y+inert_mag.nhandle.h-5,"#FFFFFF","#000000");
       }
 
     }
@@ -768,7 +959,7 @@ var GamePlayScene = function(game, stage)
       {
         comp = comps[i];
         ctx.drawImage(Circle,comps[i].x,comps[i].y,comps[i].w,comps[i].h);
-        if(cur_step >= first_guess_step-1)
+        if(cur_step >= find_first_guess_step-1)
         {
           var r = (comp.dx*comp.dx)+(comp.dy*comp.dy);
           if(r > 0.001)
@@ -864,6 +1055,14 @@ var GamePlayScene = function(game, stage)
         wh = self.yScreenToFSpace(wind.y+wind.h)-wy;
       }
 
+      var inert_c0;
+      var inert_c1;
+      if(inert_mag)
+      {
+        inert_c0 = inert_mag.n;
+        inert_c1 = inert_mag.s;
+      }
+
       for(var i = 0; i < self.dh; i++)
       {
         y = self.yIndexToFSpace(i);
@@ -886,6 +1085,10 @@ var GamePlayScene = function(game, stage)
           self.dx[index] = 0;
           for(var k = 0; k < charges.length; k++)
           {
+            if(
+              charges[k] == inert_c0 ||
+              charges[k] == inert_c1
+            ) continue;
             yd = y-charges[k].y;
             xd = x-charges[k].x;
             r2 = (xd*xd)+(yd*yd);
@@ -1131,8 +1334,8 @@ var GamePlayScene = function(game, stage)
       if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(
-        cur_step != place_dead_window_step &&
-        cur_step < reveal_step
+        cur_step != find_place_dead_window_step &&
+        cur_step < find_reveal_step
       ) return;
       self.dragging = true;
       self.drag(evt);
@@ -1176,10 +1379,22 @@ var GamePlayScene = function(game, stage)
       var r;
       var f;
 
+      var inert_c0;
+      var inert_c1;
+      if(inert_mag)
+      {
+        inert_c0 = inert_mag.n;
+        inert_c1 = inert_mag.s;
+      }
+
       self.dy = 0;
       self.dx = 0;
       for(var k = 0; k < charges.length; k++)
       {
+        if(
+          charges[k] == inert_c0 ||
+          charges[k] == inert_c1
+        ) continue;
         yd = self.fy-charges[k].y;
         xd = self.fx-charges[k].x;
         r2 = (xd*xd)+(yd*yd);
@@ -1198,8 +1413,8 @@ var GamePlayScene = function(game, stage)
     {
       if(cur_dragging) return;
       if(
-        cur_step != place_dead_compass_step &&
-        cur_step < reveal_step
+        cur_step != find_place_dead_compass_step &&
+        cur_step < find_reveal_step
       ) return;
       self.dragging = true;
       self.drag(evt);
