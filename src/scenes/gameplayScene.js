@@ -14,11 +14,9 @@ var GamePlayScene = function(game, stage)
   var input_state;
 
   ENUM = 0;
-  var FIND_MODE       = ENUM; ENUM++;
-  var RANDOM_FIND_MODE       = ENUM; ENUM++;
-  var DESIGNED_FIND_MODE     = ENUM; ENUM++;
-  var ORIENT_COMPASS_MODE    = ENUM; ENUM++;
-  var PLACE_MAGNET_FIND_MODE = ENUM; ENUM++;
+  var FIND_MAGNET_MODE    = ENUM; ENUM++;
+  var ORIENT_COMPASS_MODE = ENUM; ENUM++;
+  var PLACE_MAGNET_MODE   = ENUM; ENUM++;
   var EXPOSITION_MODE = ENUM; ENUM++;
   var PLAYGROUND_MODE = ENUM; ENUM++;
   var mode;
@@ -70,7 +68,7 @@ var GamePlayScene = function(game, stage)
   self.ready = function()
   {
     input_state = RESUME_INPUT;
-    mode = FIND_MODE;
+    mode = FIND_MAGNET_MODE;
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
@@ -97,17 +95,17 @@ var GamePlayScene = function(game, stage)
     guessed_neg = new Handle(nullNegCharge,vfield);
     guessed_pos = new Handle(nullPosCharge,vfield);
 
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode == FIND_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode == FIND_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
-    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode == FIND_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
-    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode == FIND_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
-    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode == FIND_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
+    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
+    phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
+    del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode == FIND_MAGNET_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
     ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
 
     //CUSTOM DRAGS
     guessed_neg.dragStart = function(evt)
     {
-      if(mode != FIND_MODE) return;
+      if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(
         cur_step != first_guess_step &&
@@ -118,7 +116,7 @@ var GamePlayScene = function(game, stage)
     }
     guessed_pos.dragStart = function(evt)
     {
-      if(mode != FIND_MODE) return;
+      if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(
         cur_step != first_guess_step &&
@@ -149,7 +147,7 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       function(){
         //set up game
-        mode = FIND_MODE;
+        mode = FIND_MAGNET_MODE;
           //compasses
         for(var i = 0; i < comps.length; i++)
         {
@@ -490,7 +488,7 @@ var GamePlayScene = function(game, stage)
     );
     hidden_mag.dragStart = function(evt)
     {
-      if(mode != FIND_MODE) return;
+      if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(cur_step < reveal_step) return;
 
@@ -513,7 +511,7 @@ var GamePlayScene = function(game, stage)
     }
     hidden_mag.nhandle.dragStart = function(evt)
     {
-      if(mode != FIND_MODE) return;
+      if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(cur_step < reveal_step) return;
       hidden_mag.nhandle.dragging = true;
@@ -522,7 +520,7 @@ var GamePlayScene = function(game, stage)
     }
     hidden_mag.shandle.dragStart = function(evt)
     {
-      if(mode != FIND_MODE) return;
+      if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(cur_step < reveal_step) return;
       hidden_mag.shandle.dragging = true;
@@ -571,7 +569,7 @@ var GamePlayScene = function(game, stage)
 
     if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
       vfield.tick();
-    else if(mode == FIND_MODE)
+    else if(mode == FIND_MAGNET_MODE)
       vfield.tick(wind);
 
     var charge;
@@ -692,7 +690,7 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < mags.length; i++)
     {
       mag = mags[i];
-      if(mode == FIND_MODE && cur_step < reveal_step-1 && mag == hidden_mag) continue;
+      if(mode == FIND_MAGNET_MODE && cur_step < reveal_step-1 && mag == hidden_mag) continue;
       ctx.lineWidth = 20;
       canv.drawLine(
         mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2,
@@ -730,7 +728,7 @@ var GamePlayScene = function(game, stage)
       phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
     }
-    else if(mode == FIND_MODE)
+    else if(mode == FIND_MAGNET_MODE)
     {
       if(cur_step >= second_guess_step-1)
         vfield.draw(wind);
@@ -789,7 +787,7 @@ var GamePlayScene = function(game, stage)
       }
     }
 
-    if(mode == FIND_MODE)
+    if(mode == FIND_MAGNET_MODE)
     {
       if(best_closeness < 2) ctx.fillText("best closeness:"+fdisp(best_closeness,4),canv.width/2,20);
     }
@@ -1130,7 +1128,7 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(mode != FIND_MODE) return;
+      if(mode != FIND_MAGNET_MODE) return;
       if(cur_dragging) return;
       if(
         cur_step != place_dead_window_step &&
