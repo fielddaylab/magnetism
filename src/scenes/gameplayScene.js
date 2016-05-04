@@ -15,6 +15,10 @@ var GamePlayScene = function(game, stage)
 
   ENUM = 0;
   var FIND_MODE       = ENUM; ENUM++;
+  var RANDOM_FIND_MODE       = ENUM; ENUM++;
+  var DESIGNED_FIND_MODE     = ENUM; ENUM++;
+  var ORIENT_COMPASS_MODE    = ENUM; ENUM++;
+  var PLACE_MAGNET_FIND_MODE = ENUM; ENUM++;
   var EXPOSITION_MODE = ENUM; ENUM++;
   var PLAYGROUND_MODE = ENUM; ENUM++;
   var mode;
@@ -25,8 +29,8 @@ var GamePlayScene = function(game, stage)
   var dom;
   var bmwrangler;
 
-  var is_cur_dragging;
-  var cur_selected;
+  var cur_dragging; //the thing currently dragging
+  var cur_selected; //the charge currently selected
 
   var res = 60;
   var w = 2*res;
@@ -82,10 +86,6 @@ var GamePlayScene = function(game, stage)
     nonmags = [];
     mags = [];
 
-    hidden_mag = genMagnet(
-      -2,rand0()/2,rand0()/2,
-       2,rand0()/2,rand0()/2
-    );
     wind = new Window(30,30,200,200);
     comps = [];
     for(var i = 0; i < 5; i++)
@@ -95,35 +95,7 @@ var GamePlayScene = function(game, stage)
     var nullNegCharge = new Charge(0,0,-1);
     var nullPosCharge = new Charge(0,0,1);
     guessed_neg = new Handle(nullNegCharge,vfield);
-    guessed_neg.dragStart = function(evt)
-    {
-      if(
-        is_cur_dragging ||
-        (
-          cur_step < playground_step &&
-          cur_step != first_guess_step &&
-          cur_step != second_guess_step
-        )
-      )
-        return;
-      guessed_neg.dragging = true;
-      guessed_neg.drag(evt);
-    }
     guessed_pos = new Handle(nullPosCharge,vfield);
-    guessed_pos.dragStart = function(evt)
-    {
-      if(
-        is_cur_dragging ||
-        (
-          cur_step < playground_step &&
-          cur_step != first_guess_step &&
-          cur_step != second_guess_step
-        )
-      )
-        return;
-      guessed_pos.dragging = true;
-      guessed_pos.drag(evt);
-    }
 
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode == FIND_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode == FIND_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
@@ -131,6 +103,30 @@ var GamePlayScene = function(game, stage)
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode == FIND_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
     del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode == FIND_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
     ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
+
+    //CUSTOM DRAGS
+    guessed_neg.dragStart = function(evt)
+    {
+      if(mode != FIND_MODE) return;
+      if(cur_dragging) return;
+      if(
+        cur_step != first_guess_step &&
+        cur_step != second_guess_step
+      ) return;
+      guessed_neg.dragging = true;
+      guessed_neg.drag(evt);
+    }
+    guessed_pos.dragStart = function(evt)
+    {
+      if(mode != FIND_MODE) return;
+      if(cur_dragging) return;
+      if(
+        cur_step != first_guess_step &&
+        cur_step != second_guess_step
+      ) return;
+      guessed_pos.dragging = true;
+      guessed_pos.drag(evt);
+    }
 
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
@@ -175,14 +171,7 @@ var GamePlayScene = function(game, stage)
         wind.x = 60;
         wind.y = 20;
         //magnet
-        if(hidden_mag)
-        {
-          delMagnet(hidden_mag.n);
-          hidden_mag = genMagnet(
-            -2,rand0()/2,rand0()/2,
-             2,rand0()/2,rand0()/2
-          );
-        }
+        genHiddenMagnet();
         if(!witnessed_instructs)
         pop([
         "Find The Magnet!",
@@ -491,6 +480,57 @@ var GamePlayScene = function(game, stage)
     mags[mags.length] = m;
     return m;
   }
+  var genHiddenMagnet = function()
+  {
+    if(hidden_mag)
+      delMagnet(hidden_mag.n);
+    hidden_mag = genMagnet(
+      -2,rand0()/2,rand0()/2,
+       2,rand0()/2,rand0()/2
+    );
+    hidden_mag.dragStart = function(evt)
+    {
+      if(mode != FIND_MODE) return;
+      if(cur_dragging) return;
+      if(cur_step < reveal_step) return;
+
+      var x0 = evt.doX;
+      var y0 = evt.doY;
+      var x1 = hidden_mag.nhandle.x+hidden_mag.nhandle.w/2;
+      var y1 = hidden_mag.nhandle.y+hidden_mag.nhandle.h/2;
+      var x2 = hidden_mag.shandle.x+hidden_mag.shandle.w/2;
+      var y2 = hidden_mag.shandle.y+hidden_mag.shandle.h/2;
+      //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+      var dist =
+        abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) /
+        sqrt(pow((y2-y1),2) + pow((x2-x1),2));
+      if(dist > 10) return;
+
+      hidden_mag.dragging = true;
+      hidden_mag.grabbed_x = evt.doX;
+      hidden_mag.grabbed_y = evt.doY;
+      hidden_mag.drag(evt);
+    }
+    hidden_mag.nhandle.dragStart = function(evt)
+    {
+      if(mode != FIND_MODE) return;
+      if(cur_dragging) return;
+      if(cur_step < reveal_step) return;
+      hidden_mag.nhandle.dragging = true;
+      hidden_mag.nhandle.charge.dragging = true;
+      hidden_mag.nhandle.drag(evt);
+    }
+    hidden_mag.shandle.dragStart = function(evt)
+    {
+      if(mode != FIND_MODE) return;
+      if(cur_dragging) return;
+      if(cur_step < reveal_step) return;
+      hidden_mag.shandle.dragging = true;
+      hidden_mag.shandle.charge.dragging = true;
+      hidden_mag.shandle.drag(evt);
+    }
+
+  }
   var delMagnet = function(charge)
   {
     for(var i = 0; i < mags.length; i++)
@@ -652,7 +692,7 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < mags.length; i++)
     {
       mag = mags[i];
-      if(cur_step < reveal_step-1 && mag == hidden_mag) continue;
+      if(mode == FIND_MODE && cur_step < reveal_step-1 && mag == hidden_mag) continue;
       ctx.lineWidth = 20;
       canv.drawLine(
         mag.nhandle.x+mag.nhandle.w/2,mag.nhandle.y+mag.nhandle.h/2,
@@ -948,17 +988,7 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(
-        is_cur_dragging ||
-        (
-          (
-            hidden_mag.nhandle == self ||
-            hidden_mag.shandle == self
-          ) &&
-          cur_step < reveal_step
-        )
-      )
-        return;
+      if(cur_dragging) return;
       self.dragging = true;
       self.charge.dragging = true;
       self.drag(evt);
@@ -966,7 +996,7 @@ var GamePlayScene = function(game, stage)
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      is_cur_dragging = true;
+      cur_dragging = self;
       cur_selected = self.charge;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
@@ -976,7 +1006,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      if(self.dragging) is_cur_dragging = false;
+      if(self.dragging) cur_dragging = undefined;
       self.dragging = false;
       self.charge.dragging = false;
     }
@@ -1038,14 +1068,7 @@ var GamePlayScene = function(game, stage)
     self.grabbed_y;
     self.dragStart = function(evt)
     {
-      if(
-        is_cur_dragging ||
-        (
-          hidden_mag == self &&
-          cur_step < reveal_step
-        )
-      )
-        return;
+      if(cur_dragging) return;
 
       var x0 = evt.doX;
       var y0 = evt.doY;
@@ -1067,7 +1090,7 @@ var GamePlayScene = function(game, stage)
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      is_cur_dragging = true;
+      cur_dragging = self;
       cur_selected = self.nhandle.charge;
       self.nhandle.charge.dragging = true;
       self.shandle.charge.dragging = true;
@@ -1089,7 +1112,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      if(self.dragging) is_cur_dragging = false;
+      if(self.dragging) cur_dragging = undefined;
       self.dragging = false;
       self.nhandle.charge.dragging = false;
       self.shandle.charge.dragging = false;
@@ -1107,28 +1130,25 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
+      if(mode != FIND_MODE) return;
+      if(cur_dragging) return;
       if(
-        mode != FIND_MODE ||
-        is_cur_dragging ||
-        (
-          cur_step != place_dead_window_step &&
-          cur_step < reveal_step
-        )
-      )
-        return;
+        cur_step != place_dead_window_step &&
+        cur_step < reveal_step
+      ) return;
       self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      is_cur_dragging = true;
+      cur_dragging = self;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
     }
     self.dragFinish = function()
     {
-      if(self.dragging) is_cur_dragging = false;
+      if(self.dragging) cur_dragging = undefined;
       self.dragging = false;
     }
   }
@@ -1178,21 +1198,18 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
+      if(cur_dragging) return;
       if(
-        is_cur_dragging ||
-        (
-          cur_step != place_dead_compass_step &&
-          cur_step < reveal_step
-        )
-      )
-        return;
+        cur_step != place_dead_compass_step &&
+        cur_step < reveal_step
+      ) return;
       self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
     {
       if(!self.dragging) return;
-      is_cur_dragging = true;
+      cur_dragging = self;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
       self.fx = field.xScreenToFSpace(evt.doX);
@@ -1200,7 +1217,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
-      if(self.dragging) is_cur_dragging = false;
+      if(self.dragging) cur_dragging = undefined;
       self.dragging = false;
     }
   }
