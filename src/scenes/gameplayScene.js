@@ -6,6 +6,9 @@ var GamePlayScene = function(game, stage)
   var canvas = canv.canvas;
   var ctx = canv.context;
 
+  var bignum = 999999;
+  var lilnum = -bignum;
+
   var ENUM;
 
   ENUM = 0;
@@ -250,12 +253,11 @@ var GamePlayScene = function(game, stage)
         var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
         var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
         closeness = ndist+sdist;
-        if(closeness < best_closeness) best_closeness = closeness;
+        var score = (4-closeness)/4;
+        if(score > best_closeness) best_closeness = score;
         pop([
-        "S-Closeness rating:"+fdisp(sdist,4),
-        "N-Closeness rating:"+fdisp(ndist,4),
-        "Total closeness:"+fdisp(closeness,4),
-        closeness < 0.4 ? "Good guess!" : "Better luck next time!",
+        "Your score: "+round(score*100),
+        score > 0.85 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
@@ -379,13 +381,14 @@ var GamePlayScene = function(game, stage)
         var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
         var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
         closeness = ndist+sdist;
-        var score = closeness*time;
-        if(score < best_time) best_time = score;
+        var cscore = (4-closeness)/4;
+        var score = max(cscore-min(time/10000,4),0);
+        if(score > best_time) best_time = score;
         pop([
-        "Closeness rating: "+fdisp(closeness,4)+"<br />"+
+        "Closeness rating: "+round(cscore*100)+"<br />"+
         "Time: "+time+"<br />"+
-        "Score: "+score,
-        score > 0.4 ? "Good guess!" : "Better luck next time!",
+        "Score: "+round(score*100),
+        score > 0.85 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
@@ -536,8 +539,8 @@ var GamePlayScene = function(game, stage)
     ));
 
     earth = false;
-    best_closeness = 2;
-    best_time = 9999999;
+    best_closeness = lilnum;
+    best_time = lilnum;
     find_witnessed_instructs = false;
     time_witnessed_instructs = false;
 
@@ -1010,11 +1013,11 @@ var GamePlayScene = function(game, stage)
 
     if(mode == FIND_MAGNET_MODE)
     {
-      if(best_closeness < 2) canv.outlineText("best closeness:"+fdisp(best_closeness,4),canv.width/2,20);
+      if(best_closeness > lilnum) canv.outlineText("best closeness:"+round(best_closeness*100),canv.width/2,20);
     }
     if(mode == TIME_MAGNET_MODE)
     {
-      if(best_time < 2) canv.outlineText("best time:"+fdisp(best_time,4),canv.width/2,20);
+      if(best_time > lilnum) canv.outlineText("best time:"+round(best_time*100),canv.width/2,20);
     }
 
     steps[cur_step].draw();
