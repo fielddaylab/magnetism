@@ -47,6 +47,7 @@ var GamePlayScene = function(game, stage)
   var inert_mag;
 
   //STATE
+  var earth;
   var closeness;
   var best_closeness;
   var time;
@@ -60,6 +61,7 @@ var GamePlayScene = function(game, stage)
   var new_magnet_btn;
   var phys_btn;
   var del_btn;
+  var earth_btn;
   var ready_btn; var ready_btn_clicked;
 
   //STEPS
@@ -111,7 +113,8 @@ var GamePlayScene = function(game, stage)
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != PLAYGROUND_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
     del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != PLAYGROUND_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
-    ready_btn      = new ButtonBox(10,160,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
+    earth_btn      = new ButtonBox(10,160,20,20,function(){ if(mode != PLAYGROUND_MODE) return; earth = !earth; });
+    ready_btn      = new ButtonBox(10,190,20,20,function(){ if(mode == PLAYGROUND_MODE) return; wind.dragFinish(); /* <- hack */ ready_btn_clicked = true; });
 
     dragger.register(wind);
     for(var i = 0; i < comps.length; i++)
@@ -122,6 +125,7 @@ var GamePlayScene = function(game, stage)
     clicker.register(new_magnet_btn);
     clicker.register(phys_btn);
     clicker.register(del_btn);
+    clicker.register(earth_btn);
     clicker.register(ready_btn);
 
     //STEPS
@@ -716,6 +720,7 @@ var GamePlayScene = function(game, stage)
       ffunc
     ));
 
+    earth = false;
     best_closeness = 2;
     best_time = 9999999;
     find_witnessed_instructs = false;
@@ -1132,6 +1137,7 @@ var GamePlayScene = function(game, stage)
       new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; ctx.fillText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
       phys_btn.draw(canv);       ctx.fillStyle = "#000000"; ctx.fillText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);        ctx.fillStyle = "#000000"; ctx.fillText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
+      earth_btn.draw(canv);      ctx.fillStyle = "#000000"; ctx.fillText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
     }
     else if(mode == FIND_MAGNET_MODE)
     {
@@ -1298,6 +1304,8 @@ var GamePlayScene = function(game, stage)
               self.dx[index] += f*xd/r;
             }
           }
+
+          if(earth) self.dy[index] -= 1;
 
           //repurposing variables- just making sure vector is < some length
           yd = self.dy[index];
@@ -1603,6 +1611,7 @@ var GamePlayScene = function(game, stage)
           self.dx -= f*xd/r;
         }
       }
+      if(earth) self.dy -= 1;
     }
 
     self.dragging = false;
