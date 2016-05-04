@@ -266,16 +266,7 @@ var GamePlayScene = function(game, stage)
       noop,
       function()
       {
-        ctx.strokeStyle = "#FF0000";
-        ctx.lineWidth = 2;
-        canv.drawLine(
-          inert_mag.shandle.x+inert_mag.shandle.w/2,inert_mag.shandle.y+inert_mag.shandle.h/2,
-          special_mag.shandle.x+special_mag.shandle.w/2,special_mag.shandle.y+special_mag.shandle.h/2
-        );
-        canv.drawLine(
-          inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
-          special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
-        );
+        drawConnectingInert();
       },
       function() { return input_state == RESUME_INPUT; }
     ));
@@ -354,52 +345,7 @@ var GamePlayScene = function(game, stage)
       noop,
       function()
       {
-        ctx.strokeStyle = "#FF0000";
-        ctx.lineWidth = 2;
-        var comp;
-        for(var i = 0; i < comps.length; i++)
-        {
-          comp = comps[i];
-
-          var xd;
-          var yd;
-          var r2;
-          var r;
-          var f;
-
-          var dy = 0;
-          var dx = 0;
-          for(var k = 0; k < charges.length; k++)
-          {
-            if(
-              charges[k] != inert_mag.n &&
-              charges[k] != inert_mag.s
-            ) continue;
-
-            yd = comp.fy-charges[k].y;
-            xd = comp.fx-charges[k].x;
-            r2 = (xd*xd)+(yd*yd);
-            if(r2 != 0)
-            {
-              f = charges[k].v/r2;
-              r = sqrt(r2);
-              dy -= f*yd/r;
-              dx -= f*xd/r;
-            }
-          }
-
-          var r = (dx*dx)+(dy*dy);
-          if(r > 0.001)
-          {
-            r = sqrt(r);
-            canv.drawLine(
-              comp.x+comp.w/2,
-              comp.y+comp.h/2,
-              comp.x+comp.w/2+(dx/r)*comp.r,
-              comp.y+comp.h/2+(dy/r)*comp.r
-            );
-          }
-        }
+        drawInertCompasses();
       },
       function() { return input_state == RESUME_INPUT; }
     ));
@@ -415,52 +361,7 @@ var GamePlayScene = function(game, stage)
         ctx.fillText("Hit \"submit\" when you're satisfied with your guess.",20,90);
         ctx.fillText("Current time:"+time,20,110);
 
-        ctx.strokeStyle = "#FF0000";
-        ctx.lineWidth = 2;
-        var comp;
-        for(var i = 0; i < comps.length; i++)
-        {
-          comp = comps[i];
-
-          var xd;
-          var yd;
-          var r2;
-          var r;
-          var f;
-
-          var dy = 0;
-          var dx = 0;
-          for(var k = 0; k < charges.length; k++)
-          {
-            if(
-              charges[k] != inert_mag.n &&
-              charges[k] != inert_mag.s
-            ) continue;
-
-            yd = comp.fy-charges[k].y;
-            xd = comp.fx-charges[k].x;
-            r2 = (xd*xd)+(yd*yd);
-            if(r2 != 0)
-            {
-              f = charges[k].v/r2;
-              r = sqrt(r2);
-              dy -= f*yd/r;
-              dx -= f*xd/r;
-            }
-          }
-
-          var r = (dx*dx)+(dy*dy);
-          if(r > 0.001)
-          {
-            r = sqrt(r);
-            canv.drawLine(
-              comp.x+comp.w/2,
-              comp.y+comp.h/2,
-              comp.x+comp.w/2+(dx/r)*comp.r,
-              comp.y+comp.h/2+(dy/r)*comp.r
-            );
-          }
-        }
+        drawInertCompasses();
       },
       function()
       {
@@ -485,63 +386,8 @@ var GamePlayScene = function(game, stage)
       noop,
       function()
       {
-        ctx.strokeStyle = "#FF0000";
-        ctx.lineWidth = 2;
-        canv.drawLine(
-          inert_mag.shandle.x+inert_mag.shandle.w/2,inert_mag.shandle.y+inert_mag.shandle.h/2,
-          special_mag.shandle.x+special_mag.shandle.w/2,special_mag.shandle.y+special_mag.shandle.h/2
-        );
-        canv.drawLine(
-          inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
-          special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
-        );
-
-        ctx.strokeStyle = "#FF0000";
-        ctx.lineWidth = 2;
-        var comp;
-        for(var i = 0; i < comps.length; i++)
-        {
-          comp = comps[i];
-
-          var xd;
-          var yd;
-          var r2;
-          var r;
-          var f;
-
-          var dy = 0;
-          var dx = 0;
-          for(var k = 0; k < charges.length; k++)
-          {
-            if(
-              charges[k] != inert_mag.n &&
-              charges[k] != inert_mag.s
-            ) continue;
-
-            yd = comp.fy-charges[k].y;
-            xd = comp.fx-charges[k].x;
-            r2 = (xd*xd)+(yd*yd);
-            if(r2 != 0)
-            {
-              f = charges[k].v/r2;
-              r = sqrt(r2);
-              dy -= f*yd/r;
-              dx -= f*xd/r;
-            }
-          }
-
-          var r = (dx*dx)+(dy*dy);
-          if(r > 0.001)
-          {
-            r = sqrt(r);
-            canv.drawLine(
-              comp.x+comp.w/2,
-              comp.y+comp.h/2,
-              comp.x+comp.w/2+(dx/r)*comp.r,
-              comp.y+comp.h/2+(dy/r)*comp.r
-            );
-          }
-        }
+        drawConnectingInert();
+        drawInertCompasses();
       },
       function() { return input_state == RESUME_INPUT; }
     ));
@@ -554,52 +400,7 @@ var GamePlayScene = function(game, stage)
         ctx.fillText("Feel free to drag around the compasses or magnets.",20,50);
         ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,70);
 
-        ctx.strokeStyle = "#FF0000";
-        ctx.lineWidth = 2;
-        var comp;
-        for(var i = 0; i < comps.length; i++)
-        {
-          comp = comps[i];
-
-          var xd;
-          var yd;
-          var r2;
-          var r;
-          var f;
-
-          var dy = 0;
-          var dx = 0;
-          for(var k = 0; k < charges.length; k++)
-          {
-            if(
-              charges[k] != inert_mag.n &&
-              charges[k] != inert_mag.s
-            ) continue;
-
-            yd = comp.fy-charges[k].y;
-            xd = comp.fx-charges[k].x;
-            r2 = (xd*xd)+(yd*yd);
-            if(r2 != 0)
-            {
-              f = charges[k].v/r2;
-              r = sqrt(r2);
-              dy -= f*yd/r;
-              dx -= f*xd/r;
-            }
-          }
-
-          var r = (dx*dx)+(dy*dy);
-          if(r > 0.001)
-          {
-            r = sqrt(r);
-            canv.drawLine(
-              comp.x+comp.w/2,
-              comp.y+comp.h/2,
-              comp.x+comp.w/2+(dx/r)*comp.r,
-              comp.y+comp.h/2+(dy/r)*comp.r
-            );
-          }
-        }
+        drawInertCompasses();
       },
       function() {
         if(ready_btn_clicked)
@@ -1642,6 +1443,69 @@ var GamePlayScene = function(game, stage)
     {
       if(self.dragging) cur_dragging = undefined;
       self.dragging = false;
+    }
+  }
+
+  var drawConnectingInert = function()
+  {
+    ctx.strokeStyle = "#FF0000";
+    ctx.lineWidth = 2;
+    canv.drawLine(
+      inert_mag.shandle.x+inert_mag.shandle.w/2,inert_mag.shandle.y+inert_mag.shandle.h/2,
+      special_mag.shandle.x+special_mag.shandle.w/2,special_mag.shandle.y+special_mag.shandle.h/2
+    );
+    canv.drawLine(
+      inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
+      special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
+    );
+  }
+  var drawInertCompasses = function()
+  {
+    ctx.strokeStyle = "#FF0000";
+    ctx.lineWidth = 2;
+    var comp;
+    for(var i = 0; i < comps.length; i++)
+    {
+      comp = comps[i];
+
+      var xd;
+      var yd;
+      var r2;
+      var r;
+      var f;
+
+      var dy = 0;
+      var dx = 0;
+      for(var k = 0; k < charges.length; k++)
+      {
+        if(
+          charges[k] != inert_mag.n &&
+          charges[k] != inert_mag.s
+        ) continue;
+
+        yd = comp.fy-charges[k].y;
+        xd = comp.fx-charges[k].x;
+        r2 = (xd*xd)+(yd*yd);
+        if(r2 != 0)
+        {
+          f = charges[k].v/r2;
+          r = sqrt(r2);
+          dy -= f*yd/r;
+          dx -= f*xd/r;
+        }
+      }
+
+      var r = (dx*dx)+(dy*dy);
+      if(r > 0.001)
+      {
+        r = sqrt(r);
+        canv.drawLine(
+          comp.x+comp.w/2,
+          comp.y+comp.h/2,
+          comp.x+comp.w/2+(dx/r)*comp.r,
+          comp.y+comp.h/2+(dy/r)*comp.r
+        );
+      }
     }
   }
 
