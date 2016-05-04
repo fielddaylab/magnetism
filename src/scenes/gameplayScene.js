@@ -35,6 +35,7 @@ var GamePlayScene = function(game, stage)
   var res = 60;
   var w = 2*res;
   var h = 1*res;
+  var earth_strength = 3;
 
   //OBJECTS
   var vfield;
@@ -108,9 +109,9 @@ var GamePlayScene = function(game, stage)
       comps[comps.length] = new Compass(0,0,30,vfield);
     }
 
-    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()/2.,rand0()/2., 1); });
-    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()/2.,rand0()/2.,-1); });
-    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genMagnet(-1,rand0()/2,rand0()/2,1,rand0()/2,rand0()/2); });
+    new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8, 1); });
+    new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8,-1); });
+    new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genMagnet(-1,rand0()*0.8,rand0()/2*0.8,1,rand0()*0.8,rand0()/2*0.8); });
     phys_btn       = new ButtonBox(10,100,20,20,function(){ if(mode != PLAYGROUND_MODE) return; if(cur_selected) cur_selected.physics = !cur_selected.physics; });
     del_btn        = new ButtonBox(10,130,20,20,function(){ if(mode != PLAYGROUND_MODE) return; delMagnet(cur_selected); delHandle(cur_selected); });
     earth_btn      = new ButtonBox(10,160,20,20,function(){ if(mode != PLAYGROUND_MODE) return; earth = !earth; });
@@ -299,8 +300,17 @@ var GamePlayScene = function(game, stage)
           //compasses
         for(var i = 0; i < comps.length; i++)
         {
-          comps[i].fx = rand0();
-          comps[i].fy = rand0()/2.;
+          var tooclose = true;
+          while(tooclose)
+          {
+            comps[i].fx = rand0()*0.8;
+            comps[i].fy = rand0()/2.*0.8;
+            tooclose = false;
+            for(var j = 0; j < i; j++)
+            {
+              if(fdistsqr(comps[i].fx,comps[i].fy,comps[j].fx,comps[j].fy) < 0.1) tooclose = true;
+            }
+          }
           comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
         }
@@ -581,8 +591,8 @@ var GamePlayScene = function(game, stage)
     if(inert_mag)
       delMagnet(inert_mag.n);
     inert_mag = genMagnet(
-      -2,rand0()/2,rand0()/2,
-       2,rand0()/2,rand0()/2
+      -1,rand0()*0.8,rand0()/2*0.8,
+       1,rand0()*0.8,rand0()/2*0.8
     );
     inert_mag.dragStart = function(evt)
     {
@@ -663,8 +673,8 @@ var GamePlayScene = function(game, stage)
     if(special_mag)
       delMagnet(special_mag.n);
     special_mag = genMagnet(
-      -2,rand0()/2,rand0()/2,
-       2,rand0()/2,rand0()/2
+      -1,rand0()*0.8,rand0()/2*0.8,
+       1,rand0()*0.8,rand0()/2*0.8
     );
     special_mag.dragStart = function(evt)
     {
@@ -1106,7 +1116,7 @@ var GamePlayScene = function(game, stage)
             }
           }
 
-          if(earth) self.dy[index] -= 1;
+          if(earth) self.dy[index] -= earth_strength;
 
           //repurposing variables- just making sure vector is < some length
           yd = self.dy[index];
@@ -1412,7 +1422,7 @@ var GamePlayScene = function(game, stage)
           self.dx -= f*xd/r;
         }
       }
-      if(earth) self.dy -= 1;
+      if(earth) self.dy -= earth_strength;
     }
 
     self.dragging = false;
