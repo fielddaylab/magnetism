@@ -289,7 +289,7 @@ var GamePlayScene = function(game, stage)
         if(ready_btn_clicked)
         {
           find_witnessed_instructs = true;
-          cur_step = -1;
+          cur_step = find_begin_step-1;
           return true;
         }
         return false; }
@@ -304,8 +304,8 @@ var GamePlayScene = function(game, stage)
           //compasses
         for(var i = 0; i < comps.length; i++)
         {
-          comps[i].fx = lerp(-0.5,0.5,i/(comps.length-1));
-          comps[i].fy = -0.2;
+          comps[i].fx = rand0();
+          comps[i].fy = rand0()/2.;
           comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
         }
@@ -342,7 +342,8 @@ var GamePlayScene = function(game, stage)
         pop([
         "Now, we'll show the displayed effect of <b>your guess</b>-",
         "Update your guess to <b>match the compass needles</b>.",
-        "The faster you can solve it, the more points you'll get!",
+        "Try to get <b>as close as you can</b>, <b>as fast as possible</b>.",
+        "Hit <b>submit</b> when you're satisfied with your guess.",
         "Click \"continue\" to begin the timer.",
         ]);
       },
@@ -367,7 +368,7 @@ var GamePlayScene = function(game, stage)
           for(var k = 0; k < charges.length; k++)
           {
             if(
-              charges[k] != inert_mag.n ||
+              charges[k] != inert_mag.n &&
               charges[k] != inert_mag.s
             ) continue;
 
@@ -400,14 +401,15 @@ var GamePlayScene = function(game, stage)
     ));
     time_second_guess_step = steps.length;
     steps.push(new Step(
-      function() { cur_time = 0; },
-      function() { cur_time++; },
+      function() { time = 0; },
+      function() { time++; },
       function()
       {
         ctx.fillStyle = "#000000";
         ctx.fillText("Place the magnet to match the shown compass needles.",20,50);
-        ctx.fillText("The faster, the better!",20,70);
-        ctx.fillText("Current time:"+cur_time,20,90);
+        ctx.fillText("Get as close as you can, as fast as you can.",20,70);
+        ctx.fillText("Hit \"submit\" when you're satisfied with your guess.",20,90);
+        ctx.fillText("Current time:"+time,20,110);
 
         ctx.strokeStyle = "#FF0000";
         ctx.lineWidth = 2;
@@ -427,7 +429,7 @@ var GamePlayScene = function(game, stage)
           for(var k = 0; k < charges.length; k++)
           {
             if(
-              charges[k] != inert_mag.n ||
+              charges[k] != inert_mag.n &&
               charges[k] != inert_mag.s
             ) continue;
 
@@ -463,10 +465,16 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        if(time < best_time) best_time = time;
+        var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
+        var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
+        closeness = ndist+sdist;
+        var score = closeness*time;
+        if(score < best_time) best_time = score;
         pop([
-        "Total time:"+time,
-        time < 1000 ? "Good guesses!" : "Better luck next time!",
+        "Closeness rating: "+fdisp(closeness,4)+"<br />"+
+        "Time: "+time+"<br />"+
+        "Score: "+score,
+        score > 0.4 ? "Good guesses!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
@@ -483,6 +491,53 @@ var GamePlayScene = function(game, stage)
           inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
           special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
         );
+
+        ctx.strokeStyle = "#FF0000";
+        ctx.lineWidth = 2;
+        var comp;
+        for(var i = 0; i < comps.length; i++)
+        {
+          comp = comps[i];
+
+          var xd;
+          var yd;
+          var r2;
+          var r;
+          var f;
+
+          var dy = 0;
+          var dx = 0;
+          for(var k = 0; k < charges.length; k++)
+          {
+            if(
+              charges[k] != inert_mag.n &&
+              charges[k] != inert_mag.s
+            ) continue;
+
+            yd = comp.fy-charges[k].y;
+            xd = comp.fx-charges[k].x;
+            r2 = (xd*xd)+(yd*yd);
+            if(r2 != 0)
+            {
+              f = charges[k].v/r2;
+              r = sqrt(r2);
+              dy -= f*yd/r;
+              dx -= f*xd/r;
+            }
+          }
+
+          var r = (dx*dx)+(dy*dy);
+          if(r > 0.001)
+          {
+            r = sqrt(r);
+            canv.drawLine(
+              comp.x+comp.w/2,
+              comp.y+comp.h/2,
+              comp.x+comp.w/2+(dx/r)*comp.r,
+              comp.y+comp.h/2+(dy/r)*comp.r
+            );
+          }
+        }
       },
       function() { return input_state == RESUME_INPUT; }
     ));
@@ -492,15 +547,61 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        ctx.fillText("Feel free to drag around the compasses, the window,",20,50);
-        ctx.fillText("or even the magnet's terminals!",20,70);
-        ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,90);
+        ctx.fillText("Feel free to drag around the compasses or magnets.",20,50);
+        ctx.fillText("When ready to play again, hit the \"ready\" button below.",20,70);
+
+        ctx.strokeStyle = "#FF0000";
+        ctx.lineWidth = 2;
+        var comp;
+        for(var i = 0; i < comps.length; i++)
+        {
+          comp = comps[i];
+
+          var xd;
+          var yd;
+          var r2;
+          var r;
+          var f;
+
+          var dy = 0;
+          var dx = 0;
+          for(var k = 0; k < charges.length; k++)
+          {
+            if(
+              charges[k] != inert_mag.n &&
+              charges[k] != inert_mag.s
+            ) continue;
+
+            yd = comp.fy-charges[k].y;
+            xd = comp.fx-charges[k].x;
+            r2 = (xd*xd)+(yd*yd);
+            if(r2 != 0)
+            {
+              f = charges[k].v/r2;
+              r = sqrt(r2);
+              dy -= f*yd/r;
+              dx -= f*xd/r;
+            }
+          }
+
+          var r = (dx*dx)+(dy*dy);
+          if(r > 0.001)
+          {
+            r = sqrt(r);
+            canv.drawLine(
+              comp.x+comp.w/2,
+              comp.y+comp.h/2,
+              comp.x+comp.w/2+(dx/r)*comp.r,
+              comp.y+comp.h/2+(dy/r)*comp.r
+            );
+          }
+        }
       },
       function() {
         if(ready_btn_clicked)
         {
           time_witnessed_instructs = true;
-          cur_step = -1;
+          cur_step = time_begin_step-1;
           return true;
         }
         return false; }
@@ -688,7 +789,8 @@ var GamePlayScene = function(game, stage)
       if(
         mode == TIME_MAGNET_MODE &&
         cur_step != time_first_guess_step &&
-        cur_step != time_second_guess_step
+        cur_step != time_second_guess_step &&
+        cur_step != time_reveal_step
       ) return;
       if(mode == PLAYGROUND_MODE) return;
 
@@ -720,7 +822,8 @@ var GamePlayScene = function(game, stage)
       if(
         mode == TIME_MAGNET_MODE &&
         cur_step != time_first_guess_step &&
-        cur_step != time_second_guess_step
+        cur_step != time_second_guess_step &&
+        cur_step != time_reveal_step
       ) return;
       if(mode == PLAYGROUND_MODE) return;
 
@@ -739,7 +842,8 @@ var GamePlayScene = function(game, stage)
       if(
         mode == TIME_MAGNET_MODE &&
         cur_step != time_first_guess_step &&
-        cur_step != time_second_guess_step
+        cur_step != time_second_guess_step &&
+        cur_step != time_reveal_step
       ) return;
       if(mode == PLAYGROUND_MODE) return;
 
@@ -1509,7 +1613,9 @@ var GamePlayScene = function(game, stage)
         cur_step != find_place_dead_compass_step &&
         cur_step < find_reveal_step
       ) return;
-      if(mode == TIME_MAGNET_MODE) return;
+      if(mode == TIME_MAGNET_MODE &&
+        cur_step < time_reveal_step
+      ) return;
       if(cur_dragging) return;
       self.dragging = true;
       self.drag(evt);
