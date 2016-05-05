@@ -775,6 +775,7 @@ var GamePlayScene = function(game, stage)
         cur_step != time_second_guess_step &&
         cur_step != time_reveal_step
       ) return;
+      if(mode == ORIENT_COMPASS_MODE) return;
       if(mode == PLAYGROUND_MODE) return;
 
       inert_mag.nhandle.dragging = true;
@@ -795,6 +796,7 @@ var GamePlayScene = function(game, stage)
         cur_step != time_second_guess_step &&
         cur_step != time_reveal_step
       ) return;
+      if(mode == ORIENT_COMPASS_MODE) return;
       if(mode == PLAYGROUND_MODE) return;
 
       inert_mag.shandle.dragging = true;
