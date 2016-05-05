@@ -56,8 +56,11 @@ var GamePlayScene = function(game, stage)
   var best_closeness;
   var time;
   var best_time;
+  var orient;
+  var best_orient;
   var find_witnessed_instructs;
   var time_witnessed_instructs;
+  var orient_witnessed_instructs;
 
   //BUTTONS
   var new_pos_btn;
@@ -101,10 +104,7 @@ var GamePlayScene = function(game, stage)
     dom = new CanvDom(canv);
     bmwrangler = new BottomMessageWrangler();
 
-    if(game.start == 0)
-      vfield = new VecField(0,0,canv.width,canv.height,w/2,h/2)
-    else
-      vfield = new VecField(0,0,canv.width,canv.height,w,h)
+    vfield = new VecField(0,0,canv.width,canv.height,w/2,h/2)
     charges = [];
     nonmags = [];
     mags = [];
@@ -422,9 +422,9 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       function(){
         //set up game
-        mode = ORIENT_MAGNET_MODE;
+        mode = ORIENT_COMPASS_MODE;
           //compasses
-        for(var i = 0; i < 10; i++)
+        for(var i = 0; i < 5; i++)
         {
           if(!comps[i]) genComp();
           var tooclose = true;
@@ -442,14 +442,11 @@ var GamePlayScene = function(game, stage)
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
         }
         //magnet
-        genSpecialMagnet();
         genInertMagnet();
-        if(!time_witnessed_instructs)
+        if(!orient_witnessed_instructs)
         pop([
-        "Your goal is to <b>place the magnet</b> in a spot that reflects <b>the displayed orientation of the compasses</b>.",
-        "Your first step is to simply place your best guess.",
-        "(<b>Don't worry if you don't understand what's going on right now</b>- just place it wherever, and you'll figure it out after a couple plays!)",
-        "Click \"ready\" when you're satisfied with your placement.",
+        "Your goal is to <b>drag the compass needles</b> to their <b>correct orientation</b> given the position of the shown magnet.<br />(You should assume the compasses are not affected by any disturbances of the magnetic field other than by the shown magnet)",
+        "Click \"ready\" when you're satisfied with your decided orientation!",
         ]);
       },
       noop,
@@ -462,65 +459,23 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        canv.outlineText("Place a guess where you think the magnet will need to be located",20,50);
-        canv.outlineText("to have the displayed effect on the compasses.",20,70);
-        canv.outlineText("When ready, hit the \"ready\" button below.",20,90);
+        canv.outlineText("Drag each compass needle to where you expect it ought point.",20,50);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,70);
       },
       function() { return ready_btn_clicked; }
     ));
     steps.push(new Step(
       function(){
-        if(!time_witnessed_instructs)
+        var score = 0.5;
+        if(score > best_orient) best_orient = score;
         pop([
-        "Now, we'll show the displayed effect of <b>your guess</b>-",
-        "Update your guess to <b>match the compass needles</b>.",
-        "Try to get <b>as close as you can</b>, <b>as fast as possible</b>.",
-        "Hit <b>submit</b> when you're satisfied with your guess.",
-        "Click \"continue\" to begin the timer.",
-        ]);
-      },
-      noop,
-      noop,
-      function() { return input_state == RESUME_INPUT; }
-    ));
-    orient_second_guess_step = steps.length;
-    steps.push(new Step(
-      function() { time = 0; },
-      function() { time++; },
-      function()
-      {
-        ctx.fillStyle = "#000000";
-        canv.outlineText("Place the magnet to match the shown compass needles.",20,50);
-        canv.outlineText("Get as close as you can, as fast as you can.",20,70);
-        canv.outlineText("Hit \"submit\" when you're satisfied with your guess.",20,90);
-        canv.outlineText("Current time:"+time,20,110);
-      },
-      function()
-      {
-        return ready_btn_clicked;
-      }
-    ));
-    steps.push(new Step(
-      function(){
-        var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
-        var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
-        closeness = ndist+sdist;
-        var cscore = (4-closeness)/4;
-        var score = max(cscore-min(time/10000,4),0);
-        if(score > best_time) best_time = score;
-        pop([
-        "Closeness rating: "+round(cscore*100)+"<br />"+
-        "Time: "+time+"<br />"+
         "Score: "+round(score*100),
         score > 0.85 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
       },
       noop,
-      function()
-      {
-        drawConnectingInert();
-      },
+      noop,
       function() { return input_state == RESUME_INPUT; }
     ));
     orient_reveal_step = steps.length;
@@ -529,14 +484,14 @@ var GamePlayScene = function(game, stage)
       noop,
       function() {
         ctx.fillStyle = "#000000";
-        canv.outlineText("Feel free to drag around the compasses or magnets.",20,50);
+        canv.outlineText("Feel free to drag around the compasses.",20,50);
         canv.outlineText("When ready to play again, hit the \"ready\" button below.",20,70);
       },
       function() {
         if(ready_btn_clicked)
         {
-          time_witnessed_instructs = true;
-          cur_step = time_begin_step-1;
+          orient_witnessed_instructs = true;
+          cur_step = orient_begin_step-1;
           return true;
         }
         return false; }
@@ -669,6 +624,7 @@ var GamePlayScene = function(game, stage)
     {
       case 1: cur_step = find_begin_step-1; break;
       case 2: cur_step = time_begin_step-1; break;
+      case 3: cur_step = orient_begin_step-1; break;
       case 0: cur_step = playground_step-1; break;
     }
 
@@ -733,11 +689,19 @@ var GamePlayScene = function(game, stage)
   }
   var genInertMagnet = function()
   {
-    if(inert_mag)
-      delMagnet(inert_mag.n);
+    if(inert_mag) delMagnet(inert_mag.n);
+    var nx = rand0()*0.8;
+    var ny = rand0()/2*0.8;
+    var sx = rand0()*0.8;
+    var sy = rand0()/2*0.8;
+    while((nx-sx)*(nx-sx)+(ny-sy)*(ny-sy) < 0.01)
+    {
+      sx = rand0()*0.8;
+      sy = rand0()/2*0.8;
+    }
     inert_mag = genMagnet(
-      -1,rand0()*0.8,rand0()/2*0.8,
-       1,rand0()*0.8,rand0()/2*0.8
+      -1,nx,ny,
+       1,sx,sy
     );
     inert_mag.dragStart = function(evt)
     {
@@ -753,6 +717,7 @@ var GamePlayScene = function(game, stage)
         cur_step != time_second_guess_step &&
         cur_step != time_reveal_step
       ) return;
+      if(mode == ORIENT_COMPASS_MODE) return;
       if(mode == PLAYGROUND_MODE) return;
 
       var x0 = evt.doX;
@@ -815,11 +780,19 @@ var GamePlayScene = function(game, stage)
   }
   var genSpecialMagnet = function()
   {
-    if(special_mag)
-      delMagnet(special_mag.n);
+    if(special_mag) delMagnet(special_mag.n);
+    var nx = rand0()*0.8;
+    var ny = rand0()/2*0.8;
+    var sx = rand0()*0.8;
+    var sy = rand0()/2*0.8;
+    while((nx-sx)*(nx-sx)+(ny-sy)*(ny-sy) < 0.01)
+    {
+      sx = rand0()*0.8;
+      sy = rand0()/2*0.8;
+    }
     special_mag = genMagnet(
-      -1,rand0()*0.8,rand0()/2*0.8,
-       1,rand0()*0.8,rand0()/2*0.8
+      -1,nx,ny,
+       1,sx,sy
     );
     special_mag.dragStart = function(evt)
     {
@@ -1532,8 +1505,11 @@ var GamePlayScene = function(game, stage)
 
       self.dy = 0;
       self.dx = 0;
-      self.sdy = 0;
-      self.sdx = 0;
+      if(mode == TIME_MAGNET_MODE)
+      {
+        self.sdy = 0;
+        self.sdx = 0;
+      }
       for(var k = 0; k < charges.length; k++)
       {
         yd = self.fy-charges[k].y;
@@ -1553,7 +1529,8 @@ var GamePlayScene = function(game, stage)
               self.sdy -= f*yd/r;
               self.sdx -= f*xd/r;
             }
-            continue;
+            if(mode != ORIENT_COMPASS_MODE)
+              continue;
           }
           self.dy -= f*yd/r;
           self.dx -= f*xd/r;
@@ -1567,20 +1544,27 @@ var GamePlayScene = function(game, stage)
       ctx.lineWidth = 2;
       ctx.drawImage(Circle,self.x,self.y,self.w,self.h);
       if(mode == FIND_MAGNET_MODE && cur_step < find_first_guess_step-1) return;
-      var r = (self.dx*self.dx)+(self.dy*self.dy);
-      if(r > 0.001)
+
+      if(mode != ORIENT_COMPASS_MODE || cur_step >= orient_reveal_step-1)
       {
-        r = sqrt(r);
-        ctx.strokeStyle = "#000000";
-        canv.drawLine(
-          self.x+self.w/2,
-          self.y+self.h/2,
-          self.x+self.w/2+(self.dx/r)*self.r,
-          self.y+self.h/2+(self.dy/r)*self.r
-        );
+        var r = (self.dx*self.dx)+(self.dy*self.dy);
+        if(r > 0.001)
+        {
+          r = sqrt(r);
+          ctx.strokeStyle = "#000000";
+          canv.drawLine(
+            self.x+self.w/2,
+            self.y+self.h/2,
+            self.x+self.w/2+(self.dx/r)*self.r,
+            self.y+self.h/2+(self.dy/r)*self.r
+          );
+        }
       }
 
-      if(mode == TIME_MAGNET_MODE && cur_step > time_second_guess_step-1)
+      if(
+        (mode == TIME_MAGNET_MODE && cur_step > time_second_guess_step-1) ||
+        (mode == ORIENT_COMPASS_MODE)
+      )
       {
         r = (self.sdx*self.sdx)+(self.sdy*self.sdy);
         if(r > 0.001)
@@ -1616,10 +1600,18 @@ var GamePlayScene = function(game, stage)
     {
       if(!self.dragging) return;
       cur_dragging = self;
-      self.x = evt.doX-self.w/2;
-      self.y = evt.doY-self.h/2;
-      self.fx = field.xScreenToFSpace(evt.doX);
-      self.fy = field.yScreenToFSpace(evt.doY);
+      if(mode == ORIENT_COMPASS_MODE && cur_step < orient_reveal_step)
+      {
+        self.sdx = field.xScreenToFSpace(evt.doX)-self.fx;
+        self.sdy = field.yScreenToFSpace(evt.doY)-self.fy;
+      }
+      else
+      {
+        self.x = evt.doX-self.w/2;
+        self.y = evt.doY-self.h/2;
+        self.fx = field.xScreenToFSpace(evt.doX);
+        self.fy = field.yScreenToFSpace(evt.doY);
+      }
     }
     self.dragFinish = function()
     {
