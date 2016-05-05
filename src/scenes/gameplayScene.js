@@ -440,6 +440,8 @@ var GamePlayScene = function(game, stage)
           }
           comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
           comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
+          comps[i].sdx = 0;
+          comps[i].sdy = -1;
         }
         //magnet
         genInertMagnet();
@@ -466,7 +468,27 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        var score = 0.5;
+        var dx;
+        var dx;
+        var sdx;
+        var sdx;
+        var r;
+        var closeness = 0;
+        for(var i = 0; i < comps.length; i++)
+        {
+          dx = comps[i].dx;
+          dy = comps[i].dy;
+          r = sqrt((dx*dx)+(dy*dy));
+          if(r == 0) { dx = 0; dy = 0; }
+          else { dx /= r; dy /= r; }
+          sdx = comps[i].sdx;
+          sdy = comps[i].sdy;
+          r = sqrt((sdx*sdx)+(sdy*sdy));
+          if(r == 0) { sdx = 0; sdy = 0; }
+          else { sdx /= r; sdy /= r; }
+          closeness += abs(dx-sdx)+abs(dy-sdy);
+        }
+        var score = 1-(closeness/10);
         if(score > best_orient) best_orient = score;
         pop([
         "Score: "+round(score*100),
@@ -617,8 +639,10 @@ var GamePlayScene = function(game, stage)
     earth = false;
     best_closeness = lilnum;
     best_time = lilnum;
+    best_orient = lilnum;
     find_witnessed_instructs = false;
     time_witnessed_instructs = false;
+    orient_witnessed_instructs = false;
 
     switch(game.start)
     {
@@ -1089,11 +1113,15 @@ var GamePlayScene = function(game, stage)
 
     if(mode == FIND_MAGNET_MODE)
     {
-      if(best_closeness > lilnum) canv.outlineText("best closeness:"+round(best_closeness*100),canv.width/2,20);
+      if(best_closeness > lilnum) canv.outlineText("best score:"+round(best_closeness*100),canv.width/2,20);
     }
     if(mode == TIME_MAGNET_MODE)
     {
-      if(best_time > lilnum) canv.outlineText("best time:"+round(best_time*100),canv.width/2,20);
+      if(best_time > lilnum) canv.outlineText("best score:"+round(best_time*100),canv.width/2,20);
+    }
+    if(mode == ORIENT_COMPASS_MODE)
+    {
+      if(best_orient > lilnum) canv.outlineText("best score:"+round(best_orient*100),canv.width/2,20);
     }
 
     steps[cur_step].draw();
