@@ -63,6 +63,7 @@ var GamePlayScene = function(game, stage)
   var orient_witnessed_instructs;
 
   //BUTTONS
+  var menu_btn;
   var new_pos_btn;
   var new_neg_btn;
   var new_magnet_btn;
@@ -112,6 +113,7 @@ var GamePlayScene = function(game, stage)
     wind = new Window(30,30,200,200);
     comps = [];
 
+    menu_btn       = new ButtonBox(canv.width-30, 10,20,20,function(){ game.setScene(2); });
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8, 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8,-1); });
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genMagnet(-1,rand0()*0.8,rand0()/2*0.8,1,rand0()*0.8,rand0()/2*0.8); });
@@ -122,6 +124,7 @@ var GamePlayScene = function(game, stage)
 
     dragger.register(wind);
 
+    clicker.register(menu_btn);
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
     clicker.register(new_magnet_btn);
@@ -1082,6 +1085,7 @@ var GamePlayScene = function(game, stage)
       if(nonmag.charge.v > 0) canv.outlineText("S",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
 
+    menu_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("Menu",menu_btn.x+5,menu_btn.y+menu_btn.h-5);
     if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
     {
       vfield.draw();
@@ -1131,6 +1135,15 @@ var GamePlayScene = function(game, stage)
 
   self.cleanup = function()
   {
+    for(var i = mags.length-1; i >= 0; i--)
+      delMagnet(mags[i].n);
+    for(var i = nonmags.length-1; i >= 0; i--)
+      delHandle(nonmags[i].charge);
+    for(var i = comps.length-1; i >= 0; i--)
+      delComp(comps[i]);
+    dragger.detach(); dragger = undefined;
+    clicker.detach(); clicker = undefined;
+    domclicker.detach(); domclicker = undefined;
   };
 
   var pop = function(msg,callback) { if(!callback) callback = dismissed; input_state = IGNORE_INPUT; bmwrangler.popMessage(msg,callback); }
