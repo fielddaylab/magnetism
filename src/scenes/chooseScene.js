@@ -11,6 +11,9 @@ var ChooseScene = function(game, stage)
   var btn_time_game;
   var btn_orient_game;
 
+  var bignum = 999999;
+  var lilnum = -bignum;
+
   self.ready = function()
   {
     clicker = new Clicker({source:stage.dispCanv.canvas});
@@ -36,8 +39,11 @@ var ChooseScene = function(game, stage)
     dc.context.textAlign = "left";
     btn_playground.draw(dc);  dc.context.fillStyle = "#000000"; dc.context.fillText("Playground",btn_playground.x+8,btn_playground.y+btn_playground.h-4);
     btn_find_game.draw(dc);   dc.context.fillStyle = "#000000"; dc.context.fillText("Find Game",btn_find_game.x+8,btn_find_game.y+btn_find_game.h-4);
+    if(game.best_closeness !== undefined && game.best_closeness != lilnum) dc.context.fillText("Best Score:"+round(game.best_closeness*100),btn_find_game.x+8+btn_find_game.w/2,btn_find_game.y+btn_find_game.h-4);
     btn_time_game.draw(dc);   dc.context.fillStyle = "#000000"; dc.context.fillText("Timed Game",btn_time_game.x+8,btn_time_game.y+btn_time_game.h-4);
+    if(game.best_time !== undefined && game.best_time != lilnum) dc.context.fillText("Best Score:"+round(game.best_time*100),btn_find_game.x+8+btn_find_game.w/2,btn_find_game.y+btn_find_game.h-4);
     btn_orient_game.draw(dc); dc.context.fillStyle = "#000000"; dc.context.fillText("Compass Game",btn_orient_game.x+8,btn_orient_game.y+btn_orient_game.h-4);
+    if(game.best_orient !== undefined && game.best_orient != lilnum) dc.context.fillText("Best Score:"+round(game.best_orient*100),btn_find_game.x+8+btn_find_game.w/2,btn_find_game.y+btn_find_game.h-4);
   };
 
   self.cleanup = function()
