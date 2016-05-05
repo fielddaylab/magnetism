@@ -53,14 +53,8 @@ var GamePlayScene = function(game, stage)
   //STATE
   var earth;
   var closeness;
-  var best_closeness;
   var time;
-  var best_time;
   var orient;
-  var best_orient;
-  var find_witnessed_instructs;
-  var time_witnessed_instructs;
-  var orient_witnessed_instructs;
 
   //BUTTONS
   var menu_btn;
@@ -157,7 +151,7 @@ var GamePlayScene = function(game, stage)
         //magnet
         genSpecialMagnet();
         genInertMagnet();
-        if(!find_witnessed_instructs)
+        if(!game.find_witnessed_instructs)
         pop([
         "Find The Magnet!",
         "Your first step is to place these <b>compasses</b> around the <b>magnetic field</b>.",
@@ -182,7 +176,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        if(!find_witnessed_instructs)
+        if(!game.find_witnessed_instructs)
         pop([
         "Now that we're showing <b>where the compasses point</b>,",
         "place a guess <b>where you think the North terminal of the magnet is located</b>,",
@@ -208,7 +202,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        if(!find_witnessed_instructs)
+        if(!game.find_witnessed_instructs)
         pop([
         "Now we'll give you a <b>window to visualize the magnetic field</b>.",
         "Place it where you think it will best help you <b>find the location of the magnet</b>.",
@@ -232,7 +226,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        if(!find_witnessed_instructs)
+        if(!game.find_witnessed_instructs)
         pop([
         "Now that you can see <b>a window into the magnetic field</b>,",
         "<b>update your guesses</b> of <b>where the North and South magnetic terminals are located</b>.",
@@ -261,12 +255,13 @@ var GamePlayScene = function(game, stage)
         var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
         closeness = ndist+sdist;
         var score = (4-closeness)/4;
-        if(score > best_closeness) best_closeness = score;
+        if(score > game.best_closeness) game.best_closeness = score;
         pop([
         "Your score: "+round(score*100),
         score > 0.85 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
+        game.find_witnessed_instructs = true;
       },
       noop,
       function()
@@ -288,7 +283,6 @@ var GamePlayScene = function(game, stage)
       function() {
         if(ready_btn_clicked)
         {
-          find_witnessed_instructs = true;
           cur_step = find_begin_step-1;
           return true;
         }
@@ -322,7 +316,7 @@ var GamePlayScene = function(game, stage)
         //magnet
         genSpecialMagnet();
         genInertMagnet();
-        if(!time_witnessed_instructs)
+        if(!game.time_witnessed_instructs)
         pop([
         "Your goal is to <b>place the magnet</b> in a spot that reflects <b>the displayed orientation of the compasses</b>.",
         "Your first step is to simply place your best guess.",
@@ -348,7 +342,7 @@ var GamePlayScene = function(game, stage)
     ));
     steps.push(new Step(
       function(){
-        if(!time_witnessed_instructs)
+        if(!game.time_witnessed_instructs)
         pop([
         "Now, we'll show the displayed effect of <b>your guess</b>-",
         "Update your guess to <b>match the compass needles</b>.",
@@ -385,7 +379,7 @@ var GamePlayScene = function(game, stage)
         closeness = ndist+sdist;
         var cscore = (4-closeness)/4;
         var score = max(cscore-min(time/10000,4),0);
-        if(score > best_time) best_time = score;
+        if(score > game.best_time) game.best_time = score;
         pop([
         "Closeness rating: "+round(cscore*100)+"<br />"+
         "Time: "+time+"<br />"+
@@ -393,6 +387,7 @@ var GamePlayScene = function(game, stage)
         score > 0.85 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
+        game.time_witnessed_instructs = true;
       },
       noop,
       function()
@@ -413,7 +408,6 @@ var GamePlayScene = function(game, stage)
       function() {
         if(ready_btn_clicked)
         {
-          time_witnessed_instructs = true;
           cur_step = time_begin_step-1;
           return true;
         }
@@ -448,7 +442,7 @@ var GamePlayScene = function(game, stage)
         }
         //magnet
         genInertMagnet();
-        if(!orient_witnessed_instructs)
+        if(!game.orient_witnessed_instructs)
         pop([
         "Your goal is to <b>drag the compass needles</b> to their <b>correct orientation</b> given the position of the shown magnet.<br />(You should assume the compasses are not affected by any disturbances of the magnetic field other than by the shown magnet)",
         "Click \"ready\" when you're satisfied with your decided orientation!",
@@ -492,12 +486,13 @@ var GamePlayScene = function(game, stage)
           closeness += abs(dx-sdx)+abs(dy-sdy);
         }
         var score = 1-(closeness/10);
-        if(score > best_orient) best_orient = score;
+        if(score > game.best_orient) game.best_orient = score;
         pop([
         "Score: "+round(score*100),
         score > 0.85 ? "Good guess!" : "Better luck next time!",
         "Click \"ready\" to play again!",
         ]);
+        game.orient_witnessed_instructs = true;
       },
       noop,
       noop,
@@ -515,7 +510,6 @@ var GamePlayScene = function(game, stage)
       function() {
         if(ready_btn_clicked)
         {
-          orient_witnessed_instructs = true;
           cur_step = orient_begin_step-1;
           return true;
         }
@@ -639,13 +633,14 @@ var GamePlayScene = function(game, stage)
       ffunc
     ));
 
+    if(game.best_closeness === undefined) game.best_closeness = lilnum;
+    if(game.best_time === undefined)      game.best_time = lilnum;
+    if(game.best_orient === undefined)    game.best_orient = lilnum;
+    if(game.find_witnessed_instructs === undefined)   game.find_witnessed_instructs = false;
+    if(game.time_witnessed_instructs === undefined)   game.time_witnessed_instructs = false;
+    if(game.orient_witnessed_instructs === undefined) game.orient_witnessed_instructs = false;
+
     earth = false;
-    best_closeness = lilnum;
-    best_time = lilnum;
-    best_orient = lilnum;
-    find_witnessed_instructs = false;
-    time_witnessed_instructs = false;
-    orient_witnessed_instructs = false;
 
     switch(game.start)
     {
@@ -1119,15 +1114,15 @@ var GamePlayScene = function(game, stage)
 
     if(mode == FIND_MAGNET_MODE)
     {
-      if(best_closeness > lilnum) canv.outlineText("best score:"+round(best_closeness*100),canv.width/2,20);
+      if(game.best_closeness > lilnum) canv.outlineText("best score:"+round(game.best_closeness*100),canv.width/2,20);
     }
     if(mode == TIME_MAGNET_MODE)
     {
-      if(best_time > lilnum) canv.outlineText("best score:"+round(best_time*100),canv.width/2,20);
+      if(game.best_time > lilnum) canv.outlineText("best score:"+round(game.best_time*100),canv.width/2,20);
     }
     if(mode == ORIENT_COMPASS_MODE)
     {
-      if(best_orient > lilnum) canv.outlineText("best score:"+round(best_orient*100),canv.width/2,20);
+      if(game.best_orient > lilnum) canv.outlineText("best score:"+round(game.best_orient*100),canv.width/2,20);
     }
 
     steps[cur_step].draw();
