@@ -83,6 +83,10 @@ var GamePlayScene = function(game, stage)
   var time_first_guess_step;
   var time_second_guess_step;
   var time_reveal_step;
+    //orient
+  var orient_begin_step;
+  var orient_first_guess_step;
+  var orient_reveal_step;
     //playground
   var playground_step;
 
@@ -351,10 +355,7 @@ var GamePlayScene = function(game, stage)
         ]);
       },
       noop,
-      function()
-      {
-        drawInertCompasses();
-      },
+      noop,
       function() { return input_state == RESUME_INPUT; }
     ));
     time_second_guess_step = steps.length;
@@ -368,8 +369,6 @@ var GamePlayScene = function(game, stage)
         canv.outlineText("Get as close as you can, as fast as you can.",20,70);
         canv.outlineText("Hit \"submit\" when you're satisfied with your guess.",20,90);
         canv.outlineText("Current time:"+time,20,110);
-
-        drawInertCompasses();
       },
       function()
       {
@@ -396,7 +395,6 @@ var GamePlayScene = function(game, stage)
       function()
       {
         drawConnectingInert();
-        drawInertCompasses();
       },
       function() { return input_state == RESUME_INPUT; }
     ));
@@ -408,8 +406,131 @@ var GamePlayScene = function(game, stage)
         ctx.fillStyle = "#000000";
         canv.outlineText("Feel free to drag around the compasses or magnets.",20,50);
         canv.outlineText("When ready to play again, hit the \"ready\" button below.",20,70);
+      },
+      function() {
+        if(ready_btn_clicked)
+        {
+          time_witnessed_instructs = true;
+          cur_step = time_begin_step-1;
+          return true;
+        }
+        return false; }
+    ));
 
-        drawInertCompasses();
+    //ORIENT
+    orient_begin_step = steps.length;
+    steps.push(new Step(
+      function(){
+        //set up game
+        mode = ORIENT_MAGNET_MODE;
+          //compasses
+        for(var i = 0; i < 10; i++)
+        {
+          if(!comps[i]) genComp();
+          var tooclose = true;
+          while(tooclose)
+          {
+            comps[i].fx = rand0()*0.8;
+            comps[i].fy = rand0()/2.*0.8;
+            tooclose = false;
+            for(var j = 0; j < i; j++)
+            {
+              if(fdistsqr(comps[i].fx,comps[i].fy,comps[j].fx,comps[j].fy) < 0.1) tooclose = true;
+            }
+          }
+          comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
+          comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
+        }
+        //magnet
+        genSpecialMagnet();
+        genInertMagnet();
+        if(!time_witnessed_instructs)
+        pop([
+        "Your goal is to <b>place the magnet</b> in a spot that reflects <b>the displayed orientation of the compasses</b>.",
+        "Your first step is to simply place your best guess.",
+        "(<b>Don't worry if you don't understand what's going on right now</b>- just place it wherever, and you'll figure it out after a couple plays!)",
+        "Click \"ready\" when you're satisfied with your placement.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    orient_first_guess_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        canv.outlineText("Place a guess where you think the magnet will need to be located",20,50);
+        canv.outlineText("to have the displayed effect on the compasses.",20,70);
+        canv.outlineText("When ready, hit the \"ready\" button below.",20,90);
+      },
+      function() { return ready_btn_clicked; }
+    ));
+    steps.push(new Step(
+      function(){
+        if(!time_witnessed_instructs)
+        pop([
+        "Now, we'll show the displayed effect of <b>your guess</b>-",
+        "Update your guess to <b>match the compass needles</b>.",
+        "Try to get <b>as close as you can</b>, <b>as fast as possible</b>.",
+        "Hit <b>submit</b> when you're satisfied with your guess.",
+        "Click \"continue\" to begin the timer.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    orient_second_guess_step = steps.length;
+    steps.push(new Step(
+      function() { time = 0; },
+      function() { time++; },
+      function()
+      {
+        ctx.fillStyle = "#000000";
+        canv.outlineText("Place the magnet to match the shown compass needles.",20,50);
+        canv.outlineText("Get as close as you can, as fast as you can.",20,70);
+        canv.outlineText("Hit \"submit\" when you're satisfied with your guess.",20,90);
+        canv.outlineText("Current time:"+time,20,110);
+      },
+      function()
+      {
+        return ready_btn_clicked;
+      }
+    ));
+    steps.push(new Step(
+      function(){
+        var sdist = tldist(inert_mag.shandle,special_mag.shandle)/canv.height;
+        var ndist = tldist(inert_mag.nhandle,special_mag.nhandle)/canv.height;
+        closeness = ndist+sdist;
+        var cscore = (4-closeness)/4;
+        var score = max(cscore-min(time/10000,4),0);
+        if(score > best_time) best_time = score;
+        pop([
+        "Closeness rating: "+round(cscore*100)+"<br />"+
+        "Time: "+time+"<br />"+
+        "Score: "+round(score*100),
+        score > 0.85 ? "Good guess!" : "Better luck next time!",
+        "Click \"ready\" to play again!",
+        ]);
+      },
+      noop,
+      function()
+      {
+        drawConnectingInert();
+      },
+      function() { return input_state == RESUME_INPUT; }
+    ));
+    orient_reveal_step = steps.length;
+    steps.push(new Step(
+      noop,
+      noop,
+      function() {
+        ctx.fillStyle = "#000000";
+        canv.outlineText("Feel free to drag around the compasses or magnets.",20,50);
+        canv.outlineText("When ready to play again, hit the \"ready\" button below.",20,70);
       },
       function() {
         if(ready_btn_clicked)
@@ -989,26 +1110,8 @@ var GamePlayScene = function(game, stage)
     }
     if(mode != EXPOSITION_MODE)
     {
-      var comp;
       for(var i = 0; i < comps.length; i++)
-      {
-        comp = comps[i];
-        ctx.drawImage(Circle,comps[i].x,comps[i].y,comps[i].w,comps[i].h);
-        if(mode == FIND_MAGNET_MODE && cur_step < find_first_guess_step-1) continue;
-        var r = (comp.dx*comp.dx)+(comp.dy*comp.dy);
-        if(r > 0.001)
-        {
-          r = sqrt(r);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          canv.drawLine(
-            comp.x+comp.w/2,
-            comp.y+comp.h/2,
-            comp.x+comp.w/2+(comp.dx/r)*comp.r,
-            comp.y+comp.h/2+(comp.dy/r)*comp.r
-          );
-        }
-      }
+        comps[i].draw();
     }
 
     if(mode == FIND_MAGNET_MODE)
@@ -1408,6 +1511,8 @@ var GamePlayScene = function(game, stage)
 
     self.dx = 0;
     self.dy = 0;
+    self.sdx = 0;
+    self.sdy = 0;
 
     self.tick = function()
     {
@@ -1427,12 +1532,10 @@ var GamePlayScene = function(game, stage)
 
       self.dy = 0;
       self.dx = 0;
+      self.sdy = 0;
+      self.sdx = 0;
       for(var k = 0; k < charges.length; k++)
       {
-        if(
-          charges[k] == inert_c0 ||
-          charges[k] == inert_c1
-        ) continue;
         yd = self.fy-charges[k].y;
         xd = self.fx-charges[k].x;
         r2 = (xd*xd)+(yd*yd);
@@ -1440,11 +1543,58 @@ var GamePlayScene = function(game, stage)
         {
           f = charges[k].v/r2;
           r = sqrt(r2);
+          if(
+            charges[k] == inert_c0 ||
+            charges[k] == inert_c1
+          )
+          {
+            if(mode == TIME_MAGNET_MODE)
+            {
+              self.sdy -= f*yd/r;
+              self.sdx -= f*xd/r;
+            }
+            continue;
+          }
           self.dy -= f*yd/r;
           self.dx -= f*xd/r;
         }
       }
       if(earth) self.dy -= earth_strength;
+    }
+
+    self.draw = function()
+    {
+      ctx.lineWidth = 2;
+      ctx.drawImage(Circle,self.x,self.y,self.w,self.h);
+      if(mode == FIND_MAGNET_MODE && cur_step < find_first_guess_step-1) return;
+      var r = (self.dx*self.dx)+(self.dy*self.dy);
+      if(r > 0.001)
+      {
+        r = sqrt(r);
+        ctx.strokeStyle = "#000000";
+        canv.drawLine(
+          self.x+self.w/2,
+          self.y+self.h/2,
+          self.x+self.w/2+(self.dx/r)*self.r,
+          self.y+self.h/2+(self.dy/r)*self.r
+        );
+      }
+
+      if(mode == TIME_MAGNET_MODE && cur_step > time_second_guess_step-1)
+      {
+        r = (self.sdx*self.sdx)+(self.sdy*self.sdy);
+        if(r > 0.001)
+        {
+          r = sqrt(r);
+          ctx.strokeStyle = "#FF0000";
+          canv.drawLine(
+            self.x+self.w/2,
+            self.y+self.h/2,
+            self.x+self.w/2+(self.sdx/r)*self.r,
+            self.y+self.h/2+(self.sdy/r)*self.r
+          );
+        }
+      }
     }
 
     self.dragging = false;
@@ -1490,55 +1640,6 @@ var GamePlayScene = function(game, stage)
       inert_mag.nhandle.x+inert_mag.nhandle.w/2,inert_mag.nhandle.y+inert_mag.nhandle.h/2,
       special_mag.nhandle.x+special_mag.nhandle.w/2,special_mag.nhandle.y+special_mag.nhandle.h/2
     );
-  }
-  var drawInertCompasses = function()
-  {
-    ctx.strokeStyle = "#FF0000";
-    ctx.lineWidth = 2;
-    var comp;
-    for(var i = 0; i < comps.length; i++)
-    {
-      comp = comps[i];
-
-      var xd;
-      var yd;
-      var r2;
-      var r;
-      var f;
-
-      var dy = 0;
-      var dx = 0;
-      for(var k = 0; k < charges.length; k++)
-      {
-        if(
-          charges[k] != inert_mag.n &&
-          charges[k] != inert_mag.s
-        ) continue;
-
-        yd = comp.fy-charges[k].y;
-        xd = comp.fx-charges[k].x;
-        r2 = (xd*xd)+(yd*yd);
-        if(r2 != 0)
-        {
-          f = charges[k].v/r2;
-          r = sqrt(r2);
-          dy -= f*yd/r;
-          dx -= f*xd/r;
-        }
-      }
-
-      var r = (dx*dx)+(dy*dy);
-      if(r > 0.001)
-      {
-        r = sqrt(r);
-        canv.drawLine(
-          comp.x+comp.w/2,
-          comp.y+comp.h/2,
-          comp.x+comp.w/2+(dx/r)*comp.r,
-          comp.y+comp.h/2+(dy/r)*comp.r
-        );
-      }
-    }
   }
 
   var Step = function(begin,tick,draw,test)
