@@ -1089,7 +1089,9 @@ var GamePlayScene = function(game, stage)
       new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
       phys_btn.draw(canv);       ctx.fillStyle = "#000000"; canv.outlineText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);        ctx.fillStyle = "#000000"; canv.outlineText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
-      earth_btn.draw(canv);      ctx.fillStyle = "#000000"; canv.outlineText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
+      earth_btn.draw(canv);      ctx.fillStyle = "#000000";
+      if(earth) canv.outlineText("✔ toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
+      else canv.outlineText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
     }
     else if(mode == FIND_MAGNET_MODE)
     {
