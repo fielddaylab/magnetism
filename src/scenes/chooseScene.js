@@ -10,6 +10,7 @@ var ChooseScene = function(game, stage)
   var btn_find_game;
   var btn_time_game;
   var btn_orient_game;
+  var btn_secret_game;
 
   var bignum = 999999;
   var lilnum = -bignum;
@@ -22,11 +23,13 @@ var ChooseScene = function(game, stage)
     btn_find_game   = new ButtonBox(10, 90,dc.width/2-15,30,function(evt){ game.start = 1; game.setScene(3); });
     btn_time_game   = new ButtonBox(10,130,dc.width/2-15,30,function(evt){ game.start = 2; game.setScene(3); });
     btn_orient_game = new ButtonBox(10, 50,dc.width/2-15,30,function(evt){ game.start = 3; game.setScene(3); });
+    btn_secret_game = new ButtonBox(10,170,dc.width/2-15,30,function(evt){ game.start = 4; game.setScene(3); });
 
     clicker.register(btn_playground);
     clicker.register(btn_find_game);
     clicker.register(btn_time_game);
     clicker.register(btn_orient_game);
+    clicker.register(btn_secret_game);
   };
 
   self.tick = function()

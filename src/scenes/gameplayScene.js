@@ -87,6 +87,8 @@ var GamePlayScene = function(game, stage)
   var orient_reveal_step;
     //playground
   var playground_step;
+    //secret
+  var secret_step;
 
   self.ready = function()
   {
@@ -633,6 +635,31 @@ var GamePlayScene = function(game, stage)
       ffunc
     ));
 
+    //SECRET
+    secret_step = steps.length;
+    steps.push(new Step(
+      function()
+      {
+        var nx = 12;
+        var ny = 7;
+        for(var i = 0; i < nx; i++)
+        {
+          for(var j = 0; j < ny; j++)
+          {
+            if(!comps[i*ny+j]) genComp();
+            comps[i*ny+j].fx = lerp(-1,1,i/(nx-1));
+            comps[i*ny+j].fy = lerp(-0.5,0.5,j/(ny-1));
+            comps[i*ny+j].x = vfield.xFSpaceToScreen(comps[i*ny+j].fx)-comps[i*ny+j].w/2;
+            comps[i*ny+j].y = vfield.yFSpaceToScreen(comps[i*ny+j].fy)-comps[i*ny+j].h/2;
+          }
+        }
+        mode = PLAYGROUND_MODE;
+      },
+      noop,
+      noop,
+      ffunc
+    ));
+
     if(game.best_closeness === undefined) game.best_closeness = lilnum;
     if(game.best_time === undefined)      game.best_time = lilnum;
     if(game.best_orient === undefined)    game.best_orient = lilnum;
@@ -644,10 +671,11 @@ var GamePlayScene = function(game, stage)
 
     switch(game.start)
     {
+      case 0: cur_step = playground_step-1; break;
       case 1: cur_step = find_begin_step-1; break;
       case 2: cur_step = time_begin_step-1; break;
       case 3: cur_step = orient_begin_step-1; break;
-      case 0: cur_step = playground_step-1; break;
+      case 4: cur_step = secret_step-1; break;
     }
 
     self.nextStep();
@@ -1083,7 +1111,7 @@ var GamePlayScene = function(game, stage)
     menu_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("Menu",menu_btn.x+5,menu_btn.y+menu_btn.h-5);
     if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
     {
-      vfield.draw();
+      if(game.start != 4) vfield.draw();
       new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
       new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (N)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
       new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
@@ -1631,6 +1659,9 @@ var GamePlayScene = function(game, stage)
       ) return;
       if(mode == TIME_MAGNET_MODE &&
         cur_step < time_reveal_step
+      ) return;
+      if(mode == PLAYGROUND_MODE &&
+        game.start == 4
       ) return;
       if(cur_dragging) return;
       self.dragging = true;
