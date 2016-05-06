@@ -402,8 +402,8 @@ function drawArrow(canv,sx,sy,ex,ey,w)
   canv.context.beginPath();
   canv.context.moveTo(sx,sy);
   canv.context.lineTo(ex,ey);
-  canv.context.lineTo(sx+(dx/dd*(dd-w))+ox,sy+(dy/dd*(dd-w))+oy);
-  canv.context.moveTo(ex,ey);
+  canv.context.moveTo(sx+(dx/dd*(dd-w))+ox,sy+(dy/dd*(dd-w))+oy);
+  canv.context.lineTo(ex,ey);
   canv.context.lineTo(sx+(dx/dd*(dd-w))-ox,sy+(dy/dd*(dd-w))-oy);
   canv.context.stroke();
 }

@@ -1144,6 +1144,7 @@ var GamePlayScene = function(game, stage)
         comps[i].draw();
     }
 
+    ctx.lineWidth = 1;
     menu_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("Menu",menu_btn.x+5,menu_btn.y+menu_btn.h-5);
     if((mode == PLAYGROUND_MODE && game.start != 4) || (mode == FIND_MAGNET_MODE && cur_step >= find_second_guess_step))
     {
@@ -1160,7 +1161,13 @@ var GamePlayScene = function(game, stage)
       phys_btn.draw(canv);        ctx.fillStyle = "#000000"; canv.outlineText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
       del_btn.draw(canv);         ctx.fillStyle = "#000000"; canv.outlineText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
       earth_btn.draw(canv);       ctx.fillStyle = "#000000";
-      if(earth) canv.outlineText("✔ toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
+      if(earth)
+      {
+        canv.outlineText("✔ toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
+        ctx.lineWidth = 5;
+        drawArrow(canv,canv.width-50,50,canv.width-50,20,10);
+        canv.outlineText("N",canv.width-53,40);
+      }
       else canv.outlineText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
     }
 
@@ -1642,11 +1649,13 @@ var GamePlayScene = function(game, stage)
         {
           r = sqrt(r);
           ctx.strokeStyle = "#000000";
-          canv.drawLine(
+          drawArrow(
+            canv,
             self.x+self.w/2,
             self.y+self.h/2,
             self.x+self.w/2+(self.dx/r)*self.r,
-            self.y+self.h/2+(self.dy/r)*self.r
+            self.y+self.h/2+(self.dy/r)*self.r,
+            5
           );
         }
       }
@@ -1661,11 +1670,13 @@ var GamePlayScene = function(game, stage)
         {
           r = sqrt(r);
           ctx.strokeStyle = "#FF0000";
-          canv.drawLine(
+          drawArrow(
+            canv,
             self.x+self.w/2,
             self.y+self.h/2,
             self.x+self.w/2+(self.sdx/r)*self.r,
-            self.y+self.h/2+(self.sdy/r)*self.r
+            self.y+self.h/2+(self.sdy/r)*self.r,
+            5
           );
         }
       }
