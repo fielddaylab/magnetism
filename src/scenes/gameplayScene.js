@@ -41,6 +41,7 @@ var GamePlayScene = function(game, stage)
   var earth_strength = 3;
 
   //OBJECTS
+  var vdvfield;
   var hdvfield;
   var sdvfield;
   var ldvfield;
@@ -61,6 +62,7 @@ var GamePlayScene = function(game, stage)
 
   //BUTTONS
   var menu_btn;
+  var vd_btn;
   var hd_btn;
   var sd_btn;
   var ld_btn;
@@ -108,6 +110,7 @@ var GamePlayScene = function(game, stage)
     dom = new CanvDom(canv);
     bmwrangler = new BottomMessageWrangler();
 
+    vdvfield = new VecField(0,0,canv.width,canv.height,w*4,h*4)
     hdvfield = new VecField(0,0,canv.width,canv.height,w*2,h*2)
     sdvfield = new VecField(0,0,canv.width,canv.height,w,h)
     ldvfield = new VecField(0,0,canv.width,canv.height,w/2,h/2)
@@ -120,6 +123,7 @@ var GamePlayScene = function(game, stage)
     comps = [];
 
     menu_btn        = new ButtonBox(canv.width-30, 10,20,20,function(){ game.setScene(2); });
+    vd_btn          = new ButtonBox(canv.width-30,130,20,20,function(){ vfield = vdvfield; });
     hd_btn          = new ButtonBox(canv.width-30, 40,20,20,function(){ vfield = hdvfield; });
     sd_btn          = new ButtonBox(canv.width-30, 70,20,20,function(){ vfield = sdvfield; });
     ld_btn          = new ButtonBox(canv.width-30,100,20,20,function(){ vfield = ldvfield; });
@@ -135,6 +139,7 @@ var GamePlayScene = function(game, stage)
     dragger.register(wind);
 
     clicker.register(menu_btn);
+    clicker.register(vd_btn);
     clicker.register(hd_btn);
     clicker.register(sd_btn);
     clicker.register(ld_btn);
@@ -1648,7 +1653,7 @@ var GamePlayScene = function(game, stage)
         if(r > 0.001)
         {
           r = sqrt(r);
-          ctx.strokeStyle = "#000000";
+          ctx.strokeStyle = "#440000";
           drawArrow(
             canv,
             self.x+self.w/2,
