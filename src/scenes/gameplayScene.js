@@ -643,6 +643,34 @@ var GamePlayScene = function(game, stage)
     steps.push(new Step(
       function()
       {
+        /*
+        var x;
+        var y;
+        var t;
+        var n_cs = 20;
+        var c = 1/n_cs;
+        for(var i = 0; i < n_cs; i++)
+        {
+          //only allow endpoints
+          //if(i != 0 && i != n_cs-1) continue;
+
+          //gen horseshoe
+          t = (i/(n_cs-1))*pi;
+          x = cos(t)/4;
+          y = -sin(t)/3+1/6;
+
+          //gen bar
+          //t = (i/(n_cs-1));
+          //x = lerp(-1,1,t)/4;
+          //y = 0;
+
+          //alternating charges
+          //genHandle(x,y,(i%2 ? 1*c : -1*c));
+
+          //split charges
+          genHandle(x,y,(i<n_cs/2 ? 1*c : -1*c));
+        }
+        */
         mode = PLAYGROUND_MODE;
       },
       noop,
