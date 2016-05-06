@@ -35,12 +35,15 @@ var GamePlayScene = function(game, stage)
   var cur_selected; //the charge currently selected
 
   //CONFIG
-  var res = 60;
+  var res = 30;
   var w = 2*res;
   var h = 1*res;
   var earth_strength = 3;
 
   //OBJECTS
+  var hdvfield;
+  var sdvfield;
+  var ldvfield;
   var vfield;
   var charges;
   var mags;
@@ -58,6 +61,9 @@ var GamePlayScene = function(game, stage)
 
   //BUTTONS
   var menu_btn;
+  var hd_btn;
+  var sd_btn;
+  var ld_btn;
   var new_pos_btn;
   var new_neg_btn;
   var new_magnet_btn;
@@ -101,7 +107,10 @@ var GamePlayScene = function(game, stage)
     dom = new CanvDom(canv);
     bmwrangler = new BottomMessageWrangler();
 
-    vfield = new VecField(0,0,canv.width,canv.height,w/2,h/2)
+    hdvfield = new VecField(0,0,canv.width,canv.height,w*2,h*2)
+    sdvfield = new VecField(0,0,canv.width,canv.height,w,h)
+    ldvfield = new VecField(0,0,canv.width,canv.height,w/2,h/2)
+    vfield = sdvfield;
     charges = [];
     nonmags = [];
     mags = [];
@@ -110,6 +119,9 @@ var GamePlayScene = function(game, stage)
     comps = [];
 
     menu_btn       = new ButtonBox(canv.width-30, 10,20,20,function(){ game.setScene(2); });
+    hd_btn         = new ButtonBox(canv.width-30, 40,20,20,function(){ vfield = hdvfield; });
+    sd_btn         = new ButtonBox(canv.width-30, 70,20,20,function(){ vfield = sdvfield; });
+    ld_btn         = new ButtonBox(canv.width-30,100,20,20,function(){ vfield = ldvfield; });
     new_pos_btn    = new ButtonBox(10, 10,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8, 1); });
     new_neg_btn    = new ButtonBox(10, 40,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genHandle(rand0()*0.8,rand0()/2*0.8,-1); });
     new_magnet_btn = new ButtonBox(10, 70,20,20,function(){ if(mode != PLAYGROUND_MODE) return; genMagnet(-1,rand0()*0.8,rand0()/2*0.8,1,rand0()*0.8,rand0()/2*0.8); });
@@ -121,6 +133,9 @@ var GamePlayScene = function(game, stage)
     dragger.register(wind);
 
     clicker.register(menu_btn);
+    clicker.register(hd_btn);
+    clicker.register(sd_btn);
+    clicker.register(ld_btn);
     clicker.register(new_pos_btn);
     clicker.register(new_neg_btn);
     clicker.register(new_magnet_btn);
@@ -1108,20 +1123,11 @@ var GamePlayScene = function(game, stage)
       if(nonmag.charge.v > 0) canv.outlineText("S",nonmag.x+5,nonmag.y+nonmag.h-5);
     }
 
-    menu_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("Menu",menu_btn.x+5,menu_btn.y+menu_btn.h-5);
-    if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
+    if(mode == PLAYGROUND_MODE || mode == EXPOSITION_MODE)
     {
       if(game.start != 4) vfield.draw();
-      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
-      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (N)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
-      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
-      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; canv.outlineText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
-      del_btn.draw(canv);        ctx.fillStyle = "#000000"; canv.outlineText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
-      earth_btn.draw(canv);      ctx.fillStyle = "#000000";
-      if(earth) canv.outlineText("✔ toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
-      else canv.outlineText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
     }
-    else if(mode == FIND_MAGNET_MODE)
+    if(mode == FIND_MAGNET_MODE)
     {
       if(cur_step >= find_second_guess_step-1)
         vfield.draw(wind);
@@ -1140,6 +1146,25 @@ var GamePlayScene = function(game, stage)
     {
       for(var i = 0; i < comps.length; i++)
         comps[i].draw();
+    }
+
+    menu_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("Menu",menu_btn.x+5,menu_btn.y+menu_btn.h-5);
+    if((mode == PLAYGROUND_MODE && game.start != 4) || (mode == FIND_MAGNET_MODE && cur_step >= find_second_guess_step))
+    {
+      hd_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("HD",hd_btn.x+5,hd_btn.y+hd_btn.h-5);
+      sd_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("SD",sd_btn.x+5,sd_btn.y+sd_btn.h-5);
+      ld_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("LD",ld_btn.x+5,ld_btn.y+ld_btn.h-5);
+    }
+    if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
+    {
+      new_pos_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (S)",new_pos_btn.x+5,new_pos_btn.y+new_pos_btn.h-5);
+      new_neg_btn.draw(canv);    ctx.fillStyle = "#000000"; canv.outlineText("create charge (N)",new_neg_btn.x+5,new_neg_btn.y+new_neg_btn.h-5);
+      new_magnet_btn.draw(canv); ctx.fillStyle = "#000000"; canv.outlineText("create magnet",new_magnet_btn.x+5,new_magnet_btn.y+new_magnet_btn.h-5);
+      phys_btn.draw(canv);       ctx.fillStyle = "#000000"; canv.outlineText("toggle physics for currently selected",phys_btn.x+5,phys_btn.y+phys_btn.h-5);
+      del_btn.draw(canv);        ctx.fillStyle = "#000000"; canv.outlineText("delete currently selected",del_btn.x+5,del_btn.y+del_btn.h-5);
+      earth_btn.draw(canv);      ctx.fillStyle = "#000000";
+      if(earth) canv.outlineText("✔ toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
+      else canv.outlineText("toggle earth's field",earth_btn.x+5,earth_btn.y+earth_btn.h-5);
     }
 
     if(mode == FIND_MAGNET_MODE)
