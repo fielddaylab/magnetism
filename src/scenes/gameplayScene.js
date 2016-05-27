@@ -17,6 +17,7 @@ var GamePlayScene = function(game, stage)
   var input_state;
 
   ENUM = 0;
+  var REAL_MAGNET_MODE    = ENUM; ENUM++;
   var FIND_MAGNET_MODE    = ENUM; ENUM++;
   var TIME_MAGNET_MODE    = ENUM; ENUM++;
   var ORIENT_COMPASS_MODE = ENUM; ENUM++;
@@ -79,6 +80,8 @@ var GamePlayScene = function(game, stage)
   //STEPS
   var steps;
   var cur_step;
+    //real
+  var real_begin_step;
     //find
   var find_begin_step;
   var find_place_dead_compass_step;
@@ -103,7 +106,7 @@ var GamePlayScene = function(game, stage)
   self.ready = function()
   {
     input_state = RESUME_INPUT;
-    mode = FIND_MAGNET_MODE;
+    mode = REAL_MAGNET_MODE;
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
@@ -156,6 +159,40 @@ var GamePlayScene = function(game, stage)
 
     //STEPS
     steps = [];
+
+    //REAL
+    real_begin_step = steps.length;
+    steps.push(new Step(
+      function(){
+        //set up game
+        mode = REAL_MAGNET_MODE;
+          //compasses
+        for(var i = 0; i < 5; i++)
+        {
+          if(!comps[i]) genComp();
+          comps[i].fx = lerp(-0.5,0.5,i/(5-1));
+          comps[i].fy = -0.2;
+          comps[i].x = vfield.xFSpaceToScreen(comps[i].fx)-comps[i].w/2;
+          comps[i].y = vfield.yFSpaceToScreen(comps[i].fy)-comps[i].h/2;
+        }
+        //window
+        wind.x = 60;
+        wind.y = 20;
+        //magnet
+        genSpecialMagnet();
+        genInertMagnet();
+        if(!game.real_witnessed_instructs)
+        pop([
+        "Find The Magnet!",
+        "Your first step is to place these <b>compasses</b> around the <b>magnetic field</b>.",
+        "(Just place them all around- <b>don't worry if you don't understand what's going on right now</b>- you'll figure it out after a couple plays!)",
+        "Click \"ready\" when you're satisfied with their placements.",
+        ]);
+      },
+      noop,
+      noop,
+      function() { return input_state == RESUME_INPUT; }
+    ));
 
     //FIND
     find_begin_step = steps.length;
@@ -708,6 +745,7 @@ var GamePlayScene = function(game, stage)
     if(game.best_closeness === undefined) game.best_closeness = lilnum;
     if(game.best_time === undefined)      game.best_time = lilnum;
     if(game.best_orient === undefined)    game.best_orient = lilnum;
+    if(game.real_witnessed_instructs === undefined)   game.real_witnessed_instructs = false;
     if(game.find_witnessed_instructs === undefined)   game.find_witnessed_instructs = false;
     if(game.time_witnessed_instructs === undefined)   game.time_witnessed_instructs = false;
     if(game.orient_witnessed_instructs === undefined) game.orient_witnessed_instructs = false;
@@ -717,10 +755,11 @@ var GamePlayScene = function(game, stage)
     switch(game.start)
     {
       case 0: cur_step = playground_step-1; break;
-      case 1: cur_step = find_begin_step-1; break;
-      case 2: cur_step = time_begin_step-1; break;
-      case 3: cur_step = orient_begin_step-1; break;
-      case 4: cur_step = secret_step-1; break;
+      case 1: cur_step = real_begin_step-1; break;
+      case 2: cur_step = find_begin_step-1; break;
+      case 3: cur_step = time_begin_step-1; break;
+      case 4: cur_step = orient_begin_step-1; break;
+      case 5: cur_step = secret_step-1; break;
     }
 
     self.nextStep();
@@ -804,6 +843,10 @@ var GamePlayScene = function(game, stage)
     {
       if(cur_dragging) return;
       if(
+        mode == REAL_MAGNET_MODE &&
+        cur_step != real_begin_step
+      ) return;
+      if(
         mode == FIND_MAGNET_MODE &&
         cur_step != find_first_guess_step &&
         cur_step != find_second_guess_step
@@ -838,6 +881,10 @@ var GamePlayScene = function(game, stage)
     {
       if(cur_dragging) return;
       if(
+        mode == REAL_MAGNET_MODE &&
+        cur_step != real_begin_step
+      ) return;
+      if(
         mode == FIND_MAGNET_MODE &&
         cur_step != find_first_guess_step &&
         cur_step != find_second_guess_step
@@ -858,6 +905,10 @@ var GamePlayScene = function(game, stage)
     inert_mag.shandle.dragStart = function(evt)
     {
       if(cur_dragging) return;
+      if(
+        mode == REAL_MAGNET_MODE &&
+        cur_step != real_begin_step
+      ) return;
       if(
         mode == FIND_MAGNET_MODE &&
         cur_step != find_first_guess_step &&
@@ -896,6 +947,10 @@ var GamePlayScene = function(game, stage)
     special_mag.dragStart = function(evt)
     {
       if(
+        mode == REAL_MAGNET_MODE &&
+        cur_step < real_begin_step
+      ) return;
+      if(
         mode == FIND_MAGNET_MODE &&
         cur_step < find_reveal_step
       ) return;
@@ -926,6 +981,10 @@ var GamePlayScene = function(game, stage)
     special_mag.nhandle.dragStart = function(evt)
     {
       if(
+        mode == REAL_MAGNET_MODE &&
+        cur_step < real_begin_step
+      ) return;
+      if(
         mode == FIND_MAGNET_MODE &&
         cur_step < find_reveal_step
       ) return;
@@ -942,6 +1001,10 @@ var GamePlayScene = function(game, stage)
     }
     special_mag.shandle.dragStart = function(evt)
     {
+      if(
+        mode == REAL_MAGNET_MODE &&
+        cur_step < real_begin_step
+      ) return;
       if(
         mode == FIND_MAGNET_MODE &&
         cur_step < find_reveal_step
@@ -999,6 +1062,8 @@ var GamePlayScene = function(game, stage)
 
     if(mode == EXPOSITION_MODE || mode == PLAYGROUND_MODE)
       vfield.tick();
+    else if(mode == REAL_MAGNET_MODE)
+      vfield.tick(wind);
     else if(mode == FIND_MAGNET_MODE)
       vfield.tick(wind);
 
@@ -1119,6 +1184,10 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < mags.length; i++)
     {
       mag = mags[i];
+      if(mode == REAL_MAGNET_MODE)
+      {
+        if(cur_step < real_begin_step-1 && mag == special_mag) continue;
+      }
       if(mode == FIND_MAGNET_MODE)
       {
         if(cur_step < find_reveal_step-1 && mag == special_mag) continue;
@@ -1159,6 +1228,10 @@ var GamePlayScene = function(game, stage)
     if(mode == PLAYGROUND_MODE || mode == EXPOSITION_MODE)
     {
       if(game.start != 4) vfield.draw();
+    }
+    if(mode == REAL_MAGNET_MODE) //wut
+    {
+      ;
     }
     if(mode == FIND_MAGNET_MODE)
     {
