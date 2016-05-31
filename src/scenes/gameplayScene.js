@@ -16,6 +16,7 @@ var GamePlayScene = function(game, stage)
   var compass_r = 30;
   var fieldview_s = 200;
   var charge_s = 20;
+  var guess_s = 20;
 
   var hit_ui;
   var dragger;
@@ -31,6 +32,8 @@ var GamePlayScene = function(game, stage)
   var compasses;
   var filings;
   var film;
+  var nguess;
+  var sguess;
   var earth;
 
   self.ready = function()
@@ -91,6 +94,11 @@ var GamePlayScene = function(game, stage)
     film.colored = true;
     dragger.register(film);
 
+    nguess = new Guess(dc.width-sidebar_w+p,p+3*(compass_r*2+p)+2*(fieldview_s+p));
+    dragger.register(nguess);
+    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,p+3*(compass_r*2+p)+2*(fieldview_s+p));
+    dragger.register(sguess);
+
     clicker.register(fallback);
     hit_ui = false;
   };
@@ -146,6 +154,9 @@ var GamePlayScene = function(game, stage)
       compasses[i].draw();
     filings.draw();
     film.draw();
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
+    ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
   };
 
   self.cleanup = function()
@@ -601,6 +612,56 @@ var GamePlayScene = function(game, stage)
       ctx.strokeRect(self.x,self.y,self.w,self.h);
       if(self.inert) return;
     }
+
+    self.dirty = true;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      if(!self.draggable || hit_ui) return;
+      self.dragging = true;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      if(!self.dragging) return;
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+      self.fx = vfield.xScreenToFSpace(evt.doX);
+      self.fy = vfield.yScreenToFSpace(evt.doY);
+      self.inert = (evt.doX > vfield.x+vfield.w);
+      self.dirty = true;
+      hit_ui = true;
+    }
+    self.dragFinish = function()
+    {
+      if(self.inert)
+      {
+        self.x = self.default_x;
+        self.y = self.default_y;
+      }
+      self.dragging = false;
+    }
+  }
+
+  var Guess = function(x,y,v)
+  {
+    var self = this;
+
+    self.default_x = x;
+    self.default_y = y;
+
+    self.x = x;
+    self.y = y;
+    self.w = guess_s;
+    self.h = guess_s;
+
+    self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
+    self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+    self.v = v;
+
+    self.inert = false;
+    self.draggable = true;
 
     self.dirty = true;
 
