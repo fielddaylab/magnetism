@@ -427,7 +427,19 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function()
     {
-
+      ctx.save();
+      ctx.translate(self.x+self.w/2,self.y+self.h/2);
+      ctx.rotate(Math.atan2(self.nfy-self.sfy,self.nfx-self.sfx));
+      var xdiff = self.nx-self.sx;
+      var ydiff = self.ny-self.sy;
+      var d = sqrt(xdiff*xdiff+ydiff*ydiff);
+      var h = 20;
+      var hw = 20;
+      ctx.drawImage(mag_n,-d/2+hw,-h/2,d/2-hw,h);
+      ctx.drawImage(mag_s,0,-h/2,d/2-hw,h);
+      ctx.drawImage(mag_n_tip,-d/2,-h/2,hw,h);
+      ctx.drawImage(mag_s_tip,d/2-hw,-h/2,hw,h);
+      ctx.restore();
     }
 
     self.dirty = true;
