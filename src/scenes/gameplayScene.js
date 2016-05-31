@@ -7,14 +7,14 @@ var GamePlayScene = function(game, stage)
   var ctx = dc.context;
 
   var sidebar_w = 200;
-  var res = 200;
+  var res = 50;
   var res_w = 1*res;
   var res_h = 1*res;
   var earth_strength = 3;
   //jshax
   var tuple = {fx:0,fy:0,r:0,r2:0}; //global var to return from funcs without allocs #hax
   var compass_r = 30;
-  var fieldview_s = 100;
+  var fieldview_s = 200;
   var charge_s = 20;
 
   var hit_ui;
@@ -85,8 +85,10 @@ var GamePlayScene = function(game, stage)
     }
 
     filings = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p));
+    filings.colored = false;
     dragger.register(filings);
     film    = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p)+fieldview_s+p);
+    film.colored = true;
     dragger.register(film);
 
     clicker.register(fallback);
@@ -237,7 +239,7 @@ var GamePlayScene = function(game, stage)
     var x_space = self.w/self.dw;
     var y_space = self.h/self.dh;
     var max_length = 10;
-    var vec_length = 10;
+    var vec_length = 2;
     //temp vars for tick/draw
     var x;
     var y;
@@ -287,12 +289,12 @@ var GamePlayScene = function(game, stage)
     {
       if(!view) return;
       ctx.lineWidth = 1;
+      ctx.strokeStyle = "#000000";
 
       for(var i = 0; i < self.dh; i++)
       {
         for(var j = 0; j < self.dw; j++)
         {
-
           y = self.y + y_space*i+(y_space/2);
           x = self.x + x_space*j+(x_space/2);
 
@@ -306,18 +308,21 @@ var GamePlayScene = function(game, stage)
 
           index = self.iFor(j,i);
 
-          d2 = self.d2[index];
-               if(d2 > 100) ctx.strokeStyle = "#FF0000";
-          else if(d2 >  90) ctx.strokeStyle = "#BB4400";
-          else if(d2 >  80) ctx.strokeStyle = "#888800";
-          else if(d2 >  70) ctx.strokeStyle = "#44BB00";
-          else if(d2 >  60) ctx.strokeStyle = "#00FF00";
-          else if(d2 >  50) ctx.strokeStyle = "#00BB44";
-          else if(d2 >  40) ctx.strokeStyle = "#008888";
-          else if(d2 >  30) ctx.strokeStyle = "#0044BB";
-          else if(d2 >  20) ctx.strokeStyle = "#0000FF";
-          else if(d2 >  10) ctx.strokeStyle = "#4400BB";
-          else              ctx.strokeStyle = "#880088";
+          if(view.colored)
+          {
+            d2 = self.d2[index];
+                 if(d2 > 100) ctx.strokeStyle = "#FF0000";
+            else if(d2 >  90) ctx.strokeStyle = "#BB4400";
+            else if(d2 >  80) ctx.strokeStyle = "#888800";
+            else if(d2 >  70) ctx.strokeStyle = "#44BB00";
+            else if(d2 >  60) ctx.strokeStyle = "#00FF00";
+            else if(d2 >  50) ctx.strokeStyle = "#00BB44";
+            else if(d2 >  40) ctx.strokeStyle = "#008888";
+            else if(d2 >  30) ctx.strokeStyle = "#0044BB";
+            else if(d2 >  20) ctx.strokeStyle = "#0000FF";
+            else if(d2 >  10) ctx.strokeStyle = "#4400BB";
+            else              ctx.strokeStyle = "#880088";
+          }
           //ctx.fillStyle = ctx.strokeStyle;
           //ctx.fillRect(x-2,y-2,4,4);
           dc.drawLine(
@@ -586,6 +591,7 @@ var GamePlayScene = function(game, stage)
     self.fw = vfield.xScreenToFSpace(self.x+self.w*1.5)-self.fx;
     self.fh = vfield.xScreenToFSpace(self.y+self.h*1.5)-self.fy;
 
+    self.colored = false;
     self.draggable = true;
     self.inert = false;
 
