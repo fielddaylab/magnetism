@@ -7,12 +7,12 @@ var GamePlayScene = function(game, stage)
   var ctx = dc.context;
 
   var sidebar_w = 200;
-  var res = 30;
-  var res_w = 2*res;
+  var res = 50;
+  var res_w = 1*res;
   var res_h = 1*res;
   var earth_strength = 3;
   //jshax
-  var tuple = {x:0,y:0,r:0,r2:0}; //global var to return from funcs without allocs #hax
+  var tuple = {fx:0,fy:0,r:0,r2:0}; //global var to return from funcs without allocs #hax
 
   var dragger;
   var clicker;
@@ -35,7 +35,14 @@ var GamePlayScene = function(game, stage)
 
     vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h);
     vfield.setWindow(0,0,dc.width-sidebar_w,dc.height);
-    charges = []; charges.push(new Charge(0,0,-1));
+    var c;
+    charges = [];
+    for(var i = 0; i < 1; i++)
+    {
+      c = new Charge(vfield.x+vfield.w/2,vfield.y+vfield.h/2,-1)
+      dragger.register(c);
+      charges.push(c);
+    }
     vfield.tick(charges);
 
     clicker.register(fallback);
@@ -44,6 +51,12 @@ var GamePlayScene = function(game, stage)
 
   self.tick = function()
   {
+    var dirty = false;
+    clicker.flush();
+    dragger.flush();
+    for(var i = 0; i < charges.length; i++) { dirty = (charges[i].dirty || dirty); charges[i].dirty = false; }
+
+    if(dirty) vfield.tick(charges);
 
     hit_ui = false;
   };
@@ -51,6 +64,20 @@ var GamePlayScene = function(game, stage)
   self.draw = function()
   {
     vfield.draw();
+
+    //sidebar
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.lineWidth = 1;
+    ctx.lineWidth = 1;
+    ctx.fillRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
+    ctx.strokeRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
+
+    //charges
+    for(var i = 0; i < charges.length; i++)
+    {
+      ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
+    }
   };
 
   self.cleanup = function()
@@ -58,29 +85,29 @@ var GamePlayScene = function(game, stage)
 
   };
 
-  var popTupleForCharges = function(x,y,charges)
+  var popForceTupleForCharges = function(fx,fy,charges)
   {
     var xd;
     var yd;
     var r2;
     var r;
     var f;
-    tuple.x = 0;
-    tuple.y = 0;
+    tuple.fx = 0;
+    tuple.fy = 0;
     for(var i = 0; i < charges.length; i++)
     {
-      yd = charges[i].y-y;
-      xd = charges[i].x-x;
+      yd = charges[i].fy-fy;
+      xd = charges[i].fx-fx;
       r2 = (xd*xd)+(yd*yd);
       if(r2 != 0)
       {
         f = charges[i].v/r2;
         r = sqrt(r2);
-        tuple.y += f*yd/r;
-        tuple.x += f*xd/r;
+        tuple.fy += f*yd/r;
+        tuple.fx += f*xd/r;
       }
     }
-    tuple.r2 = (tuple.x*tuple.x)+(tuple.y*tuple.y);
+    tuple.r2 = (tuple.fx*tuple.fx)+(tuple.fy*tuple.fy);
     tuple.r = sqrt(tuple.r2);
   }
 
@@ -143,6 +170,8 @@ var GamePlayScene = function(game, stage)
     //temp vars for tick/draw
     var x;
     var y;
+    var fx;
+    var fy;
 
     self.tick = function(charges)
     {
@@ -150,23 +179,23 @@ var GamePlayScene = function(game, stage)
 
       for(var i = 0; i < self.dh; i++)
       {
-        y = self.yIndexToFSpace(i);
+        fy = self.yIndexToFSpace(i);
         for(var j = 0; j < self.dw; j++)
         {
           index = self.iFor(j,i);
-          x = self.xIndexToFSpace(j);
+          fx = self.xIndexToFSpace(j);
 
           if(
-              x < self.win_fx             ||
-              x > self.win_fx+self.win_fw ||
-              y < self.win_fy             ||
-              y > self.win_fy+self.win_fh
+              fx < self.win_fx             ||
+              fx > self.win_fx+self.win_fw ||
+              fy < self.win_fy             ||
+              fy > self.win_fy+self.win_fh
             )
             continue;
 
-          popTupleForCharges(x,y,charges);
-          self.dx[index] = tuple.x;
-          self.dy[index] = tuple.y;
+          popForceTupleForCharges(fx,fy,charges);
+          self.dx[index] = tuple.fx;
+          self.dy[index] = tuple.fy;
           self.dr[index] = tuple.r;
           self.d2[index] = tuple.r2;
 
@@ -217,15 +246,14 @@ var GamePlayScene = function(game, stage)
           else if(d2 >  20) ctx.strokeStyle = "#0000FF";
           else if(d2 >  10) ctx.strokeStyle = "#4400BB";
           else             ctx.strokeStyle = "#880088";
-          ctx.fillStyle = ctx.strokeStyle;
-          //ctx.fillRect(x-1,y-1,2,2);
+          //ctx.fillStyle = ctx.strokeStyle;
+          //ctx.fillRect(x-2,y-2,4,4);
           dc.drawLine(
             x-(self.dx[index]*vec_length/2),
             y-(self.dy[index]*vec_length/2),
             x+(self.dx[index]*vec_length/2),
             y+(self.dy[index]*vec_length/2)
           );
-
         }
       }
 
@@ -234,10 +262,38 @@ var GamePlayScene = function(game, stage)
 
   var Charge = function(x,y,v)
   {
-    this.x = x;
-    this.y = y;
-    this.v = v;
+    var self = this;
+
+    self.x = x;
+    self.y = y;
+    self.w = 10;
+    self.h = 10;
+
+    self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
+    self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+    self.v = v;
+
+    self.dirty = false;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      self.dragging = true;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+      self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
+      self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+      self.dirty = true;
+    }
+    self.dragFinish = function()
+    {
+      self.dragging = false;
+    }
   }
 
-
 };
+
