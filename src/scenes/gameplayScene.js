@@ -7,13 +7,14 @@ var GamePlayScene = function(game, stage)
   var ctx = dc.context;
 
   var sidebar_w = 200;
-  var res = 50;
+  var res = 200;
   var res_w = 1*res;
   var res_h = 1*res;
   var earth_strength = 3;
   //jshax
   var tuple = {fx:0,fy:0,r:0,r2:0}; //global var to return from funcs without allocs #hax
   var compass_r = 30;
+  var fieldview_s = 100;
   var charge_s = 20;
 
   var hit_ui;
@@ -24,9 +25,12 @@ var GamePlayScene = function(game, stage)
   var dom;
 
   var vfield;
+  var hdvfield;
   var charges;
   var magnets;
   var compasses;
+  var filings;
+  var film;
   var earth;
 
   self.ready = function()
@@ -38,7 +42,7 @@ var GamePlayScene = function(game, stage)
     fallback = {x:0,y:0,w:dc.width,h:dc.height,click:function(evt){if(!hit_ui)dom.click(evt);}};
 
     vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h);
-    vfield.setWindow(0,0,dc.width-sidebar_w,dc.height);
+    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*2,res_h*2);
     var c;
     var m;
     charges = [];
@@ -80,6 +84,11 @@ var GamePlayScene = function(game, stage)
       }
     }
 
+    filings = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p));
+    dragger.register(filings);
+    film    = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p)+fieldview_s+p);
+    dragger.register(film);
+
     clicker.register(fallback);
     hit_ui = false;
   };
@@ -100,22 +109,12 @@ var GamePlayScene = function(game, stage)
       magnets[i].dirty = false;
     }
 
-    if(dirty)
+    if(filings.dirty || dirty) vfield.tick(filings,charges,magnets); filings.dirty = false;
+    if(film.dirty    || dirty) hdvfield.tick(film,charges,magnets);  film.dirty = false;
+    for(var i = 0; i < compasses.length; i++)
     {
-      vfield.tick(charges,magnets);
-      for(var i = 0; i < compasses.length; i++)
-      {
-        compasses[i].tick();
-        compasses[i].dirty = false;
-      }
-    }
-    else
-    {
-      for(var i = 0; i < compasses.length; i++)
-      {
-        if(compasses[i].dirty) compasses[i].tick();
-        compasses[i].dirty = false;
-      }
+      if(compasses[i].dirty || dirty) compasses[i].tick();
+      compasses[i].dirty = false;
     }
 
     hit_ui = false;
@@ -123,7 +122,8 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    vfield.draw();
+    vfield.draw(filings);
+    hdvfield.draw(film);
 
     //sidebar
     ctx.strokeStyle = "#000000";
@@ -142,6 +142,8 @@ var GamePlayScene = function(game, stage)
     //compasses
     for(var i = 0; i < compasses.length; i++)
       compasses[i].draw();
+    filings.draw();
+    film.draw();
   };
 
   self.cleanup = function()
@@ -209,27 +211,6 @@ var GamePlayScene = function(game, stage)
     self.w = w;
     self.h = h;
 
-    self.win_x = x;
-    self.win_y = y;
-    self.win_w = w;
-    self.win_h = h;
-    self.win_fx = -0.5;
-    self.win_fy = -0.5;
-    self.win_fw =  0.5;
-    self.win_fh =  0.5;
-
-    self.setWindow = function(x,y,w,h)
-    {
-      self.win_x = x;
-      self.win_y = y;
-      self.win_w = w;
-      self.win_h = h;
-      self.win_fx = self.xScreenToFSpace(x);
-      self.win_fy = self.yScreenToFSpace(y);
-      self.win_fw = self.xScreenToFSpace(x+w)-self.win_fx;
-      self.win_fh = self.yScreenToFSpace(y+h)-self.win_fy;
-    }
-
     //ratio
     self.xtransform = 1;
     self.ytransform = 1;
@@ -263,7 +244,7 @@ var GamePlayScene = function(game, stage)
     var fx;
     var fy;
 
-    self.tick = function(charges,magnets)
+    self.tick = function(view,charges,magnets)
     {
       var index;
 
@@ -276,10 +257,10 @@ var GamePlayScene = function(game, stage)
           fx = self.xIndexToFSpace(j);
 
           if(
-              fx < self.win_fx             ||
-              fx > self.win_fx+self.win_fw ||
-              fy < self.win_fy             ||
-              fy > self.win_fy+self.win_fh
+              fx < view.fx-view.fw ||
+              fx > view.fx+view.fw ||
+              fy < view.fy-view.fh ||
+              fy > view.fy+view.fh
             )
             continue;
 
@@ -302,8 +283,9 @@ var GamePlayScene = function(game, stage)
       }
     }
 
-    self.draw = function()
+    self.draw = function(view)
     {
+      if(!view) return;
       ctx.lineWidth = 1;
 
       for(var i = 0; i < self.dh; i++)
@@ -315,10 +297,10 @@ var GamePlayScene = function(game, stage)
           x = self.x + x_space*j+(x_space/2);
 
           if(
-              x < self.win_x            ||
-              x > self.win_x+self.win_w ||
-              y < self.win_y            ||
-              y > self.win_y+self.win_h
+              x < view.x        ||
+              x > view.x+view.w ||
+              y < view.y        ||
+              y > view.y+view.h
             )
             continue;
 
@@ -335,7 +317,7 @@ var GamePlayScene = function(game, stage)
           else if(d2 >  30) ctx.strokeStyle = "#0044BB";
           else if(d2 >  20) ctx.strokeStyle = "#0000FF";
           else if(d2 >  10) ctx.strokeStyle = "#4400BB";
-          else             ctx.strokeStyle = "#880088";
+          else              ctx.strokeStyle = "#880088";
           //ctx.fillStyle = ctx.strokeStyle;
           //ctx.fillRect(x-2,y-2,4,4);
           dc.drawLine(
@@ -524,9 +506,6 @@ var GamePlayScene = function(game, stage)
     self.dr = 0;
     self.d2 = 0;
 
-    self.sdx = 0;
-    self.sdy = 0;
-
     self.draggable = true;
     self.inert = false;
 
@@ -557,6 +536,64 @@ var GamePlayScene = function(game, stage)
           5
         );
       }
+    }
+
+    self.dirty = true;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      if(!self.draggable || hit_ui) return;
+      self.dragging = true;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      if(!self.dragging) return;
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+      self.fx = vfield.xScreenToFSpace(evt.doX);
+      self.fy = vfield.yScreenToFSpace(evt.doY);
+      self.inert = (evt.doX > vfield.x+vfield.w);
+      self.dirty = true;
+      hit_ui = true;
+    }
+    self.dragFinish = function()
+    {
+      if(self.inert)
+      {
+        self.x = self.default_x;
+        self.y = self.default_y;
+      }
+      self.dragging = false;
+    }
+  }
+
+  var FieldView = function(x,y)
+  {
+    var self = this;
+
+    self.default_x = x;
+    self.default_y = y;
+
+    self.x = x;
+    self.y = y;
+    self.w = fieldview_s;
+    self.h = fieldview_s;
+
+    self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
+    self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+    self.fw = vfield.xScreenToFSpace(self.x+self.w*1.5)-self.fx;
+    self.fh = vfield.xScreenToFSpace(self.y+self.h*1.5)-self.fy;
+
+    self.draggable = true;
+    self.inert = false;
+
+    self.draw = function()
+    {
+      ctx.lineWidth = 2;
+      ctx.strokeRect(self.x,self.y,self.w,self.h);
+      if(self.inert) return;
     }
 
     self.dirty = true;
