@@ -13,10 +13,12 @@ var GamePlayScene = function(game, stage)
   var earth_strength = 3;
   //jshax
   var tuple = {fx:0,fy:0,r:0,r2:0}; //global var to return from funcs without allocs #hax
+  var compass_r = 30;
+  var charge_s = 20;
 
+  var hit_ui;
   var dragger;
   var clicker;
-  var hit_ui;
 
   var fallback;
   var dom;
@@ -38,18 +40,31 @@ var GamePlayScene = function(game, stage)
     vfield.setWindow(0,0,dc.width-sidebar_w,dc.height);
     var c;
     charges = [];
-    for(var i = 0; i < 2; i++)
+      c = new Charge(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100,-1)
+      c.draggable = false;
+      dragger.register(c);
+      charges.push(c);
+      c = new Charge(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100, 1)
+      c.draggable = false;
+      dragger.register(c);
+      charges.push(c);
+    for(var i = 0; i < 0; i++)
     {
-      c = new Charge(vfield.x+vfield.w/2+i*10,vfield.y+vfield.h/2,i ? -1 : 1)
+      c = new Charge(vfield.x+vfield.w/2,vfield.y+vfield.h/2,-1)
       dragger.register(c);
       charges.push(c);
     }
     compasses = [];
-    for(var i = 0; i < 1; i++)
+    var p = 20;
+    for(var i = 0; i < 2; i++)
     {
-      c = new Compass(vfield.x+vfield.w/2,vfield.y+vfield.h/2,30)
-      dragger.register(c);
-      compasses.push(c);
+      for(var j = 0; j < 3; j++)
+      {
+        c = new Compass(dc.width-sidebar_w+p+(i*(compass_r*2+p)),p+j*(compass_r*2+p))
+        c.inert = true;
+        dragger.register(c);
+        compasses.push(c);
+      }
     }
 
     clicker.register(fallback);
@@ -294,28 +309,34 @@ var GamePlayScene = function(game, stage)
 
     self.x = x;
     self.y = y;
-    self.w = 20;
-    self.h = 20;
+    self.w = charge_s;
+    self.h = charge_s;
 
     self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
     self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
     self.v = v;
+
+    self.draggable = true;
+    self.inert = false;
 
     self.dirty = true;
 
     self.dragging = false;
     self.dragStart = function(evt)
     {
+      if(!self.draggable || hit_ui) return;
       self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
     {
+      if(!self.dragging) return;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
       self.fx = vfield.xScreenToFSpace(evt.doX);
       self.fy = vfield.yScreenToFSpace(evt.doY);
       self.dirty = true;
+      hit_ui = true;
     }
     self.dragFinish = function()
     {
@@ -323,15 +344,18 @@ var GamePlayScene = function(game, stage)
     }
   }
 
-  var Compass = function(x,y,r)
+  var Compass = function(x,y)
   {
     var self = this;
 
+    self.default_x = x;
+    self.default_y = y;
+
     self.x = x;
     self.y = y;
-    self.w = 2*r;
-    self.h = 2*r;
-    self.r = r;
+    self.w = 2*compass_r;
+    self.h = 2*compass_r;
+    self.r = compass_r;
 
     self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
     self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
@@ -343,6 +367,9 @@ var GamePlayScene = function(game, stage)
 
     self.sdx = 0;
     self.sdy = 0;
+
+    self.draggable = true;
+    self.inert = false;
 
     self.tick = function()
     {
@@ -357,6 +384,7 @@ var GamePlayScene = function(game, stage)
     {
       ctx.lineWidth = 2;
       ctx.drawImage(circle,self.x,self.y,self.w,self.h);
+      if(self.inert) return;
 
       if(self.dr > 0.001)
       {
@@ -377,20 +405,28 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
+      if(!self.draggable || hit_ui) return;
       self.dragging = true;
       self.drag(evt);
     }
     self.drag = function(evt)
     {
+      if(!self.dragging) return;
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
       self.fx = vfield.xScreenToFSpace(evt.doX);
       self.fy = vfield.yScreenToFSpace(evt.doY);
-
+      self.inert = (evt.doX > vfield.x+vfield.w);
       self.dirty = true;
+      hit_ui = true;
     }
     self.dragFinish = function()
     {
+      if(self.inert)
+      {
+        self.x = self.default_x;
+        self.y = self.default_y;
+      }
       self.dragging = false;
     }
   }
