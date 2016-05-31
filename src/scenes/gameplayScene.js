@@ -23,6 +23,7 @@ var GamePlayScene = function(game, stage)
 
   var vfield;
   var charges;
+  var compasses;
   var earth;
 
   self.ready = function()
@@ -37,13 +38,19 @@ var GamePlayScene = function(game, stage)
     vfield.setWindow(0,0,dc.width-sidebar_w,dc.height);
     var c;
     charges = [];
-    for(var i = 0; i < 1; i++)
+    for(var i = 0; i < 2; i++)
     {
-      c = new Charge(vfield.x+vfield.w/2,vfield.y+vfield.h/2,-1)
+      c = new Charge(vfield.x+vfield.w/2+i*10,vfield.y+vfield.h/2,i ? -1 : 1)
       dragger.register(c);
       charges.push(c);
     }
-    vfield.tick(charges);
+    compasses = [];
+    for(var i = 0; i < 1; i++)
+    {
+      c = new Compass(vfield.x+vfield.w/2,vfield.y+vfield.h/2,30)
+      dragger.register(c);
+      compasses.push(c);
+    }
 
     clicker.register(fallback);
     hit_ui = false;
@@ -54,9 +61,29 @@ var GamePlayScene = function(game, stage)
     var dirty = false;
     clicker.flush();
     dragger.flush();
-    for(var i = 0; i < charges.length; i++) { dirty = (charges[i].dirty || dirty); charges[i].dirty = false; }
+    for(var i = 0; i < charges.length; i++)
+    {
+      dirty = (charges[i].dirty || dirty);
+      charges[i].dirty = false;
+    }
 
-    if(dirty) vfield.tick(charges);
+    if(dirty)
+    {
+      vfield.tick(charges);
+      for(var i = 0; i < compasses.length; i++)
+      {
+        compasses[i].tick();
+        compasses[i].dirty = false;
+      }
+    }
+    else
+    {
+      for(var i = 0; i < compasses.length; i++)
+      {
+        if(compasses[i].dirty) compasses[i].tick();
+        compasses[i].dirty = false;
+      }
+    }
 
     hit_ui = false;
   };
@@ -75,9 +102,10 @@ var GamePlayScene = function(game, stage)
 
     //charges
     for(var i = 0; i < charges.length; i++)
-    {
       ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
-    }
+    //compasses
+    for(var i = 0; i < compasses.length; i++)
+      compasses[i].draw();
   };
 
   self.cleanup = function()
@@ -266,14 +294,14 @@ var GamePlayScene = function(game, stage)
 
     self.x = x;
     self.y = y;
-    self.w = 10;
-    self.h = 10;
+    self.w = 20;
+    self.h = 20;
 
     self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
     self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
     self.v = v;
 
-    self.dirty = false;
+    self.dirty = true;
 
     self.dragging = false;
     self.dragStart = function(evt)
@@ -285,8 +313,80 @@ var GamePlayScene = function(game, stage)
     {
       self.x = evt.doX-self.w/2;
       self.y = evt.doY-self.h/2;
-      self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
-      self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+      self.fx = vfield.xScreenToFSpace(evt.doX);
+      self.fy = vfield.yScreenToFSpace(evt.doY);
+      self.dirty = true;
+    }
+    self.dragFinish = function()
+    {
+      self.dragging = false;
+    }
+  }
+
+  var Compass = function(x,y,r)
+  {
+    var self = this;
+
+    self.x = x;
+    self.y = y;
+    self.w = 2*r;
+    self.h = 2*r;
+    self.r = r;
+
+    self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
+    self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+
+    self.dx = 0;
+    self.dy = 0;
+    self.dr = 0;
+    self.d2 = 0;
+
+    self.sdx = 0;
+    self.sdy = 0;
+
+    self.tick = function()
+    {
+      popForceTupleForCharges(self.fx,self.fy,charges);
+      self.dx = tuple.fx;
+      self.dy = tuple.fy;
+      self.dr = tuple.r;
+      self.d2 = tuple.r2;
+    }
+
+    self.draw = function()
+    {
+      ctx.lineWidth = 2;
+      ctx.drawImage(circle,self.x,self.y,self.w,self.h);
+
+      if(self.dr > 0.001)
+      {
+        ctx.strokeStyle = "#000000";
+        drawArrow(
+          dc,
+          self.x+self.w/2,
+          self.y+self.h/2,
+          self.x+self.w/2+(self.dx/self.dr)*self.r,
+          self.y+self.h/2+(self.dy/self.dr)*self.r,
+          5
+        );
+      }
+    }
+
+    self.dirty = true;
+
+    self.dragging = false;
+    self.dragStart = function(evt)
+    {
+      self.dragging = true;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      self.x = evt.doX-self.w/2;
+      self.y = evt.doY-self.h/2;
+      self.fx = vfield.xScreenToFSpace(evt.doX);
+      self.fy = vfield.yScreenToFSpace(evt.doY);
+
       self.dirty = true;
     }
     self.dragFinish = function()
