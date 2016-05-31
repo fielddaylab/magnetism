@@ -6,6 +6,8 @@ var GamePlayScene = function(game, stage)
   var canvas = dc.canvas;
   var ctx = dc.context;
 
+  var n_ticks;
+
   var sidebar_w = 200;
   var res = 50;
   var res_w = 1*res;
@@ -38,6 +40,8 @@ var GamePlayScene = function(game, stage)
 
   self.ready = function()
   {
+    n_ticks = 0;
+
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
 
@@ -64,8 +68,8 @@ var GamePlayScene = function(game, stage)
       charges.push(c);
     }
     magnets = [];
-      m = new Magnet(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100,vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100)
-      m.draggable = false;
+      m = new Magnet(vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200,vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200)
+      m.draggable = true;
       dragger.register(m);
       magnets.push(m);
     for(var i = 0; i < 0; i++)
@@ -105,6 +109,8 @@ var GamePlayScene = function(game, stage)
 
   self.tick = function()
   {
+    n_ticks++;
+
     var dirty = false;
     clicker.flush();
     dragger.flush();
@@ -298,7 +304,7 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function(view)
     {
-      if(!view) return;
+      if(view.dragging) return;
       ctx.lineWidth = 1;
       ctx.strokeStyle = "#000000";
 
@@ -427,6 +433,7 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function()
     {
+      if(n_ticks < 1000) return;
       ctx.save();
       ctx.translate(self.x+self.w/2,self.y+self.h/2);
       ctx.rotate(Math.atan2(self.nfy-self.sfy,self.nfx-self.sfx));
@@ -462,28 +469,28 @@ var GamePlayScene = function(game, stage)
         if(self.nx < self.sx)
         {
           self.nx = evt.doX-self.w/2;
-          self.sx = evt.doX+self.w/2-self.sw/2;
+          self.sx = evt.doX+self.w/2-self.sw;
         }
         else
         {
           self.sx = evt.doX-self.w/2;
-          self.nx = evt.doX+self.w/2-self.nw/2;
+          self.nx = evt.doX+self.w/2-self.nw;
         }
         if(self.ny < self.sy)
         {
           self.ny = evt.doY-self.h/2;
-          self.sy = evt.doY+self.h/2-self.sh/2;
+          self.sy = evt.doY+self.h/2-self.sh;
         }
         else
         {
           self.sy = evt.doY-self.h/2;
-          self.ny = evt.doY+self.h/2-self.nh/2;
+          self.ny = evt.doY+self.h/2-self.nh;
         }
 
         self.nfx = vfield.xScreenToFSpace(self.nx+self.nw/2);
-        self.nfy = vfield.yScreenToFSpace(self.nx+self.nw/2);
+        self.nfy = vfield.yScreenToFSpace(self.ny+self.nh/2);
         self.sfx = vfield.xScreenToFSpace(self.sx+self.sw/2);
-        self.sfy = vfield.yScreenToFSpace(self.sx+self.sw/2);
+        self.sfy = vfield.yScreenToFSpace(self.sy+self.sh/2);
       }
       else if(self.ndragging)
       {
@@ -501,7 +508,7 @@ var GamePlayScene = function(game, stage)
       }
       else return;
 
-      calcBB();
+      self.calcBB();
       self.dirty = true;
       hit_ui = true;
     }
@@ -550,7 +557,7 @@ var GamePlayScene = function(game, stage)
     {
       ctx.lineWidth = 2;
       ctx.drawImage(circle,self.x,self.y,self.w,self.h);
-      if(self.inert) return;
+      if(self.inert || self.dragging) return;
 
       if(self.dr > 0.001)
       {
