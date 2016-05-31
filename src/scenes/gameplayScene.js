@@ -25,6 +25,7 @@ var GamePlayScene = function(game, stage)
 
   var vfield;
   var charges;
+  var magnets;
   var compasses;
   var earth;
 
@@ -39,20 +40,32 @@ var GamePlayScene = function(game, stage)
     vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h);
     vfield.setWindow(0,0,dc.width-sidebar_w,dc.height);
     var c;
+    var m;
     charges = [];
-      c = new Charge(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100,-1)
-      c.draggable = false;
-      dragger.register(c);
-      charges.push(c);
-      c = new Charge(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100, 1)
-      c.draggable = false;
-      dragger.register(c);
-      charges.push(c);
+      //c = new Charge(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100,-1)
+      //c.draggable = false;
+      //dragger.register(c);
+      //charges.push(c);
+      //c = new Charge(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100, 1)
+      //c.draggable = false;
+      //dragger.register(c);
+      //charges.push(c);
     for(var i = 0; i < 0; i++)
     {
       c = new Charge(vfield.x+vfield.w/2,vfield.y+vfield.h/2,-1)
       dragger.register(c);
       charges.push(c);
+    }
+    magnets = [];
+      m = new Magnet(vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100,vfield.x+vfield.w/2+rand0()*100,vfield.y+vfield.h/2+rand0()*100)
+      m.draggable = false;
+      dragger.register(m);
+      magnets.push(m);
+    for(var i = 0; i < 0; i++)
+    {
+      m = new Magnet(vfield.x+vfield.w/2-20,vfield.y+vfield.h/2-20,vfield.x+vfield.w/2+20,vfield.y+vfield.h/2+20)
+      dragger.register(m);
+      magnets.push(m);
     }
     compasses = [];
     var p = 20;
@@ -81,10 +94,15 @@ var GamePlayScene = function(game, stage)
       dirty = (charges[i].dirty || dirty);
       charges[i].dirty = false;
     }
+    for(var i = 0; i < magnets.length; i++)
+    {
+      dirty = (magnets[i].dirty || dirty);
+      magnets[i].dirty = false;
+    }
 
     if(dirty)
     {
-      vfield.tick(charges);
+      vfield.tick(charges,magnets);
       for(var i = 0; i < compasses.length; i++)
       {
         compasses[i].tick();
@@ -118,6 +136,9 @@ var GamePlayScene = function(game, stage)
     //charges
     for(var i = 0; i < charges.length; i++)
       ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
+    //magnets
+    for(var i = 0; i < magnets.length; i++)
+      magnets[i].draw();
     //compasses
     for(var i = 0; i < compasses.length; i++)
       compasses[i].draw();
@@ -128,7 +149,7 @@ var GamePlayScene = function(game, stage)
 
   };
 
-  var popForceTupleForCharges = function(fx,fy,charges)
+  var popForceTuple = function(fx,fy,charges,magnets)
   {
     var xd;
     var yd;
@@ -145,6 +166,32 @@ var GamePlayScene = function(game, stage)
       if(r2 != 0)
       {
         f = charges[i].v/r2;
+        r = sqrt(r2);
+        tuple.fy += f*yd/r;
+        tuple.fx += f*xd/r;
+      }
+    }
+    for(var i = 0; i < magnets.length; i++)
+    {
+      //n
+      yd = magnets[i].nfy-fy;
+      xd = magnets[i].nfx-fx;
+      r2 = (xd*xd)+(yd*yd);
+      if(r2 != 0)
+      {
+        f = -1/r2;
+        r = sqrt(r2);
+        tuple.fy += f*yd/r;
+        tuple.fx += f*xd/r;
+      }
+
+      //s
+      yd = magnets[i].sfy-fy;
+      xd = magnets[i].sfx-fx;
+      r2 = (xd*xd)+(yd*yd);
+      if(r2 != 0)
+      {
+        f = 1/r2;
         r = sqrt(r2);
         tuple.fy += f*yd/r;
         tuple.fx += f*xd/r;
@@ -216,7 +263,7 @@ var GamePlayScene = function(game, stage)
     var fx;
     var fy;
 
-    self.tick = function(charges)
+    self.tick = function(charges,magnets)
     {
       var index;
 
@@ -236,7 +283,7 @@ var GamePlayScene = function(game, stage)
             )
             continue;
 
-          popForceTupleForCharges(fx,fy,charges);
+          popForceTuple(fx,fy,charges,magnets);
           self.dx[index] = tuple.fx;
           self.dy[index] = tuple.fy;
           self.dr[index] = tuple.r;
@@ -344,6 +391,118 @@ var GamePlayScene = function(game, stage)
     }
   }
 
+  var Magnet = function(nx,ny,sx,sy)
+  {
+    var self = this;
+
+    self.nx = nx;
+    self.ny = ny;
+    self.nw = charge_s;
+    self.nh = charge_s;
+
+    self.nfx = vfield.xScreenToFSpace(self.nx+self.nw/2);
+    self.nfy = vfield.yScreenToFSpace(self.ny+self.nh/2);
+
+    self.sx = sx;
+    self.sy = sy;
+    self.sw = charge_s;
+    self.sh = charge_s;
+
+    self.sfx = vfield.xScreenToFSpace(self.sx+self.sw/2);
+    self.sfy = vfield.yScreenToFSpace(self.sy+self.sh/2);
+
+    self.x = 0;
+    self.y = 0;
+    self.w = 0;
+    self.h = 0;
+    self.calcBB = function()
+    {
+      self.x = min(self.nx,self.sx);
+      self.y = min(self.ny,self.sy);
+      self.w = abs(self.nx-self.sx)+self.sw;
+      self.h = abs(self.ny-self.sy)+self.sh;
+    }
+    self.calcBB();
+
+    self.draggable = true;
+    self.inert = false;
+
+    self.draw = function()
+    {
+
+    }
+
+    self.dirty = true;
+
+    self.dragging = false;
+    self.ndragging = false;
+    self.sdragging = false;
+    self.dragStart = function(evt)
+    {
+      if(!self.draggable || hit_ui) return;
+      self.dragging = true;
+      self.ndragging = false;
+      self.sdragging = false;
+      self.drag(evt);
+    }
+    self.drag = function(evt)
+    {
+      if(self.dragging)
+      {
+        if(self.nx < self.sx)
+        {
+          self.nx = evt.doX-self.w/2;
+          self.sx = evt.doX+self.w/2-self.sw/2;
+        }
+        else
+        {
+          self.sx = evt.doX-self.w/2;
+          self.nx = evt.doX+self.w/2-self.nw/2;
+        }
+        if(self.ny < self.sy)
+        {
+          self.ny = evt.doY-self.h/2;
+          self.sy = evt.doY+self.h/2-self.sh/2;
+        }
+        else
+        {
+          self.sy = evt.doY-self.h/2;
+          self.ny = evt.doY+self.h/2-self.nh/2;
+        }
+
+        self.nfx = vfield.xScreenToFSpace(self.nx+self.nw/2);
+        self.nfy = vfield.yScreenToFSpace(self.nx+self.nw/2);
+        self.sfx = vfield.xScreenToFSpace(self.sx+self.sw/2);
+        self.sfy = vfield.yScreenToFSpace(self.sx+self.sw/2);
+      }
+      else if(self.ndragging)
+      {
+        self.nx = evt.doX-self.nw/2;
+        self.ny = evt.doY-self.nh/2;
+        self.nfx = vfield.xScreenToFSpace(evt.doX);
+        self.nfy = vfield.yScreenToFSpace(evt.doY);
+      }
+      else if(self.sdragging)
+      {
+        self.sx = evt.doX-self.sw/2;
+        self.sy = evt.doY-self.sh/2;
+        self.sfx = vfield.xScreenToFSpace(evt.doX);
+        self.sfy = vfield.yScreenToFSpace(evt.doY);
+      }
+      else return;
+
+      calcBB();
+      self.dirty = true;
+      hit_ui = true;
+    }
+    self.dragFinish = function()
+    {
+      self.dragging = false;
+      self.ndragging = false;
+      self.sdragging = false;
+    }
+  }
+
   var Compass = function(x,y)
   {
     var self = this;
@@ -373,7 +532,7 @@ var GamePlayScene = function(game, stage)
 
     self.tick = function()
     {
-      popForceTupleForCharges(self.fx,self.fy,charges);
+      popForceTuple(self.fx,self.fy,charges,magnets);
       self.dx = tuple.fx;
       self.dy = tuple.fy;
       self.dr = tuple.r;
