@@ -85,6 +85,13 @@ for(var i = 0; i < 10000; i++)
   iron_filings_img.context.fillRect(iron_filings_img.width/2+cos(t)*r-1,iron_filings_img.height/2+sin(t)*r-1,2,2);
 }
 
+mag_film_img = GenIcon(300,300);
+mag_film_img.context.strokeStyle = "#2EBE85"; //dark green
+mag_film_img.context.fillStyle = "#7AE4AA"; //light green
+mag_film_img.context.lineWidth = 10;
+mag_film_img.context.fillRect(0,0,mag_film_img.width,mag_film_img.height);
+mag_film_img.context.strokeRect(mag_film_img.context.lineWidth/2,mag_film_img.context.lineWidth/2,mag_film_img.width-mag_film_img.context.lineWidth,mag_film_img.height-mag_film_img.context.lineWidth);
+
 var bev = 10;
 mag_n_tip_img = GenIcon(100,100);
 mag_n_tip_img.context.fillStyle = "#FF0000";

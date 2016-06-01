@@ -156,9 +156,6 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    ifvfield.draw(filings);
-    hdvfield.draw(film);
-
     //sidebar
     ctx.strokeStyle = "#000000";
     ctx.fillStyle = "#FFFFFF";
@@ -180,14 +177,15 @@ var GamePlayScene = function(game, stage)
     //compasses
     for(var i = 0; i < compasses.length; i++)
       if(!ui_toggle || !compasses[i].default) compasses[i].draw();
+    if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
     if(!ui_toggle || !filings.default)
-    {
       if(filings.inert || filings.dragging) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
-    }
-    if(!ui_toggle || !film.default)    film.draw();
     ctx.fillStyle = "#000000";
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
+
+    ifvfield.draw(filings);
+    hdvfield.draw(film);
   };
 
   self.cleanup = function()
