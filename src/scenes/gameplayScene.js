@@ -18,7 +18,7 @@ var GamePlayScene = function(game, stage)
   var compass_r = 30;
   var fieldview_s = 200;
   var charge_s = 20;
-  var guess_s = 20;
+  var guess_s = 40;
 
   var hit_ui;
   var dragger;
@@ -36,6 +36,10 @@ var GamePlayScene = function(game, stage)
   var film;
   var nguess;
   var sguess;
+
+  var ui_toggle;
+  var tools_toggle_btn;
+  var guess_toggle_btn;
   var earth;
 
   self.ready = function()
@@ -98,10 +102,17 @@ var GamePlayScene = function(game, stage)
     film.colored = true;
     dragger.register(film);
 
-    nguess = new Guess(dc.width-sidebar_w+p,p+3*(compass_r*2+p)+2*(fieldview_s+p));
+    nguess = new Guess(dc.width-sidebar_w+p,p);
     dragger.register(nguess);
-    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,p+3*(compass_r*2+p)+2*(fieldview_s+p));
+    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,p);
     dragger.register(sguess);
+
+    ui_toggle = false;
+    tools_toggle_btn = new ButtonBox(dc.width-sidebar_w,            0,sidebar_w/2,20,function(evt){ui_toggle = false;});
+    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_w/2,0,sidebar_w/2,20,function(evt){ui_toggle = true;});
+    clicker.register(tools_toggle_btn);
+    clicker.register(guess_toggle_btn);
+    earth = 0;
 
     clicker.register(fallback);
     hit_ui = false;
@@ -149,20 +160,23 @@ var GamePlayScene = function(game, stage)
     ctx.fillRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
     ctx.strokeRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
 
+    if(ui_toggle)  tools_toggle_btn.draw(dc);
+    if(!ui_toggle) guess_toggle_btn.draw(dc);
+
     //charges
     for(var i = 0; i < charges.length; i++)
       ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
     //magnets
     for(var i = 0; i < magnets.length; i++)
-      magnets[i].draw();
+      if(!ui_toggle || !magnets[i].default) magnets[i].draw();
     //compasses
     for(var i = 0; i < compasses.length; i++)
-      compasses[i].draw();
-    filings.draw();
-    film.draw();
+      if(!ui_toggle || !compasses[i].default) compasses[i].draw();
+    if(!ui_toggle || !filings.default) filings.draw();
+    if(!ui_toggle || !film.default)    film.draw();
     ctx.fillStyle = "#000000";
-    ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
-    ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
+    if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
+    if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
   };
 
   self.cleanup = function()
@@ -401,16 +415,16 @@ var GamePlayScene = function(game, stage)
 
     self.nx = nx;
     self.ny = ny;
-    self.nw = charge_s;
-    self.nh = charge_s;
+    self.nw = charge_s*2;
+    self.nh = charge_s*2;
 
     self.nfx = vfield.xScreenToFSpace(self.nx+self.nw/2);
     self.nfy = vfield.yScreenToFSpace(self.ny+self.nh/2);
 
     self.sx = sx;
     self.sy = sy;
-    self.sw = charge_s;
-    self.sh = charge_s;
+    self.sw = charge_s*2;
+    self.sh = charge_s*2;
 
     self.sfx = vfield.xScreenToFSpace(self.sx+self.sw/2);
     self.sfy = vfield.yScreenToFSpace(self.sy+self.sh/2);
@@ -430,6 +444,7 @@ var GamePlayScene = function(game, stage)
 
     self.draggable = true;
     self.inert = false;
+    self.default = true;
 
     self.draw = function()
     {
@@ -457,9 +472,27 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(!self.draggable || hit_ui) return;
-      self.dragging = true;
-      self.ndragging = false;
-      self.sdragging = false;
+
+      if(ptWithin(evt.doX,evt.doY,self.nx,self.ny,self.nw,self.nh))
+        self.ndragging = true;
+      else if(ptWithin(evt.doX,evt.doY,self.sx,self.sy,self.sw,self.sh))
+        self.sdragging = true;
+      else
+      {
+        var x0 = evt.doX;
+        var y0 = evt.doY;
+        var x1 = self.nx+self.nw/2;
+        var y1 = self.ny+self.nh/2;
+        var x2 = self.sx+self.sw/2;
+        var y2 = self.sy+self.sh/2;
+        //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+        var dist =
+          abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1) /
+          sqrt(pow((y2-y1),2) + pow((x2-x1),2));
+        if(dist > 10) return;
+        else self.dragging = true;
+      }
+
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -509,6 +542,7 @@ var GamePlayScene = function(game, stage)
       else return;
 
       self.calcBB();
+      self.default = false;
       self.dirty = true;
       hit_ui = true;
     }
@@ -541,6 +575,7 @@ var GamePlayScene = function(game, stage)
     self.dr = 0;
     self.d2 = 0;
 
+    self.default = true;
     self.draggable = true;
     self.inert = false;
 
@@ -578,7 +613,7 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!self.draggable || hit_ui) return;
+      if(!self.draggable || hit_ui || (self.default && ui_toggle)) return;
       self.dragging = true;
       self.drag(evt);
     }
@@ -590,6 +625,7 @@ var GamePlayScene = function(game, stage)
       self.fx = vfield.xScreenToFSpace(evt.doX);
       self.fy = vfield.yScreenToFSpace(evt.doY);
       self.inert = (evt.doX > vfield.x+vfield.w);
+      self.default = false;
       self.dirty = true;
       hit_ui = true;
     }
@@ -599,6 +635,7 @@ var GamePlayScene = function(game, stage)
       {
         self.x = self.default_x;
         self.y = self.default_y;
+        self.default = true
       }
       self.dragging = false;
     }
@@ -621,6 +658,7 @@ var GamePlayScene = function(game, stage)
     self.fw = vfield.xScreenToFSpace(self.x+self.w*1.5)-self.fx;
     self.fh = vfield.xScreenToFSpace(self.y+self.h*1.5)-self.fy;
 
+    self.default = true;
     self.colored = false;
     self.draggable = true;
     self.inert = false;
@@ -637,7 +675,7 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!self.draggable || hit_ui) return;
+      if(!self.draggable || hit_ui || (self.default && ui_toggle)) return;
       self.dragging = true;
       self.drag(evt);
     }
@@ -649,6 +687,7 @@ var GamePlayScene = function(game, stage)
       self.fx = vfield.xScreenToFSpace(evt.doX);
       self.fy = vfield.yScreenToFSpace(evt.doY);
       self.inert = (evt.doX > vfield.x+vfield.w);
+      self.default = false;
       self.dirty = true;
       hit_ui = true;
     }
@@ -658,6 +697,7 @@ var GamePlayScene = function(game, stage)
       {
         self.x = self.default_x;
         self.y = self.default_y;
+        self.default = true;
       }
       self.dragging = false;
     }
@@ -679,6 +719,7 @@ var GamePlayScene = function(game, stage)
     self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
     self.v = v;
 
+    self.default = true;
     self.inert = false;
     self.draggable = true;
 
@@ -687,7 +728,7 @@ var GamePlayScene = function(game, stage)
     self.dragging = false;
     self.dragStart = function(evt)
     {
-      if(!self.draggable || hit_ui) return;
+      if(!self.draggable || hit_ui || (self.default && !ui_toggle)) return;
       self.dragging = true;
       self.drag(evt);
     }
@@ -699,6 +740,7 @@ var GamePlayScene = function(game, stage)
       self.fx = vfield.xScreenToFSpace(evt.doX);
       self.fy = vfield.yScreenToFSpace(evt.doY);
       self.inert = (evt.doX > vfield.x+vfield.w);
+      self.default = false;
       self.dirty = true;
       hit_ui = true;
     }
@@ -708,6 +750,7 @@ var GamePlayScene = function(game, stage)
       {
         self.x = self.default_x;
         self.y = self.default_y;
+        self.default = true;
       }
       self.dragging = false;
     }
