@@ -8,7 +8,7 @@ var GamePlayScene = function(game, stage)
 
   var n_ticks;
 
-  var sidebar_w = 200;
+  var sidebar_w = 300;
   var res = 50;
   var res_w = 1*res;
   var res_h = 1*res;
@@ -16,9 +16,10 @@ var GamePlayScene = function(game, stage)
   //jshax
   var tuple = {fx:0,fy:0,r:0,r2:0}; //global var to return from funcs without allocs #hax
   var compass_r = 30;
-  var fieldview_s = 200;
+  var fieldview_s = 150;
   var charge_s = 20;
   var guess_s = 40;
+  var btn_h = 40;
 
   var hit_ui;
   var dragger;
@@ -92,7 +93,7 @@ var GamePlayScene = function(game, stage)
     {
       for(var j = 0; j < 3; j++)
       {
-        c = new Compass(dc.width-sidebar_w+p+(i*(compass_r*2+p)),p+j*(compass_r*2+p))
+        c = new Compass(dc.width-sidebar_w+p+(i*(compass_r*2+p)),btn_h+30+p+j*(compass_r*2+p))
         c.inert = true;
         dragger.register(c);
         compasses.push(c);
@@ -106,15 +107,15 @@ var GamePlayScene = function(game, stage)
     film.colored = true;
     dragger.register(film);
 
-    nguess = new Guess(dc.width-sidebar_w+p,p);
+    nguess = new Guess(dc.width-sidebar_w+p,btn_h+p);
     dragger.register(nguess);
-    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,p);
+    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,btn_h+p);
     dragger.register(sguess);
 
     ui_toggle = false;
     guess_placed = false;
-    tools_toggle_btn = new ButtonBox(dc.width-sidebar_w,            0,sidebar_w/2,20,function(evt){ui_toggle = false;});
-    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_w/2,0,sidebar_w/2,20,function(evt){ui_toggle = true;});
+    tools_toggle_btn = new ButtonBox(dc.width-sidebar_w,            0,sidebar_w/2,btn_h,function(evt){ui_toggle = false;});
+    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_w/2,0,sidebar_w/2,btn_h,function(evt){ui_toggle = true;});
     guess_btn        = new ButtonBox(dc.width-sidebar_w+p,100,sidebar_w-2*p,20,function(evt){if(!ui_toggle || hit_ui) return; guess_placed = true; hit_ui = true;});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
@@ -158,14 +159,27 @@ var GamePlayScene = function(game, stage)
   {
     //sidebar
     ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = "#90764A";
     ctx.lineWidth = 1;
     ctx.lineWidth = 1;
     ctx.fillRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
-    ctx.strokeRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
 
-    if(ui_toggle)  tools_toggle_btn.draw(dc);
-    if(!ui_toggle) guess_toggle_btn.draw(dc);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "25px Open Sans";
+    ctx.textAlign = "center";
+    ctx.fillRect(dc.width-sidebar_w,0,sidebar_w,btn_h);
+    if(ui_toggle) ctx.fillStyle = "#000000"; else ctx.fillStyle = "#5C9BF3"; ctx.fillText("TOOLS",tools_toggle_btn.x+tools_toggle_btn.w/2,tools_toggle_btn.y+tools_toggle_btn.h*0.8);
+    if(ui_toggle) ctx.fillStyle = "#5C9BF3"; else ctx.fillStyle = "#000000"; ctx.fillText("GUESS",guess_toggle_btn.x+guess_toggle_btn.w/2,guess_toggle_btn.y+guess_toggle_btn.h*0.8);
+    var cx;
+    if(!ui_toggle) cx = tools_toggle_btn.x+tools_toggle_btn.w/2; else cx = guess_toggle_btn.x+guess_toggle_btn.w/2;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath();
+    ctx.moveTo(cx-8,btn_h-1);
+    ctx.lineTo(cx,btn_h+8);
+    ctx.lineTo(cx+8,btn_h-1);
+    ctx.fill();
+    ctx.stokeStyle = "#000000";
+    dc.drawLine(dc.width-sidebar_w/2,5,dc.width-sidebar_w/2,btn_h-10);
     if(ui_toggle)  guess_btn.draw(dc);
 
     //charges
@@ -175,6 +189,9 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < magnets.length; i++)
       magnets[i].draw();
     //compasses
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "18px Open Sans";
+    ctx.fillText("COMPASSES",dc.width-sidebar_w/2,btn_h+30);
     for(var i = 0; i < compasses.length; i++)
       if(!ui_toggle || !compasses[i].default) compasses[i].draw();
     if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
@@ -613,16 +630,21 @@ var GamePlayScene = function(game, stage)
     {
       ctx.lineWidth = 2;
       ctx.drawImage(compass_img,self.x,self.y,self.w,self.h);
-      if(self.inert || self.dragging) return;
-
-      if(self.dr > 0.001)
+      if(self.inert || self.dragging || self.dr < 0.001)
       {
         ctx.save();
         ctx.translate(self.x+self.w/2,self.y+self.h/2);
-        ctx.rotate(Math.atan2(self.dy,self.dx));
+        ctx.rotate(halfpi+pi);
         ctx.drawImage(needle_img,-self.w/2,-self.h/2,self.w,self.h);
         ctx.restore();
+        return;
       }
+
+      ctx.save();
+      ctx.translate(self.x+self.w/2,self.y+self.h/2);
+      ctx.rotate(Math.atan2(self.dy,self.dx));
+      ctx.drawImage(needle_img,-self.w/2,-self.h/2,self.w,self.h);
+      ctx.restore();
     }
 
     self.dirty = true;
