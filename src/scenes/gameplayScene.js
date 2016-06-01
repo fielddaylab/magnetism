@@ -463,10 +463,10 @@ var GamePlayScene = function(game, stage)
       var d = sqrt(xdiff*xdiff+ydiff*ydiff);
       var h = 20;
       var hw = 20;
-      ctx.drawImage(mag_n,-d/2+hw,-h/2,d/2-hw,h);
-      ctx.drawImage(mag_s,0,-h/2,d/2-hw,h);
-      ctx.drawImage(mag_n_tip,-d/2,-h/2,hw,h);
-      ctx.drawImage(mag_s_tip,d/2-hw,-h/2,hw,h);
+      ctx.drawImage(mag_n_img,-d/2+hw,-h/2,d/2-hw,h);
+      ctx.drawImage(mag_s_img,0,-h/2,d/2-hw,h);
+      ctx.drawImage(mag_n_tip_img,-d/2,-h/2,hw,h);
+      ctx.drawImage(mag_s_tip_img,d/2-hw,-h/2,hw,h);
       ctx.restore();
     }
 
@@ -597,20 +597,16 @@ var GamePlayScene = function(game, stage)
     self.draw = function()
     {
       ctx.lineWidth = 2;
-      ctx.drawImage(circle,self.x,self.y,self.w,self.h);
+      ctx.drawImage(compass_img,self.x,self.y,self.w,self.h);
       if(self.inert || self.dragging) return;
 
       if(self.dr > 0.001)
       {
-        ctx.strokeStyle = "#000000";
-        drawArrow(
-          dc,
-          self.x+self.w/2,
-          self.y+self.h/2,
-          self.x+self.w/2+(self.dx/self.dr)*self.r,
-          self.y+self.h/2+(self.dy/self.dr)*self.r,
-          5
-        );
+        ctx.save();
+        ctx.translate(self.x+self.w/2,self.y+self.h/2);
+        ctx.rotate(Math.atan2(self.dy,self.dx));
+        ctx.drawImage(needle_img,-self.w/2,-self.h/2,self.w,self.h);
+        ctx.restore();
       }
     }
 
