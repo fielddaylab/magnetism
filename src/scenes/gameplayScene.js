@@ -38,8 +38,10 @@ var GamePlayScene = function(game, stage)
   var sguess;
 
   var ui_toggle;
+  var guess_placed;
   var tools_toggle_btn;
   var guess_toggle_btn;
+  var guess_btn;
   var earth;
 
   self.ready = function()
@@ -73,7 +75,7 @@ var GamePlayScene = function(game, stage)
     }
     magnets = [];
       m = new Magnet(vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200,vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200)
-      m.draggable = true;
+      m.draggable = false;
       dragger.register(m);
       magnets.push(m);
     for(var i = 0; i < 0; i++)
@@ -108,10 +110,13 @@ var GamePlayScene = function(game, stage)
     dragger.register(sguess);
 
     ui_toggle = false;
+    guess_placed = false;
     tools_toggle_btn = new ButtonBox(dc.width-sidebar_w,            0,sidebar_w/2,20,function(evt){ui_toggle = false;});
     guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_w/2,0,sidebar_w/2,20,function(evt){ui_toggle = true;});
+    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,100,sidebar_w-2*p,20,function(evt){if(!ui_toggle || hit_ui) return; guess_placed = true; hit_ui = true;});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
+    clicker.register(guess_btn);
     earth = 0;
 
     clicker.register(fallback);
@@ -162,13 +167,14 @@ var GamePlayScene = function(game, stage)
 
     if(ui_toggle)  tools_toggle_btn.draw(dc);
     if(!ui_toggle) guess_toggle_btn.draw(dc);
+    if(ui_toggle)  guess_btn.draw(dc);
 
     //charges
     for(var i = 0; i < charges.length; i++)
       ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
     //magnets
     for(var i = 0; i < magnets.length; i++)
-      if(!ui_toggle || !magnets[i].default) magnets[i].draw();
+      magnets[i].draw();
     //compasses
     for(var i = 0; i < compasses.length; i++)
       if(!ui_toggle || !compasses[i].default) compasses[i].draw();
@@ -448,7 +454,7 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function()
     {
-      if(n_ticks < 1000) return;
+      if(!guess_placed) return;
       ctx.save();
       ctx.translate(self.x+self.w/2,self.y+self.h/2);
       ctx.rotate(Math.atan2(self.nfy-self.sfy,self.nfx-self.sfx));
