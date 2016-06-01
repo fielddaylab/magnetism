@@ -28,6 +28,7 @@ var GamePlayScene = function(game, stage)
   var dom;
 
   var vfield;
+  var ifvfield;
   var hdvfield;
   var charges;
   var magnets;
@@ -55,7 +56,8 @@ var GamePlayScene = function(game, stage)
     fallback = {x:0,y:0,w:dc.width,h:dc.height,click:function(evt){if(!hit_ui)dom.click(evt);}};
 
     vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h);
-    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*2,res_h*2);
+    ifvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*3,res_h*3);
+    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*4,res_h*4);
     var c;
     var m;
     charges = [];
@@ -98,7 +100,7 @@ var GamePlayScene = function(game, stage)
     }
 
     filings = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p));
-    filings.colored = false;
+    filings.blurred = true;
     dragger.register(filings);
     film    = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p)+fieldview_s+p);
     film.colored = true;
@@ -141,7 +143,7 @@ var GamePlayScene = function(game, stage)
       magnets[i].dirty = false;
     }
 
-    if(filings.dirty || dirty) vfield.tick(filings,charges,magnets); filings.dirty = false;
+    if(filings.dirty || dirty) ifvfield.tick(filings,charges,magnets); filings.dirty = false;
     if(film.dirty    || dirty) hdvfield.tick(film,charges,magnets);  film.dirty = false;
     for(var i = 0; i < compasses.length; i++)
     {
@@ -154,7 +156,7 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    vfield.draw(filings);
+    ifvfield.draw(filings);
     hdvfield.draw(film);
 
     //sidebar
@@ -178,7 +180,10 @@ var GamePlayScene = function(game, stage)
     //compasses
     for(var i = 0; i < compasses.length; i++)
       if(!ui_toggle || !compasses[i].default) compasses[i].draw();
-    if(!ui_toggle || !filings.default) filings.draw();
+    if(!ui_toggle || !filings.default)
+    {
+      if(filings.inert || filings.dragging) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
+    }
     if(!ui_toggle || !film.default)    film.draw();
     ctx.fillStyle = "#000000";
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
@@ -360,6 +365,16 @@ var GamePlayScene = function(game, stage)
             else if(d2 >  10) ctx.strokeStyle = "#4400BB";
             else              ctx.strokeStyle = "#880088";
           }
+
+          if(view.blurred)
+          {
+            var dx = x-(view.x+view.w/2);
+            var dy = y-(view.y+view.h/2);
+            var a = 1-(sqrt(dx*dx+dy*dy)/(view.w/2))
+            if(a < 0) a = 0;
+            ctx.globalAlpha = a;
+          }
+
           //ctx.fillStyle = ctx.strokeStyle;
           //ctx.fillRect(x-2,y-2,4,4);
           dc.drawLine(
@@ -368,6 +383,8 @@ var GamePlayScene = function(game, stage)
             x+(self.dx[index]*vec_length/2),
             y+(self.dy[index]*vec_length/2)
           );
+
+          ctx.globalAlpha = 1;
         }
       }
 
@@ -662,8 +679,9 @@ var GamePlayScene = function(game, stage)
 
     self.default = true;
     self.colored = false;
+    self.blurred = false;
     self.draggable = true;
-    self.inert = false;
+    self.inert = true;
 
     self.draw = function()
     {

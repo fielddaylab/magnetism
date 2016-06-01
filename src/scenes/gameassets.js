@@ -6,6 +6,8 @@ var mag_n_tip_img;
 var mag_n_img;
 var mag_s_tip_img;
 var mag_s_img;
+var iron_filings_img;
+var mag_film_img;
 
 circle = GenIcon(100,100);
 circle.context.strokeStyle = "#000000";
@@ -62,6 +64,26 @@ needle_img.context.closePath();
 needle_img.context.fill();
 needle_img.context.fillStyle = "#000000";
 needle_img.context.fillRect(needle_img.width/2-cw/2,needle_img.height/2-cw/2,cw,cw);
+
+iron_filings_img = GenIcon(300,300);
+iron_filings_img.context.strokeStyle = "#1A7CAF"; //dark blue
+iron_filings_img.context.fillStyle = "#DDF7FE"; //light blue
+iron_filings_img.context.lineWidth = 10;
+iron_filings_img.context.beginPath();
+iron_filings_img.context.arc(iron_filings_img.width/2,iron_filings_img.height/2,iron_filings_img.width/2-iron_filings_img.context.lineWidth,0,2*Math.PI);
+iron_filings_img.context.fill();
+iron_filings_img.context.stroke();
+var t;
+var r;
+iron_filings_img.context.fillStyle = "#000000";
+for(var i = 0; i < 10000; i++)
+{
+  t = Math.random()*twopi;
+  r = Math.random();
+  r *= r;
+  r *= iron_filings_img.width/2.3;
+  iron_filings_img.context.fillRect(iron_filings_img.width/2+cos(t)*r-1,iron_filings_img.height/2+sin(t)*r-1,2,2);
+}
 
 var bev = 10;
 mag_n_tip_img = GenIcon(100,100);
