@@ -20,6 +20,7 @@ var GamePlayScene = function(game, stage)
   var charge_s = 20;
   var guess_s = 40;
   var btn_h = 40;
+  var title_h = 30;
 
   var hit_ui;
   var dragger;
@@ -93,30 +94,30 @@ var GamePlayScene = function(game, stage)
     {
       for(var j = 0; j < 3; j++)
       {
-        c = new Compass(dc.width-sidebar_w+p+(i*(compass_r*2+p)),btn_h+30+p+j*(compass_r*2+p))
+        c = new Compass(dc.width-sidebar_w+p+(i*(compass_r*2+p)),btn_h+title_h+p+j*(compass_r*2+p))
         c.inert = true;
         dragger.register(c);
         compasses.push(c);
       }
     }
 
-    filings = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p));
+    filings = new FieldView(dc.width-sidebar_w+p,btn_h+title_h+p+3*(compass_r*2+p)+title_h+p);
     filings.blurred = true;
     dragger.register(filings);
-    film    = new FieldView(dc.width-sidebar_w+p,p+3*(compass_r*2+p)+fieldview_s+p);
+    film    = new FieldView(dc.width-sidebar_w+p,btn_h+title_h+p+3*(compass_r*2+p)+title_h+p+filings.h+title_h+p);
     film.colored = true;
     dragger.register(film);
 
-    nguess = new Guess(dc.width-sidebar_w+p,btn_h+p);
+    nguess = new Guess(dc.width-sidebar_w+p,btn_h+title_h+p);
     dragger.register(nguess);
-    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,btn_h+p);
+    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,btn_h+title_h+p);
     dragger.register(sguess);
 
     ui_toggle = false;
     guess_placed = false;
     tools_toggle_btn = new ButtonBox(dc.width-sidebar_w,            0,sidebar_w/2,btn_h,function(evt){ui_toggle = false;});
     guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_w/2,0,sidebar_w/2,btn_h,function(evt){ui_toggle = true;});
-    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,100,sidebar_w-2*p,20,function(evt){if(!ui_toggle || hit_ui) return; guess_placed = true; hit_ui = true;});
+    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,function(evt){if(!ui_toggle || hit_ui) return; guess_placed = true; hit_ui = true;});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
@@ -191,12 +192,15 @@ var GamePlayScene = function(game, stage)
     //compasses
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "18px Open Sans";
-    ctx.fillText("COMPASSES",dc.width-sidebar_w/2,btn_h+30);
+    if(!ui_toggle) ctx.fillText("COMPASSES",dc.width-sidebar_w/2,btn_h+30);
     for(var i = 0; i < compasses.length; i++)
       if(!ui_toggle || !compasses[i].default) compasses[i].draw();
+    if(!ui_toggle) ctx.fillText("MAGNETIC FILM",dc.width-sidebar_w/2,film.default_y-30);
     if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
+    if(!ui_toggle) ctx.fillText("IRON FILINGS",dc.width-sidebar_w/2,filings.default_y-30);
     if(!ui_toggle || !filings.default)
       if(filings.inert || filings.dragging) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
+    if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
