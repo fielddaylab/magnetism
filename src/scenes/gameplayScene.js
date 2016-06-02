@@ -213,6 +213,8 @@ var GamePlayScene = function(game, stage)
   {
     var xd;
     var yd;
+    var x;
+    var y;
     var r2;
     var r;
     var f;
@@ -233,28 +235,22 @@ var GamePlayScene = function(game, stage)
     }
     for(var i = 0; i < magnets.length; i++)
     {
-      //n
-      yd = magnets[i].nfy-fy;
-      xd = magnets[i].nfx-fx;
-      r2 = (xd*xd)+(yd*yd);
-      if(r2 != 0)
+      var mag_d = 2;
+      for(var j = 0; j < mag_d; j++)
       {
-        f = -1/r2;
-        r = sqrt(r2);
-        tuple.fy += f*yd/r;
-        tuple.fx += f*xd/r;
-      }
+        x = lerp(magnets[i].nfx,magnets[i].sfx,j/(mag_d-1));
+        y = lerp(magnets[i].nfy,magnets[i].sfy,j/(mag_d-1));
 
-      //s
-      yd = magnets[i].sfy-fy;
-      xd = magnets[i].sfx-fx;
-      r2 = (xd*xd)+(yd*yd);
-      if(r2 != 0)
-      {
-        f = 1/r2;
-        r = sqrt(r2);
-        tuple.fy += f*yd/r;
-        tuple.fx += f*xd/r;
+        yd = y-fy;
+        xd = x-fx;
+        r2 = (xd*xd)+(yd*yd);
+        if(r2 != 0)
+        {
+          f = (j%2) ? (1/r2) : (-1/r2);
+          r = sqrt(r2);
+          tuple.fy += f*yd/r;
+          tuple.fx += f*xd/r;
+        }
       }
     }
     tuple.r2 = (tuple.fx*tuple.fx)+(tuple.fy*tuple.fy);
