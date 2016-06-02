@@ -19,8 +19,8 @@ var GamePlayScene = function(game, stage)
 
   var n_ticks;
 
-  var sidebar_w = 250;
-  var sidebar_xb = 13;
+  var sidebar_w = 210;
+  var sidebar_xb = 10;
   var sidebar_yb = 9;
   var res = 50;
   var res_w = 1*res;
@@ -195,7 +195,8 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#90764A";
     ctx.lineWidth = 1;
     ctx.lineWidth = 1;
-    ctx.drawImage(sidebar_img,dc.width-sidebar_w,0,sidebar_w,dc.height);
+    if(!ui_toggle) ctx.drawImage(sidebar_tools_img,dc.width-sidebar_w,0,sidebar_w,dc.height);
+    else           ctx.drawImage(sidebar_guess_img,dc.width-sidebar_w,0,sidebar_w,dc.height);
 
     var btn_overlap = 15;
     if(!ui_toggle) ctx.drawImage(tools_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
@@ -216,9 +217,6 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "18px Open Sans";
     ctx.textAlign = "center";
-    if(!ui_toggle) ctx.fillText("COMPASSES",dc.width-sidebar_w/2,btn_h+30);
-    if(!ui_toggle) ctx.fillText("MAGNETIC FILM",dc.width-sidebar_w/2,film.default_y-30);
-    if(!ui_toggle) ctx.fillText("IRON FILINGS",dc.width-sidebar_w/2,filings.default_y-30);
     if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
 

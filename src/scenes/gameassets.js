@@ -1,14 +1,18 @@
 var circle;
 var hcircle;
 var compass_img;
+var compass_dot_img;
 var needle_img;
 var mag_n_tip_img;
 var mag_n_img;
 var mag_s_tip_img;
 var mag_s_img;
 var iron_filings_img;
+var iron_filings_dot_img;
 var mag_film_img;
-var sidebar_img;
+var mag_film_dot_img;
+var sidebar_tools_img;
+var sidebar_guess_img;
 var tools_btn_img;
 var guess_btn_img;
 
@@ -29,6 +33,8 @@ var bake = function()
 
   compass_img = new Image();
   compass_img.src = "assets/compass.png";
+  compass_dot_img = new Image();
+  compass_dot_img.src = "assets/compass_dot.png";
   /*
   compass_img = GenIcon(200,200);
   compass_img.context.strokeStyle = "#1A7CAF"; //dark blue
@@ -80,6 +86,8 @@ var bake = function()
 
   iron_filings_img = new Image();
   iron_filings_img.src = "assets/iron_filings.png";
+  iron_filings_dot_img = new Image();
+  iron_filings_dot_img.src = "assets/iron_filings_dot.png";
   /*
   iron_filings_img = GenIcon(300,300);
   iron_filings_img.context.strokeStyle = "#1A7CAF"; //dark blue
@@ -105,6 +113,8 @@ var bake = function()
 
   mag_film_img = new Image();
   mag_film_img.src = "assets/mag_film.png";
+  mag_film_dot_img = new Image();
+  mag_film_dot_img.src = "assets/mag_film_dot.png";
   /*
   mag_film_img = GenIcon(300,300);
   mag_film_img.context.strokeStyle = "#2EBE85"; //dark green
@@ -169,8 +179,10 @@ var bake = function()
   mag_s_img.context.fillRect(0,mag_s_img.height-bev,mag_s_img.width,bev);
   */
 
-  sidebar_img = new Image();
-  sidebar_img.src = "assets/sidebar.png";
+  sidebar_tools_img = new Image();
+  sidebar_tools_img.src = "assets/sidebar_tools.png";
+  sidebar_guess_img = new Image();
+  sidebar_guess_img.src = "assets/sidebar_guess.png";
   guess_btn_img = new Image();
   guess_btn_img.src = "assets/guess_btn.png";
   tools_btn_img = new Image();
