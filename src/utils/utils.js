@@ -158,6 +158,13 @@ var worldPtWithinObj = function(ptx, pty, obj)
   return worldPtWithin(ptx, pty, obj.wx, obj.wy, obj.ww, obj.wh);
 }
 
+var space = function(minv,maxv,obv,nobs,obi)
+{
+  var w = maxv-minv;
+  var pad = (w-(nobs*obv))/(nobs+1);
+  return minv+pad+(obv+pad)*obi;
+}
+
 var decToHex = function(dec, dig)
 {
   var r = "";

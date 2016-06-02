@@ -96,17 +96,17 @@ var GamePlayScene = function(game, stage)
     {
       for(var j = 0; j < 3; j++)
       {
-        c = new Compass(dc.width-sidebar_w+p+(i*(compass_r*2+p)),btn_h+title_h+p+j*(compass_r*2+p))
+        c = new Compass(space(dc.width-sidebar_w+sidebar_xb,dc.width,compass_r*2,2,i),space(sidebar_yb+btn_h+title_h,300,compass_r*2,3,j));
         c.inert = true;
         dragger.register(c);
         compasses.push(c);
       }
     }
 
-    filings = new FieldView(dc.width-sidebar_w+p,btn_h+title_h+p+3*(compass_r*2+p)+title_h+p);
+    filings = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,390);
     filings.blurred = true;
     dragger.register(filings);
-    film    = new FieldView(dc.width-sidebar_w+p,btn_h+title_h+p+3*(compass_r*2+p)+title_h+p+filings.h+title_h+p);
+    film = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,615);
     film.colored = true;
     dragger.register(film);
 
