@@ -206,7 +206,7 @@ var GamePlayScene = function(game, stage)
       ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
     //magnets
     for(var i = 0; i < magnets.length; i++)
-      magnets[i].draw();
+      if(game_mode == GAME_PLAYGROUND || guess_placed) magnets[i].draw();
     //compasses
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "18px Open Sans";
@@ -219,12 +219,12 @@ var GamePlayScene = function(game, stage)
 
     if(game_mode == GAME_PLAYGROUND) vfield.draw(fullview);
     if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
-    hdvfield.draw(film);
+    if(game_mode == GAME_PLAYGROUND || !hdvfield.dragging) hdvfield.draw(film);
     if(!ui_toggle || !filings.default)
-      if(filings.inert || (!game_mode == GAME_PLAYGROUND && filings.dragging)) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
-    ifvfield.draw(filings);
+      if(filings.inert || (game_mode != GAME_PLAYGROUND && filings.dragging)) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
+    if(game_mode == GAME_PLAYGROUND || !ivfield.dragging) ifvfield.draw(filings);
     for(var i = 0; i < compasses.length; i++)
-      if(!ui_toggle || !compasses[i].default) compasses[i].draw();
+      if(!ui_toggle || !compasses[i].default) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
 
@@ -370,7 +370,6 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function(view)
     {
-      if(!game_mode == GAME_PLAYGROUND && view.dragging) return;
       ctx.lineWidth = 1;
       ctx.strokeStyle = "#000000";
 
@@ -512,7 +511,6 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function()
     {
-      if(!guess_placed) return;
       ctx.save();
       ctx.translate(self.x+self.w/2,self.y+self.h/2);
       ctx.rotate(Math.atan2(self.nfy-self.sfy,self.nfx-self.sfx));
@@ -652,11 +650,11 @@ var GamePlayScene = function(game, stage)
       self.d2 = tuple.r2;
     }
 
-    self.draw = function()
+    self.draw = function(dead)
     {
       ctx.lineWidth = 2;
       ctx.drawImage(compass_img,self.x,self.y,self.w,self.h);
-      if(self.inert || (!game_mode == GAME_PLAYGROUND && self.dragging) || self.dr < 0.001)
+      if(self.inert || dead || self.dr < 0.001)
       {
         ctx.save();
         ctx.translate(self.x+self.w/2,self.y+self.h/2);
