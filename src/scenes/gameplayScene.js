@@ -6,6 +6,10 @@ var GamePlayScene = function(game, stage)
   var canvas = dc.canvas;
   var ctx = dc.context;
 
+  var ENUM = 0;
+  var INPUT_RESUME = ENUM; ENUM++;
+  var INPUT_PAUSE  = ENUM; ENUM++;
+  var input_state;
   var n_ticks;
 
   var sidebar_w = 250;
@@ -135,6 +139,10 @@ var GamePlayScene = function(game, stage)
 
     clicker.register(fallback);
     hit_ui = false;
+
+    input_state = INPUT_RESUME;
+
+    //setTimeout(function(){displayMessage(["Hey there","This is great","This is really long let me keep writing I'm trying to test how quicly I can type and I'm finding out that I actually don't normally write out continuous sentences like this so have probably built up a bias towards burst typing and stuff but now I think that this is probably long enough.","one more"]);},100);
   };
 
   self.tick = function()
@@ -212,6 +220,8 @@ var GamePlayScene = function(game, stage)
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
 
+    ctx.font = blurb_f+"px Open Sans";
+    dom.draw(blurb_f,dc);
   };
 
   self.cleanup = function()
@@ -803,6 +813,18 @@ var GamePlayScene = function(game, stage)
       }
       self.dragging = false;
     }
+  }
+
+  var blurb_f = 20;
+  var blurb_x = 0;
+  var blurb_y = dc.height-300;
+  var blurb_w = dc.width-sidebar_w;
+  var blurb_h = 300;
+  var displayMessage = function(lines)
+  {
+    input_state = INPUT_PAUSE;
+    if(lines.length > 1) dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){lines.splice(0,1); displayMessage(lines)});
+    else                 dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){input_state = INPUT_RESUME;});
   }
 
 };

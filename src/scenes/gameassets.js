@@ -175,5 +175,8 @@ var bake = function()
   guess_btn_img.src = "assets/guess_btn.png";
   tools_btn_img = new Image();
   tools_btn_img.src = "assets/tools_btn.png";
+
+  tall_img = new Image();
+  tall_img.src = "assets/scout.png";
 }
 

@@ -40,6 +40,7 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/sidebar.png");
     img_srcs.push("assets/guess_btn.png");
     img_srcs.push("assets/tools_btn.png");
+    img_srcs.push("assets/scout.png");
     for(var i = 0; i < img_srcs.length; i++)
     {
       images[i] = new Image();
@@ -71,3 +72,4 @@ var LoadingScene = function(game, stage)
     canv.context.fillRect(0,0,canv.width,canv.height);
   };
 };
+
