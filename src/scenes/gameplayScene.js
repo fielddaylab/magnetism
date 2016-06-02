@@ -6,10 +6,17 @@ var GamePlayScene = function(game, stage)
   var canvas = dc.canvas;
   var ctx = dc.context;
 
-  var ENUM = 0;
+  var ENUM;
+  ENUM = 0;
   var INPUT_RESUME = ENUM; ENUM++;
   var INPUT_PAUSE  = ENUM; ENUM++;
   var input_state;
+
+  ENUM = 0;
+  var GAME_PLAYGROUND = ENUM; ENUM++;
+  var GAME_FIND       = ENUM; ENUM++;
+  var game_mode;
+
   var n_ticks;
 
   var sidebar_w = 250;
@@ -86,7 +93,7 @@ var GamePlayScene = function(game, stage)
     }
     magnets = [];
       m = new Magnet(vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200,vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200)
-      m.draggable = false;
+      m.draggable = true;
       dragger.register(m);
       magnets.push(m);
     for(var i = 0; i < 0; i++)
@@ -141,6 +148,7 @@ var GamePlayScene = function(game, stage)
     hit_ui = false;
 
     input_state = INPUT_RESUME;
+    game_mode = GAME_PLAYGROUND;
 
     //setTimeout(function(){displayMessage(["Hey there","This is great","This is really long let me keep writing I'm trying to test how quicly I can type and I'm finding out that I actually don't normally write out continuous sentences like this so have probably built up a bias towards burst typing and stuff but now I think that this is probably long enough.","one more"]);},100);
   };
@@ -165,7 +173,7 @@ var GamePlayScene = function(game, stage)
 
     if(filings.dirty || dirty) ifvfield.tick(filings,charges,magnets); filings.dirty = false;
     if(film.dirty    || dirty) hdvfield.tick(film,charges,magnets);  film.dirty = false;
-    if(fullview.dirty || dirty) vfield.tick(fullview,charges,magnets); fullview.dirty = false;
+    if(game_mode == GAME_PLAYGROUND) { if(fullview.dirty || dirty) vfield.tick(fullview,charges,magnets); fullview.dirty = false; }
     for(var i = 0; i < compasses.length; i++)
     {
       if(compasses[i].dirty || dirty) compasses[i].tick();
@@ -209,11 +217,11 @@ var GamePlayScene = function(game, stage)
     if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
 
-    vfield.draw(fullview);
+    if(game_mode == GAME_PLAYGROUND) vfield.draw(fullview);
     if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
     hdvfield.draw(film);
     if(!ui_toggle || !filings.default)
-      if(filings.inert || filings.dragging) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
+      if(filings.inert || (!game_mode == GAME_PLAYGROUND && filings.dragging)) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
     ifvfield.draw(filings);
     for(var i = 0; i < compasses.length; i++)
       if(!ui_toggle || !compasses[i].default) compasses[i].draw();
@@ -362,7 +370,7 @@ var GamePlayScene = function(game, stage)
 
     self.draw = function(view)
     {
-      if(view.dragging) return;
+      if(!game_mode == GAME_PLAYGROUND && view.dragging) return;
       ctx.lineWidth = 1;
       ctx.strokeStyle = "#000000";
 
@@ -648,7 +656,7 @@ var GamePlayScene = function(game, stage)
     {
       ctx.lineWidth = 2;
       ctx.drawImage(compass_img,self.x,self.y,self.w,self.h);
-      if(self.inert || self.dragging || self.dr < 0.001)
+      if(self.inert || (!game_mode == GAME_PLAYGROUND && self.dragging) || self.dr < 0.001)
       {
         ctx.save();
         ctx.translate(self.x+self.w/2,self.y+self.h/2);
