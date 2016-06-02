@@ -1,17 +1,15 @@
+- dirt background
+- background for "guess" sidebar (only have the "tools" bg asset that's segmented into 3 groups
+- (could bake "COMPASSES","IRON FILINGS",etc... titles into background for both if you want exact control of how it will look)
 
-- underlying eqn
-- + and - cancel
-- can be grouped and considered as net +/-
-- multiple groups w/ net +/- can be aligned to create magnets
+- are we doing the black teardrops for pole-guesses? or the dotted line? or the faded out magnet?
+- if teardrop:
+- - magnet-guess-placer specifically for the "N" pole and the "S" pole individually
+- - I could gen the black teardrop icon w/ shadow, or you could give me that asset
+- if dotted:
+- - should I gen this? what specifies N/S?
 
-- things that are attracted to magnets /are/ magnets (temporarily become "magnets" when in field)
-- like charges increase strength of field
-- unlike charges cancel out field
-- any "piece" of a magnet is full magnet (any "magnet" is "infinite" small magnets, end to end (not really but you get the idea))
-- magnetism is /fundamental/
-- field is simply distance function (charge/d2)
-- field cannot specify direction (implies known effected charge)
-- difference between force/transfer of energy (I actually don't know answer)
-- build up from unpaired electrons -> magnet
+- what happens when you guess? girl pops up and gives debrief/try again? <- this is the assumption I'm working from until otherwise instructed
 
+- what does playground look like? is it any different? (I don't think its on the table to throw out playground- very important to build intuition by seeing realtime updates to field)
 
