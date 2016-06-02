@@ -64,9 +64,9 @@ var GamePlayScene = function(game, stage)
     dom = new CanvDom(dc);
     fallback = {x:0,y:0,w:dc.width,h:dc.height,click:function(evt){if(!hit_ui)dom.click(evt);}};
 
-    vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h);
-    ifvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*3,res_h*3);
-    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*2,res_h*2);
+    vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h,0.05);
+    ifvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*3,res_h*3,0.02);
+    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*4,res_h*4,0.01);
     var c;
     var m;
     charges = [];
@@ -277,7 +277,7 @@ var GamePlayScene = function(game, stage)
     tuple.r = sqrt(tuple.r2);
   }
 
-  var VecField = function(x,y,w,h,dw,dh)
+  var VecField = function(x,y,w,h,dw,dh,o)
   {
     var self = this;
     self.x = x;
@@ -296,6 +296,8 @@ var GamePlayScene = function(game, stage)
     self.dh = dh;
     self.dx = []; for(var i = 0; i < self.dw*self.dh; i++) self.dx[i] = 0;
     self.dy = []; for(var i = 0; i < self.dw*self.dh; i++) self.dy[i] = 0;
+    self.ox = []; for(var i = 0; i < self.dw*self.dh; i++) self.ox[i] = rand0()*o; //offset to fix moire patterns
+    self.oy = []; for(var i = 0; i < self.dw*self.dh; i++) self.oy[i] = rand0()*o; //offset to fix moire patterns
     self.dr = []; for(var i = 0; i < self.dw*self.dh; i++) self.dr[i] = 0;
     self.d2 = []; for(var i = 0; i < self.dw*self.dh; i++) self.d2[i] = 0;
     self.iFor = function(dx,dy) { return (dy*dw)+dx; }
@@ -304,6 +306,8 @@ var GamePlayScene = function(game, stage)
     self.yIndexToFSpace = function(i) { return (((i+0.5)/self.dh)-0.5)*self.ytransform; }
     self.xScreenToFSpace = function(x) { return (((x-self.x)/self.w)-0.5)*self.xtransform; };
     self.yScreenToFSpace = function(y) { return (((y-self.y)/self.h)-0.5)*self.ytransform; };
+    self.wFSpaceToScreen = function(w) { return w*self.w/self.xtransform; };
+    self.hFSpaceToScreen = function(h) { return h*self.h/self.ytransform; };
     self.xFSpaceToScreen = function(x) { return (((x/self.xtransform)+0.5)*self.w)+self.x; };
     self.yFSpaceToScreen = function(y) { return (((y/self.ytransform)+0.5)*self.h)+self.y; };
     //self.sampleToIndex(s,n) { return (s*n)-0.5; }
@@ -323,11 +327,11 @@ var GamePlayScene = function(game, stage)
 
       for(var i = 0; i < self.dh; i++)
       {
-        fy = self.yIndexToFSpace(i);
         for(var j = 0; j < self.dw; j++)
         {
           index = self.iFor(j,i);
-          fx = self.xIndexToFSpace(j);
+          fy = self.yIndexToFSpace(i)+self.oy[index];
+          fx = self.xIndexToFSpace(j)+self.ox[index];
 
           if(
               fx < view.fx-view.fw ||
@@ -366,8 +370,10 @@ var GamePlayScene = function(game, stage)
       {
         for(var j = 0; j < self.dw; j++)
         {
-          y = self.y + y_space*i+(y_space/2);
-          x = self.x + x_space*j+(x_space/2);
+          index = self.iFor(j,i);
+
+          y = self.y + y_space*i+(y_space/2) + self.hFSpaceToScreen(self.oy[index]);
+          x = self.x + x_space*j+(x_space/2) + self.wFSpaceToScreen(self.ox[index]);
 
           if(
               x < view.x        ||
@@ -376,8 +382,6 @@ var GamePlayScene = function(game, stage)
               y > view.y+view.h
             )
             continue;
-
-          index = self.iFor(j,i);
 
           if(view.colored)
           {
