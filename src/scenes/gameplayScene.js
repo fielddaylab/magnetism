@@ -221,8 +221,10 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#000000";
 
     if(game_mode == GAME_PLAYGROUND) vfield.draw(fullview);
+    if(!ui_toggle) ctx.drawImage(mag_film_dot_img,film.default_x,film.default_y,film.w,film.h);
     if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
     if(game_mode == GAME_PLAYGROUND || !hdvfield.dragging) hdvfield.draw(film);
+    if(!ui_toggle) ctx.drawImage(iron_filings_dot_img,filings.default_x,filings.default_y,filings.w,filings.h);
     if(!ui_toggle || !filings.default)
       if(filings.inert || (game_mode != GAME_PLAYGROUND && filings.dragging)) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
     if(game_mode == GAME_PLAYGROUND || !ivfield.dragging) ifvfield.draw(filings);
@@ -668,6 +670,7 @@ var GamePlayScene = function(game, stage)
     self.draw = function(dead)
     {
       ctx.lineWidth = 2;
+      ctx.drawImage(compass_dot_img,self.default_x,self.default_y,self.w,self.h);
       ctx.drawImage(compass_img,self.x,self.y,self.w,self.h);
       if(self.inert || dead || self.dr < 0.001)
       {
