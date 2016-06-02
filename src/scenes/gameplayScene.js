@@ -37,6 +37,7 @@ var GamePlayScene = function(game, stage)
   var charges;
   var magnets;
   var compasses;
+  var fullview;
   var filings;
   var film;
   var nguess;
@@ -61,7 +62,7 @@ var GamePlayScene = function(game, stage)
 
     vfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w,res_h);
     ifvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*3,res_h*3);
-    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*4,res_h*4);
+    hdvfield = new VecField(0,0,dc.width-sidebar_w,dc.height,res_w*2,res_h*2);
     var c;
     var m;
     charges = [];
@@ -103,11 +104,18 @@ var GamePlayScene = function(game, stage)
       }
     }
 
+    fullview = new FieldView(0,0);
+    fullview.w = dc.width-sidebar_w;
+    fullview.h = dc.height;
+    fullview.screenToF();
+    fullview.draggble = false;
     filings = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,390);
     filings.blurred = true;
+    filings.vec_l = 5;
     dragger.register(filings);
     film = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,615);
     film.colored = true;
+    film.vec_l = 1;
     dragger.register(film);
 
     nguess = new Guess(dc.width-sidebar_w+p,btn_h+title_h+p);
@@ -149,6 +157,7 @@ var GamePlayScene = function(game, stage)
 
     if(filings.dirty || dirty) ifvfield.tick(filings,charges,magnets); filings.dirty = false;
     if(film.dirty    || dirty) hdvfield.tick(film,charges,magnets);  film.dirty = false;
+    if(fullview.dirty || dirty) vfield.tick(fullview,charges,magnets); fullview.dirty = false;
     for(var i = 0; i < compasses.length; i++)
     {
       if(compasses[i].dirty || dirty) compasses[i].tick();
@@ -192,6 +201,7 @@ var GamePlayScene = function(game, stage)
     if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
 
+    vfield.draw(fullview);
     if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
     hdvfield.draw(film);
     if(!ui_toggle || !filings.default)
@@ -291,7 +301,6 @@ var GamePlayScene = function(game, stage)
     var x_space = self.w/self.dw;
     var y_space = self.h/self.dh;
     var max_length = 10;
-    var vec_length = 2;
     //temp vars for tick/draw
     var x;
     var y;
@@ -388,10 +397,10 @@ var GamePlayScene = function(game, stage)
           //ctx.fillStyle = ctx.strokeStyle;
           //ctx.fillRect(x-2,y-2,4,4);
           dc.drawLine(
-            x-(self.dx[index]*vec_length/2),
-            y-(self.dy[index]*vec_length/2),
-            x+(self.dx[index]*vec_length/2),
-            y+(self.dy[index]*vec_length/2)
+            x-(self.dx[index]*view.vec_l/2),
+            y-(self.dy[index]*view.vec_l/2),
+            x+(self.dx[index]*view.vec_l/2),
+            y+(self.dy[index]*view.vec_l/2)
           );
 
           ctx.globalAlpha = 1;
@@ -687,16 +696,21 @@ var GamePlayScene = function(game, stage)
     self.w = fieldview_s;
     self.h = fieldview_s;
 
-    self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
-    self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
-    self.fw = vfield.xScreenToFSpace(self.x+self.w*1.5)-self.fx;
-    self.fh = vfield.xScreenToFSpace(self.y+self.h*1.5)-self.fy;
+    self.screenToF = function()
+    {
+      self.fx = vfield.xScreenToFSpace(self.x+self.w/2);
+      self.fy = vfield.yScreenToFSpace(self.y+self.h/2);
+      self.fw = vfield.xScreenToFSpace(self.x+self.w*1.5)-self.fx;
+      self.fh = vfield.xScreenToFSpace(self.y+self.h*1.5)-self.fy;
+    }
+    self.screenToF();
 
     self.default = true;
     self.colored = false;
     self.blurred = false;
     self.draggable = true;
     self.inert = true;
+    self.vec_l = 2;
 
     self.draw = function()
     {
