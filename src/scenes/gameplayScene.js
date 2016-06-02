@@ -59,6 +59,7 @@ var GamePlayScene = function(game, stage)
   var tools_toggle_btn;
   var guess_toggle_btn;
   var guess_btn;
+  var message_bg_disp;
   var earth;
 
   self.ready = function()
@@ -143,6 +144,7 @@ var GamePlayScene = function(game, stage)
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
     earth = 0;
+    message_bg_disp = 0;
 
     clicker.register(fallback);
     hit_ui = false;
@@ -150,7 +152,7 @@ var GamePlayScene = function(game, stage)
     input_state = INPUT_RESUME;
     game_mode = GAME_PLAYGROUND;
 
-    //setTimeout(function(){displayMessage(["Hey there","This is great","This is really long let me keep writing I'm trying to test how quicly I can type and I'm finding out that I actually don't normally write out continuous sentences like this so have probably built up a bias towards burst typing and stuff but now I think that this is probably long enough.","one more"]);},100);
+    setTimeout(function(){displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);},1000);
   };
 
   self.tick = function()
@@ -179,6 +181,9 @@ var GamePlayScene = function(game, stage)
       if(compasses[i].dirty || dirty) compasses[i].tick();
       compasses[i].dirty = false;
     }
+
+    if(input_state == INPUT_PAUSE) message_bg_disp = lerp(message_bg_disp,1,0.1);
+    else                           message_bg_disp = lerp(message_bg_disp,0,0.1);
 
     hit_ui = false;
   };
@@ -229,6 +234,18 @@ var GamePlayScene = function(game, stage)
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
 
     ctx.font = blurb_f+"px Open Sans";
+
+    var grad = ctx.createLinearGradient(
+      0,dc.height+10+200-message_bg_disp*200,
+      0,dc.height+10-message_bg_disp*200
+    );
+    grad.addColorStop(0,"rgba(0,0,0,1)");
+    grad.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=grad;
+    ctx.fillRect(0, dc.height+10-message_bg_disp*200, dc.width-sidebar_w, 200);
+    ctx.drawImage(tall_img, 50, dc.height+10-message_bg_disp*200, 80, 200);
+
+    ctx.fillStyle = "#FFFFFF";
     dom.draw(blurb_f,dc);
   };
 
@@ -826,10 +843,10 @@ var GamePlayScene = function(game, stage)
   }
 
   var blurb_f = 20;
-  var blurb_x = 0;
-  var blurb_y = dc.height-300;
-  var blurb_w = dc.width-sidebar_w;
-  var blurb_h = 300;
+  var blurb_x = 190;
+  var blurb_h = 150;
+  var blurb_y = dc.height-blurb_h;
+  var blurb_w = dc.width-sidebar_w-blurb_x;
   var displayMessage = function(lines)
   {
     input_state = INPUT_PAUSE;

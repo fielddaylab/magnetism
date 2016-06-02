@@ -100,7 +100,6 @@ var CanvDom = function(canv)
   self.click = mclicked;
   self.draw = function(text_h,canv)
   {
-    canv.context.fillStyle = "#000000";
     canv.context.textAlign = "left";
     if(!Array.isArray(m)) m = [m]; //boy I'm lazy...
     for(var i = 0; i < m.length; i++)
