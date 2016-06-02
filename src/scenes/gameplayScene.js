@@ -8,7 +8,9 @@ var GamePlayScene = function(game, stage)
 
   var n_ticks;
 
-  var sidebar_w = 300;
+  var sidebar_w = 250;
+  var sidebar_xb = 13;
+  var sidebar_yb = 9;
   var res = 50;
   var res_w = 1*res;
   var res_h = 1*res;
@@ -19,7 +21,7 @@ var GamePlayScene = function(game, stage)
   var fieldview_s = 150;
   var charge_s = 20;
   var guess_s = 40;
-  var btn_h = 40;
+  var btn_h = 60;
   var title_h = 30;
 
   var hit_ui;
@@ -115,8 +117,8 @@ var GamePlayScene = function(game, stage)
 
     ui_toggle = false;
     guess_placed = false;
-    tools_toggle_btn = new ButtonBox(dc.width-sidebar_w,            0,sidebar_w/2,btn_h,function(evt){ui_toggle = false;});
-    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_w/2,0,sidebar_w/2,btn_h,function(evt){ui_toggle = true;});
+    tools_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb                         ,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = false;});
+    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = true;});
     guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,function(evt){if(!ui_toggle || hit_ui) return; guess_placed = true; hit_ui = true;});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
@@ -163,25 +165,16 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#90764A";
     ctx.lineWidth = 1;
     ctx.lineWidth = 1;
-    ctx.fillRect(dc.width-sidebar_w,0,sidebar_w,dc.height);
+    ctx.drawImage(sidebar_img,dc.width-sidebar_w,0,sidebar_w,dc.height);
 
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "25px Open Sans";
-    ctx.textAlign = "center";
-    ctx.fillRect(dc.width-sidebar_w,0,sidebar_w,btn_h);
-    if(ui_toggle) ctx.fillStyle = "#000000"; else ctx.fillStyle = "#5C9BF3"; ctx.fillText("TOOLS",tools_toggle_btn.x+tools_toggle_btn.w/2,tools_toggle_btn.y+tools_toggle_btn.h*0.8);
-    if(ui_toggle) ctx.fillStyle = "#5C9BF3"; else ctx.fillStyle = "#000000"; ctx.fillText("GUESS",guess_toggle_btn.x+guess_toggle_btn.w/2,guess_toggle_btn.y+guess_toggle_btn.h*0.8);
-    var cx;
-    if(!ui_toggle) cx = tools_toggle_btn.x+tools_toggle_btn.w/2; else cx = guess_toggle_btn.x+guess_toggle_btn.w/2;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.moveTo(cx-8,btn_h-1);
-    ctx.lineTo(cx,btn_h+8);
-    ctx.lineTo(cx+8,btn_h-1);
-    ctx.fill();
-    ctx.stokeStyle = "#000000";
-    dc.drawLine(dc.width-sidebar_w/2,5,dc.width-sidebar_w/2,btn_h-10);
-    if(ui_toggle)  guess_btn.draw(dc);
+    var btn_overlap = 15;
+    if(!ui_toggle) ctx.drawImage(tools_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
+    else           ctx.drawImage(guess_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
+
+    //tools_toggle_btn.draw(dc);
+    //guess_toggle_btn.draw(dc);
+
+    if(ui_toggle) guess_btn.draw(dc);
 
     //charges
     for(var i = 0; i < charges.length; i++)
@@ -192,21 +185,23 @@ var GamePlayScene = function(game, stage)
     //compasses
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "18px Open Sans";
+    ctx.textAlign = "center";
     if(!ui_toggle) ctx.fillText("COMPASSES",dc.width-sidebar_w/2,btn_h+30);
-    for(var i = 0; i < compasses.length; i++)
-      if(!ui_toggle || !compasses[i].default) compasses[i].draw();
     if(!ui_toggle) ctx.fillText("MAGNETIC FILM",dc.width-sidebar_w/2,film.default_y-30);
-    if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
     if(!ui_toggle) ctx.fillText("IRON FILINGS",dc.width-sidebar_w/2,filings.default_y-30);
-    if(!ui_toggle || !filings.default)
-      if(filings.inert || filings.dragging) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
     if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
+
+    if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
+    hdvfield.draw(film);
+    if(!ui_toggle || !filings.default)
+      if(filings.inert || filings.dragging) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
+    ifvfield.draw(filings);
+    for(var i = 0; i < compasses.length; i++)
+      if(!ui_toggle || !compasses[i].default) compasses[i].draw();
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
 
-    ifvfield.draw(filings);
-    hdvfield.draw(film);
   };
 
   self.cleanup = function()
@@ -499,8 +494,8 @@ var GamePlayScene = function(game, stage)
       var d = sqrt(xdiff*xdiff+ydiff*ydiff);
       var h = 20;
       var hw = 20;
-      ctx.drawImage(mag_n_img,-d/2+hw,-h/2,d/2-hw,h);
-      ctx.drawImage(mag_s_img,0,-h/2,d/2-hw,h);
+      ctx.drawImage(mag_n_img,-d/2+hw-2,-h/2,d/2-hw+2,h);
+      ctx.drawImage(mag_s_img,0,-h/2,d/2-hw+2,h);
       ctx.drawImage(mag_n_tip_img,-d/2,-h/2,hw,h);
       ctx.drawImage(mag_s_tip_img,d/2-hw,-h/2,hw,h);
       ctx.restore();

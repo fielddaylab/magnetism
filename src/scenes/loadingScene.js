@@ -29,13 +29,21 @@ var LoadingScene = function(game, stage)
     canv.context.fillText(".",0,0);// funky way to encourage any custom font to load
 
     //put strings in 'img_srcs' as separate array to get "static" count
-    /*
-    img_srcs.push("assets/man.png");
-    */
+    img_srcs.push("assets/mag_n.png");
+    img_srcs.push("assets/mag_s.png");
+    img_srcs.push("assets/mag_red.png");
+    img_srcs.push("assets/mag_blue.png");
+    img_srcs.push("assets/compass.png");
+    img_srcs.push("assets/needle.png");
+    img_srcs.push("assets/iron_filings.png");
+    img_srcs.push("assets/mag_film.png");
+    img_srcs.push("assets/sidebar.png");
+    img_srcs.push("assets/guess_btn.png");
+    img_srcs.push("assets/tools_btn.png");
     for(var i = 0; i < img_srcs.length; i++)
     {
       images[i] = new Image();
-      images[i].onload = imageLoaded; 
+      images[i].onload = imageLoaded;
       images[i].src = img_srcs[i];
     }
     imageLoaded(); //call once to prevent 0/0 != 100% bug
@@ -43,8 +51,9 @@ var LoadingScene = function(game, stage)
 
   self.tick = function()
   {
-    if(progress <= imagesloaded/(img_srcs.length+1)) progress += 100;//0.01;
-    if(progress >= 1.0) game.nextScene();
+    var p = imagesloaded/(img_srcs.length+1);
+    if(progress <= p) progress += 0.01;
+    if(p >= 1.0) { bake(); game.nextScene(); }
   };
 
   self.draw = function()
