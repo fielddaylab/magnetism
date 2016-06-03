@@ -56,6 +56,9 @@ var GamePlayScene = function(game, stage)
 
   var ui_toggle;
   var guess_placed;
+  var guess_n_d;
+  var guess_s_d;
+  var guess_d;
   var tools_toggle_btn;
   var guess_toggle_btn;
   var guess_btn;
@@ -144,7 +147,32 @@ var GamePlayScene = function(game, stage)
     guess_placed = false;
     tools_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb                         ,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = false;});
     guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = true;});
-    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,function(evt){if(!ui_toggle || hit_ui) return; if(nguess.default || sguess.default) return; guess_placed = true; hit_ui = true;});
+    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,
+      function(evt)
+      {
+        if(!ui_toggle || hit_ui) return;
+        if(nguess.default || sguess.default) return;
+        guess_placed = true;
+        var xd;
+        var yd;
+        xd = magnets[0].nfx-nguess.fx;
+        yd = magnets[0].nfy-nguess.fy;
+        guess_n_d = sqrt(xd*xd + yd*yd);
+        xd = magnets[0].sfx-sguess.fx;
+        yd = magnets[0].sfy-sguess.fy;
+        guess_s_d = sqrt(xd*xd + yd*yd);
+        guess_d = guess_n_d+guess_s_d;
+        hit_ui = true;
+        var comment;
+        var stats;
+        if(guess_d < 1) comment = "Nice Guess!";
+        else            comment = "Let's see how you did-";
+        stats = "You were "+fdisp(guess_n_d)+" away from the north pole, and "+fdisp(guess_n_d)+" away from the south pole. Your total score is "+fdisp(guess_d)+".";
+        displayMessage([comment,stats,"Ok. Bye!"]);
+        magnets[0].draggable = true;
+        game_mode = GAME_PLAYGROUND;
+      }
+    );
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
@@ -155,11 +183,13 @@ var GamePlayScene = function(game, stage)
     hit_ui = false;
 
     input_state = INPUT_RESUME;
+    guess_n_d = 0;
+    guess_s_d = 0;
 
     if(game_mode == GAME_PLAYGROUND)
-      displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);
+      displayMessage(["This is a playground.","Play around with the tools to see how they behave in the presence of a magnetic field."]);
     if(game_mode == GAME_FIND)
-      displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);
+      displayMessage(["Find The Magnet!","You can place each tool somewhere on the dirt.","When ready, place a guess where you think the magnet is!"]);
   };
 
   self.tick = function()
@@ -256,6 +286,12 @@ var GamePlayScene = function(game, stage)
     //guesses
     if(ui_toggle || !nguess.default) ctx.drawImage(guess_n_img,nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.drawImage(guess_s_img,sguess.x,sguess.y,sguess.w,sguess.h);
+    if(guess_n_d != 0 && guess_s_d != 0)
+    {
+      ctx.strokeStyle = "#FF0000";
+      dc.drawLine(magnets[0].nx+magnets[0].nw/2,magnets[0].ny+magnets[0].nh/2,nguess.x+nguess.w/2,nguess.y+nguess.h/2);
+      dc.drawLine(magnets[0].sx+magnets[0].sw/2,magnets[0].sy+magnets[0].sh/2,sguess.x+sguess.w/2,sguess.y+sguess.h/2);
+    }
 
     ctx.font = blurb_f+"px Open Sans";
 
@@ -554,7 +590,7 @@ var GamePlayScene = function(game, stage)
     {
       ctx.save();
       ctx.translate(self.x+self.w/2,self.y+self.h/2);
-      ctx.rotate(Math.atan2(self.nfy-self.sfy,self.nfx-self.sfx));
+      ctx.rotate(Math.atan2(self.nfy-self.sfy,self.nfx-self.sfx)+Math.PI);
       var xdiff = self.nx-self.sx;
       var ydiff = self.ny-self.sy;
       var d = sqrt(xdiff*xdiff+ydiff*ydiff);

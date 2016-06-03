@@ -195,9 +195,8 @@ var bake = function()
 
   w = 100;
   h = 100;
-
   guess_n_img = GenIcon(w,h);
-  guess_n_img.context.fillStyle = "#000000";
+  guess_n_img.context.fillStyle = "#FFFFFF";
   guess_n_img.context.beginPath();
   guess_n_img.context.arc(w/2,h/6,h/6,0,2*Math.PI);
   guess_n_img.context.fill();
@@ -206,9 +205,27 @@ var bake = function()
   guess_n_img.context.lineTo(w/2,h/2);
   guess_n_img.context.lineTo(2*w/3,h/6);
   guess_n_img.context.fill();
+  var b = 4;
+  guess_n_img.context.fillStyle = "#000000";
+  guess_n_img.context.beginPath();
+  guess_n_img.context.arc(w/2,h/6,h/6-b,0,2*Math.PI);
+  guess_n_img.context.fill();
+  guess_n_img.context.beginPath();
+  guess_n_img.context.moveTo(b+w/3,h/6);
+  guess_n_img.context.lineTo(w/2,h/2-b);
+  guess_n_img.context.lineTo(2*w/3-b,h/6);
+  guess_n_img.context.fill();
 
   guess_s_img = GenIcon(w,h);
   guess_s_img.context.drawImage(guess_n_img,0,0,w,h);
+
+  guess_n_img.context.fillStyle = "#FFFFFF";
+  guess_n_img.context.textAlign = "center";
+  guess_n_img.context.fillText("N",w/2,h/4);
+  guess_s_img.context.fillStyle = "#FFFFFF";
+  guess_s_img.context.textAlign = "center";
+  guess_s_img.context.fillText("S",w/2,h/4);
+
 
   sidebar_tools_img = new Image();
   sidebar_tools_img.src = "assets/sidebar_tools.png";
