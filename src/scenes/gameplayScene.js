@@ -216,15 +216,96 @@ var GamePlayScene = function(game, stage)
     tutests[i] = tfunc;
     i++;
 
-    tuts[i] = ["Hey!","How ya doin?"];
+    tuts[i] = ["Hey!","I'm going to tell you about magnets.","See those black flakes on the table? Those are just small flakes of iron.","They'll always point toward the end of a magnet (if the magnet is close enough).","Why do they point toward the ends, and not the middle?","Well, the ends of a magnet is where its Poles are located- and it's also where the magnetic effect can be felt the strongest.","What are poles, then?","Well, to keep things simple, let's start by focusing on just the SOUTH end of the magnet..."];
     tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
-    tutests[i] = ffunc;
+    tutests[i] = tfunc;
     i++;
 
-    tuts[i] = ["Hey!","How ya doin?"];
-    tutstart[i] = noop;
+    tuts[i] = ["Now lets bring in a compass to test some things..."];
+    tutstart[i] = function() {
+      magnets[0].nfx = -100;
+      magnets[0].nfy = -100;
+      magnets[0].sfx = 0;
+      magnets[0].sfy = 0;
+      magnets[0].draggable = false;
+      magnets[0].orientFromField();
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
+    tuts[i] = ["See how the compass also points toward the magnet's pole?","Well, *one* end of the compass points to the pole...","A compass is really just a little magnet that's free to spin whatever direction it wants (sometimes it floats in water, or is hung on a string...)","This means it has two poles (North and South), just like every other magnet!","So, which pole is pointing toward the big magnet's South pole?","The answer is the compass' North pole (compasses often have a red needle to represent its north pole, and a white one to represent its south pole).","So, how does the compass decide which needle to point toward which pole?","There are a couple rules that magnets follow:","Rule 1: North attracts South, South attracts North (or, Opposites Attract)","Rule 2: North repels North, South repels South (or, Likes Repel)","Since the part of the magnet on the table is a South pole, it attracts the compass' North pole","Cool- so the North needle of the compass will point toward the South pole of another magnet","Now, let's mix things up."];
+    tutstart[i] = function() {
+      compasses[0].fx = 0.1;
+      compasses[0].fy = -0.1;
+      compasses[0].orientFromField();
+      compasses[0].inert = false;
+      compasses[0].default = false;
+      compasses[0].draggable = false;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
+    tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
+    tutstart[i] = function(){
+      magnets[0].nfx = -0.2;
+      magnets[0].nfy = -0.2;
+      magnets[0].sfx = 0.2;
+      magnets[0].sfy = 0.2;
+      magnets[0].orientFromField();
+
+      compasses[0].fx = -0.3;
+      compasses[0].fy = -0.3;
+      compasses[0].orientFromField();
+      compasses[0].inert = true;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
+    tuts[i] = ["Hmmm... this is interesting.","The compass' North pole is pointing AWAY from the magnet's South pole!","But, it's also pointing away from the magnet's North pole...","So if it's supposed to point TOWARD South, and AWAY from North, but those are different directions... which way will it point?","This brings us to our final rule:","Rule 3: A magnet affects its surroundings inversely proportional to its distance- (or, the further away, the weaker the effect)","So the North pole of the compass does still want to point toward South,","but since it is closer to the North end of the magnet, it wants to point away from North even more! (Even if this means also pointing away from South!)","Ok. Let's do one more test."];
+    tutstart[i] = function(){
+      compasses[0].inert = false;
+      compasses[0].dirty = true;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
+    tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
+    tutstart[i] = function(){
+      compasses[0].fx = 0.2;
+      compasses[0].fy = -0.2;
+      compasses[0].orientFromField();
+      compasses[0].inert = true;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
+    tuts[i] = ["Its pointing parallel to the magnet!","Because the needle just as close to the North pole of the magnet as it is to the South pole,","It equally wants to point TOWARD South and AWAY from North!", "This illustrates an interesting relationship between compasses and iron filings...","If you pay close attention, the Compass will always point in the same direction as the iron filings!","It will just be pointing toward or away from the magnet depending on which poles are where!","Now, feel free to drag around some compasses to get a feel for how they interact with magnets.","Then, go find my magnets!"];
+    tutstart[i] = function(){
+      compasses[0].inert = false;
+      compasses[0].dirty = true;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
+    tuts[i] = [];
+    tutstart[i] = function(){
+      compasses[0].draggable = true;
+      magnets[0].draggable = true;
+    };
     tutdo[i] = noop;
     tutdraw[i] = noop;
     tutests[i] = ffunc;
@@ -338,7 +419,7 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < compasses.length; i++)
     {
       if(!ui_toggle) ctx.drawImage(compass_dot_img,compasses[i].default_x,compasses[i].default_y,compasses[i].w,compasses[i].h);
-      if((!ui_toggle && compasses[i].default) || (!compasses[i].default && (game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || !compasses[i].dragging))) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
+      if((!ui_toggle && compasses[i].default) || (!compasses[i].default && (game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || !compasses[i].dragging))) compasses[i].draw(game_mode == GAME_FIND && compasses[i].dragging);
       if(game_mode == GAME_FIND && compasses[i].dragging) ctx.drawImage(compass_drop_img,compasses[i].x,compasses[i].y,compasses[i].w,compasses[i].h);
     }
     //guesses
@@ -472,6 +553,7 @@ var GamePlayScene = function(game, stage)
     var y;
     var fx;
     var fy;
+    var d;
 
     self.tick = function(view,charges,magnets)
     {
@@ -536,17 +618,17 @@ var GamePlayScene = function(game, stage)
 
           if(view.colored)
           {
-            d2 = self.dr[index];
-                 if(d2 > 10) ctx.strokeStyle = "#FF0000";
-            else if(d2 >  9) ctx.strokeStyle = "#BB4400";
-            else if(d2 >  8) ctx.strokeStyle = "#888800";
-            else if(d2 >  7) ctx.strokeStyle = "#44BB00";
-            else if(d2 >  6) ctx.strokeStyle = "#00FF00";
-            else if(d2 >  5) ctx.strokeStyle = "#00BB44";
-            else if(d2 >  4) ctx.strokeStyle = "#008888";
-            else if(d2 >  3) ctx.strokeStyle = "#0044BB";
-            else if(d2 >  2) ctx.strokeStyle = "#0000FF";
-            else if(d2 >  1) ctx.strokeStyle = "#4400BB";
+            d = self.dr[index];
+                 if(d > 10) ctx.strokeStyle = "#FF0000";
+            else if(d >  9) ctx.strokeStyle = "#BB4400";
+            else if(d >  8) ctx.strokeStyle = "#888800";
+            else if(d >  7) ctx.strokeStyle = "#44BB00";
+            else if(d >  6) ctx.strokeStyle = "#00FF00";
+            else if(d >  5) ctx.strokeStyle = "#00BB44";
+            else if(d >  4) ctx.strokeStyle = "#008888";
+            else if(d >  3) ctx.strokeStyle = "#0044BB";
+            else if(d >  2) ctx.strokeStyle = "#0000FF";
+            else if(d >  1) ctx.strokeStyle = "#4400BB";
             else             ctx.strokeStyle = "#880088";
           }
 
@@ -648,6 +730,16 @@ var GamePlayScene = function(game, stage)
       self.h = abs(self.ny-self.sy)+self.sh;
     }
     self.calcBB();
+
+    self.orientFromField = function()
+    {
+      self.nx = vfield.xFSpaceToScreen(self.nfx)-self.nw/2;
+      self.ny = vfield.yFSpaceToScreen(self.nfy)-self.nh/2;
+      self.sx = vfield.xFSpaceToScreen(self.sfx)-self.sw/2;
+      self.sy = vfield.yFSpaceToScreen(self.sfy)-self.sh/2;
+      self.calcBB();
+      self.dirty = true;
+    }
 
     self.draggable = true;
     self.inert = false;
@@ -780,6 +872,13 @@ var GamePlayScene = function(game, stage)
     self.dy = 0;
     self.dr = 0;
     self.d2 = 0;
+
+    self.orientFromField = function()
+    {
+      self.x = vfield.xFSpaceToScreen(self.fx)-self.w/2;
+      self.y = vfield.yFSpaceToScreen(self.fy)-self.h/2;
+      self.dirty = true;
+    }
 
     self.default = true;
     self.draggable = true;
