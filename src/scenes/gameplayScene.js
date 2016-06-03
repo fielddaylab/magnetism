@@ -31,7 +31,7 @@ var GamePlayScene = function(game, stage)
   var compass_r = 30;
   var fieldview_s = 150;
   var charge_s = 20;
-  var guess_s = 40;
+  var guess_s = 100;
   var btn_h = 60;
   var title_h = 30;
 
@@ -246,8 +246,9 @@ var GamePlayScene = function(game, stage)
       if((!ui_toggle && compasses[i].default) || (!compasses[i].default && (game_mode == GAME_PLAYGROUND || !compasses[i].dragging))) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
       if(game_mode == GAME_FIND && compasses[i].dragging) ctx.drawImage(compass_drop_img,compasses[i].x,compasses[i].y,compasses[i].w,compasses[i].h);
     }
-    if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
-    if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
+    //guesses
+    if(ui_toggle || !nguess.default) ctx.drawImage(guess_n_img,nguess.x,nguess.y,nguess.w,nguess.h);
+    if(ui_toggle || !sguess.default) ctx.drawImage(guess_s_img,sguess.x,sguess.y,sguess.w,sguess.h);
 
     ctx.font = blurb_f+"px Open Sans";
 
@@ -673,6 +674,7 @@ var GamePlayScene = function(game, stage)
     self.default = true;
     self.draggable = true;
     self.inert = false;
+    self.placed = false;
 
     self.tick = function()
     {
@@ -710,6 +712,7 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(!self.draggable || hit_ui || (self.default && ui_toggle)) return;
+      if(game_mode == GAME_FIND && self.placed) return;
       self.dragging = true;
       self.drag(evt);
     }
@@ -733,6 +736,7 @@ var GamePlayScene = function(game, stage)
         self.y = self.default_y;
         self.default = true
       }
+      else self.placed = true;
       self.dragging = false;
     }
   }
@@ -763,6 +767,7 @@ var GamePlayScene = function(game, stage)
     self.blurred = false;
     self.draggable = true;
     self.inert = true;
+    self.placed = false;
     self.vec_l = 2;
 
     self.draw = function()
@@ -778,6 +783,7 @@ var GamePlayScene = function(game, stage)
     self.dragStart = function(evt)
     {
       if(!self.draggable || hit_ui || (self.default && ui_toggle)) return;
+      if(game_mode == GAME_FIND && self.placed) return;
       self.dragging = true;
       self.drag(evt);
     }
@@ -801,6 +807,7 @@ var GamePlayScene = function(game, stage)
         self.y = self.default_y;
         self.default = true;
       }
+      else self.placed = true;
       self.dragging = false;
     }
   }

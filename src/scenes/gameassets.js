@@ -8,6 +8,8 @@ var mag_n_tip_img;
 var mag_n_img;
 var mag_s_tip_img;
 var mag_s_img;
+var guess_n_img;
+var guess_s_img;
 var iron_filings_img;
 var iron_filings_dot_img;
 var iron_filings_drop_img;
@@ -21,6 +23,9 @@ var guess_btn_img;
 
 var bake = function()
 {
+  var w;
+  var h;
+
   circle = GenIcon(100,100);
   circle.context.strokeStyle = "#000000";
   circle.context.lineWidth = 5;
@@ -187,6 +192,23 @@ var bake = function()
   mag_s_img.context.fillRect(0,0,mag_s_img.width,bev);
   mag_s_img.context.fillRect(0,mag_s_img.height-bev,mag_s_img.width,bev);
   */
+
+  w = 100;
+  h = 100;
+
+  guess_n_img = GenIcon(w,h);
+  guess_n_img.context.fillStyle = "#000000";
+  guess_n_img.context.beginPath();
+  guess_n_img.context.arc(w/2,h/6,h/6,0,2*Math.PI);
+  guess_n_img.context.fill();
+  guess_n_img.context.beginPath();
+  guess_n_img.context.moveTo(w/3,h/6);
+  guess_n_img.context.lineTo(w/2,h/2);
+  guess_n_img.context.lineTo(2*w/3,h/6);
+  guess_n_img.context.fill();
+
+  guess_s_img = GenIcon(w,h);
+  guess_s_img.context.drawImage(guess_n_img,0,0,w,h);
 
   sidebar_tools_img = new Image();
   sidebar_tools_img.src = "assets/sidebar_tools.png";
