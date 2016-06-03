@@ -242,8 +242,11 @@ var GamePlayScene = function(game, stage)
 
     var dirty = false;
     clicker.flush();
-    if(input_state == INPUT_PAUSE) dragger.ignore();
-    else { if(dragger) dragger.flush(); }
+    if(dragger)
+    {
+      if(input_state == INPUT_PAUSE) dragger.ignore();
+      else dragger.flush();
+    }
     for(var i = 0; i < charges.length; i++)
     {
       dirty = (charges[i].dirty || dirty);
@@ -533,18 +536,18 @@ var GamePlayScene = function(game, stage)
 
           if(view.colored)
           {
-            d2 = self.d2[index];
-                 if(d2 > 100) ctx.strokeStyle = "#FF0000";
-            else if(d2 >  90) ctx.strokeStyle = "#BB4400";
-            else if(d2 >  80) ctx.strokeStyle = "#888800";
-            else if(d2 >  70) ctx.strokeStyle = "#44BB00";
-            else if(d2 >  60) ctx.strokeStyle = "#00FF00";
-            else if(d2 >  50) ctx.strokeStyle = "#00BB44";
-            else if(d2 >  40) ctx.strokeStyle = "#008888";
-            else if(d2 >  30) ctx.strokeStyle = "#0044BB";
-            else if(d2 >  20) ctx.strokeStyle = "#0000FF";
-            else if(d2 >  10) ctx.strokeStyle = "#4400BB";
-            else              ctx.strokeStyle = "#880088";
+            d2 = self.dr[index];
+                 if(d2 > 10) ctx.strokeStyle = "#FF0000";
+            else if(d2 >  9) ctx.strokeStyle = "#BB4400";
+            else if(d2 >  8) ctx.strokeStyle = "#888800";
+            else if(d2 >  7) ctx.strokeStyle = "#44BB00";
+            else if(d2 >  6) ctx.strokeStyle = "#00FF00";
+            else if(d2 >  5) ctx.strokeStyle = "#00BB44";
+            else if(d2 >  4) ctx.strokeStyle = "#008888";
+            else if(d2 >  3) ctx.strokeStyle = "#0044BB";
+            else if(d2 >  2) ctx.strokeStyle = "#0000FF";
+            else if(d2 >  1) ctx.strokeStyle = "#4400BB";
+            else             ctx.strokeStyle = "#880088";
           }
 
           if(view.blurred)
