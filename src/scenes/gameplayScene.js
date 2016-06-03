@@ -144,7 +144,7 @@ var GamePlayScene = function(game, stage)
     guess_placed = false;
     tools_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb                         ,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = false;});
     guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = true;});
-    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,function(evt){if(!ui_toggle || hit_ui) return; guess_placed = true; hit_ui = true;});
+    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,function(evt){if(!ui_toggle || hit_ui) return; if(nguess.default || sguess.default) return; guess_placed = true; hit_ui = true;});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
@@ -199,6 +199,9 @@ var GamePlayScene = function(game, stage)
   self.draw = function()
   {
     //sidebar
+    ctx.fillStyle = "#F2C87C";
+    ctx.fillRect(0,0,dc.width,dc.height);
+
     ctx.strokeStyle = "#000000";
     ctx.fillStyle = "#90764A";
     ctx.lineWidth = 1;
@@ -210,10 +213,14 @@ var GamePlayScene = function(game, stage)
     if(!ui_toggle) ctx.drawImage(tools_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
     else           ctx.drawImage(guess_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
 
-    //tools_toggle_btn.draw(dc);
-    //guess_toggle_btn.draw(dc);
-
-    if(ui_toggle) guess_btn.draw(dc);
+    if(!guess_placed && ui_toggle)
+    {
+      guess_btn.draw(dc);
+      ctx.fillStyle = "#000000";
+      if(nguess.default && sguess.default) ctx.fillText("Place Your Guesses...",guess_btn.x+10,guess_btn.y+guess_btn.h-10);
+      else if(nguess.default || nguess.dragging || sguess.default || sguess.dragging) ctx.fillText("Place Both Guesses...",guess_btn.x+10,guess_btn.y+guess_btn.h-10);
+      else ctx.fillText("Click to Confirm Guess",guess_btn.x+10,guess_btn.y+guess_btn.h-10);
+    }
 
     //charges
     for(var i = 0; i < charges.length; i++)
