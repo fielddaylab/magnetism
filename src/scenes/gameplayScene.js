@@ -65,6 +65,11 @@ var GamePlayScene = function(game, stage)
   self.ready = function()
   {
     n_ticks = 0;
+    switch(game.start)
+    {
+      case 0: game_mode = GAME_PLAYGROUND; break;
+      case 1: game_mode = GAME_FIND; break;
+    }
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
@@ -150,7 +155,6 @@ var GamePlayScene = function(game, stage)
     hit_ui = false;
 
     input_state = INPUT_RESUME;
-    game_mode = GAME_PLAYGROUND;
 
     setTimeout(function(){displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);},1000);
   };
@@ -221,15 +225,23 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#000000";
 
     if(game_mode == GAME_PLAYGROUND) vfield.draw(fullview);
+    //film
     if(!ui_toggle) ctx.drawImage(mag_film_dot_img,film.default_x,film.default_y,film.w,film.h);
-    if(!ui_toggle || !film.default) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
-    if(game_mode == GAME_PLAYGROUND || !hdvfield.dragging) hdvfield.draw(film);
+    if((!ui_toggle && film.default) || (!film.default && (game_mode == GAME_PLAYGROUND || !film.dragging))) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
+    if(game_mode == GAME_FIND && film.dragging) ctx.drawImage(mag_film_drop_img,film.x,film.y,film.w,film.h);
+    if(game_mode == GAME_PLAYGROUND || !film.dragging) hdvfield.draw(film);
+    //filings
     if(!ui_toggle) ctx.drawImage(iron_filings_dot_img,filings.default_x,filings.default_y,filings.w,filings.h);
-    if(!ui_toggle || !filings.default)
-      if(filings.inert || (game_mode != GAME_PLAYGROUND && filings.dragging)) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
-    if(game_mode == GAME_PLAYGROUND || !ivfield.dragging) ifvfield.draw(filings);
+    if(!ui_toggle && filings.default) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
+    if(filings.dragging) ctx.drawImage(iron_filings_drop_img,filings.x,filings.y,filings.w,filings.h);
+    if(game_mode == GAME_PLAYGROUND || !filings.dragging) ifvfield.draw(filings);
+    //compasses
     for(var i = 0; i < compasses.length; i++)
-      if(!ui_toggle || !compasses[i].default) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
+    {
+      if(!ui_toggle) ctx.drawImage(compass_dot_img,compasses[i].default_x,compasses[i].default_y,compasses[i].w,compasses[i].h);
+      if((!ui_toggle && compasses[i].default) || (!compasses[i].default && (game_mode == GAME_PLAYGROUND || !compasses[i].dragging))) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
+      if(game_mode == GAME_FIND && compasses[i].dragging) ctx.drawImage(compass_drop_img,compasses[i].x,compasses[i].y,compasses[i].w,compasses[i].h);
+    }
     if(ui_toggle || !nguess.default) ctx.fillRect(nguess.x,nguess.y,nguess.w,nguess.h);
     if(ui_toggle || !sguess.default) ctx.fillRect(sguess.x,sguess.y,sguess.w,sguess.h);
 
@@ -670,7 +682,6 @@ var GamePlayScene = function(game, stage)
     self.draw = function(dead)
     {
       ctx.lineWidth = 2;
-      ctx.drawImage(compass_dot_img,self.default_x,self.default_y,self.w,self.h);
       ctx.drawImage(compass_img,self.x,self.y,self.w,self.h);
       if(self.inert || dead || self.dr < 0.001)
       {
