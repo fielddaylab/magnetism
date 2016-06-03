@@ -167,8 +167,8 @@ var GamePlayScene = function(game, stage)
         hit_ui = true;
         var comment;
         var stats;
-        if(guess_d < 1) comment = "Nice Guess!";
-        else            comment = "Let's see how you did-";
+        if(guess_d < 0.5) comment = "Nice Guess!";
+        else              comment = "Let's see how you did:";
         stats = "You were "+fdisp(guess_n_d)+" away from the north pole, and "+fdisp(guess_n_d)+" away from the south pole. Your total score is "+fdisp(guess_d)+".";
         displayMessage([comment,stats,"Ok. Bye!"]);
         magnets[0].draggable = true;
@@ -789,7 +789,11 @@ var GamePlayScene = function(game, stage)
         self.y = self.default_y;
         self.default = true
       }
-      else self.placed = true;
+      else
+      {
+        self.placed = true;
+        checkAllPlaced();
+      }
       self.dragging = false;
     }
   }
@@ -860,7 +864,11 @@ var GamePlayScene = function(game, stage)
         self.y = self.default_y;
         self.default = true;
       }
-      else self.placed = true;
+      else
+      {
+        self.placed = true;
+        checkAllPlaced();
+      }
       self.dragging = false;
     }
   }
@@ -916,6 +924,17 @@ var GamePlayScene = function(game, stage)
       }
       self.dragging = false;
     }
+  }
+
+  var checkAllPlaced = function()
+  {
+    if(game_mode != GAME_FIND) return;
+
+    var placed = film.placed && filings.placed;
+    for(var i = 0; i < compasses.length && placed; i++)
+      placed = compasses[i].placed;
+
+    if(placed) displayMessage(["Now that you've placed all your tools, go to the \"Guess\" tab, and place a guess!"]);
   }
 
   var blurb_f = 20;
