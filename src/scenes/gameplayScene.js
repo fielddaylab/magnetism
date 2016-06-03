@@ -21,7 +21,7 @@ var GamePlayScene = function(game, stage)
 
   var sidebar_w = 210;
   var sidebar_xb = 10;
-  var sidebar_yb = 9;
+  var sidebar_yb = 6;
   var res = 50;
   var res_w = 1*res;
   var res_h = 1*res;
@@ -33,7 +33,7 @@ var GamePlayScene = function(game, stage)
   var charge_s = 20;
   var guess_s = 100;
   var btn_h = 60;
-  var title_h = 30;
+  var title_h = 10;
 
   var hit_ui;
   var dragger;
@@ -119,7 +119,7 @@ var GamePlayScene = function(game, stage)
     {
       for(var j = 0; j < 3; j++)
       {
-        c = new Compass(space(dc.width-sidebar_w+sidebar_xb,dc.width,compass_r*2,2,i),space(sidebar_yb+btn_h+title_h,300,compass_r*2,3,j));
+        c = new Compass(space(dc.width-sidebar_w+sidebar_xb,dc.width,compass_r*2,2,i),space(sidebar_yb+btn_h+title_h,270,compass_r*2,3,j));
         c.inert = true;
         dragger.register(c);
         compasses.push(c);
@@ -131,11 +131,11 @@ var GamePlayScene = function(game, stage)
     fullview.h = dc.height;
     fullview.screenToF();
     fullview.draggble = false;
-    filings = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,390);
+    filings = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,310);
     filings.blurred = true;
     filings.vec_l = 5;
     dragger.register(filings);
-    film = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,615);
+    film = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,515);
     film.colored = true;
     film.vec_l = 1;
     dragger.register(film);
@@ -938,7 +938,7 @@ var GamePlayScene = function(game, stage)
   }
 
   var blurb_f = 20;
-  var blurb_x = 190;
+  var blurb_x = 160;
   var blurb_h = 150;
   var blurb_y = dc.height-blurb_h;
   var blurb_w = dc.width-sidebar_w-blurb_x;
