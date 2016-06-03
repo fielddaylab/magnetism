@@ -169,7 +169,7 @@ var GamePlayScene = function(game, stage)
         var stats;
         if(guess_d < 0.5) comment = "Nice Guess!";
         else              comment = "Let's see how you did:";
-        stats = "You were "+fdisp(guess_n_d)+" away from the north pole, and "+fdisp(guess_n_d)+" away from the south pole. Your total score is "+fdisp(guess_d)+".";
+        stats = "You were "+fdisp(guess_n_d)+" away from the north pole, and "+fdisp(guess_s_d)+" away from the south pole. Your total score is "+fdisp(guess_d)+".";
         displayMessage([comment,stats,"Ok. Bye!"]);
         magnets[0].draggable = true;
         game_mode = GAME_PLAYGROUND;
