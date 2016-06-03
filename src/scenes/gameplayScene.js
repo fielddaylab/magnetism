@@ -70,6 +70,9 @@ var GamePlayScene = function(game, stage)
 
   var cur_tut;
   var tuts;
+  var tutstart;
+  var tutdo;
+  var tutdraw;
   var tutests;
 
   self.ready = function()
@@ -201,13 +204,32 @@ var GamePlayScene = function(game, stage)
     cur_tut = 0;
     var i = 0;
     tuts = [];
+    tutstart = [];
+    tutdo = [];
+    tutdraw = [];
     tutests = [];
+
+    tuts[i] = [];
+    tutstart[i] = noop;
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = tfunc;
+    i++;
+
     tuts[i] = ["Hey!","How ya doin?"];
+    tutstart[i] = noop;
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
     tutests[i] = ffunc;
     i++;
 
-    if(game_mode == GAME_TUT)
-      displayMessage(tuts[cur_tut]);
+    tuts[i] = ["Hey!","How ya doin?"];
+    tutstart[i] = noop;
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = ffunc;
+    i++;
+
     if(game_mode == GAME_PLAYGROUND)
       displayMessage(["This is a playground.","Play around with the tools to see how they behave in the presence of a magnetic field."]);
     if(game_mode == GAME_FIND)
@@ -245,10 +267,15 @@ var GamePlayScene = function(game, stage)
     if(input_state == INPUT_PAUSE) message_bg_disp = lerp(message_bg_disp,1,0.1);
     else                           message_bg_disp = lerp(message_bg_disp,0,0.1);
 
-    if(game_mode == GAME_TUT && input_state == INPUT_RESUME && tutests[cur_tut]())
+    if(game_mode == GAME_TUT)
     {
-      cur_tut = (cur_tut+1)%tuts.length;
-      displayMessage(tuts[cur_tut]);
+      tutdo[cur_tut]();
+      if(input_state == INPUT_RESUME && tutests[cur_tut]())
+      {
+        cur_tut = (cur_tut+1)%tuts.length;
+        tutstart[cur_tut]();
+        if(tuts[cur_tut] && tuts[cur_tut].length) displayMessage(tuts[cur_tut]);
+      }
     }
 
     hit_ui = false;
@@ -338,6 +365,11 @@ var GamePlayScene = function(game, stage)
 
     menu_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Menu",menu_btn.x+10,menu_btn.y+menu_btn.h-10);
     if(guess_placed) { retry_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Retry",retry_btn.x+10,retry_btn.y+retry_btn.h-10); }
+
+    if(game_mode == GAME_TUT)
+    {
+      tutdraw[cur_tut]();
+    }
   };
 
   self.cleanup = function()
