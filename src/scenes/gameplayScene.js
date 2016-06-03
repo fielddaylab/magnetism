@@ -62,6 +62,8 @@ var GamePlayScene = function(game, stage)
   var tools_toggle_btn;
   var guess_toggle_btn;
   var guess_btn;
+  var retry_btn;
+  var menu_btn;
   var message_bg_disp;
   var earth;
 
@@ -173,9 +175,13 @@ var GamePlayScene = function(game, stage)
         game_mode = GAME_PLAYGROUND;
       }
     );
+    menu_btn = new ButtonBox(20,20,100,20,function(evt){game.setScene(2);});
+    retry_btn = new ButtonBox(140,20,100,20,function(evt){if(!guess_placed) return; game.setScene(3);});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
+    clicker.register(menu_btn);
+    clicker.register(retry_btn);
     earth = 0;
     message_bg_disp = 0;
 
@@ -307,11 +313,15 @@ var GamePlayScene = function(game, stage)
 
     ctx.fillStyle = "#FFFFFF";
     dom.draw(blurb_f,dc);
+
+    menu_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Menu",menu_btn.x+10,menu_btn.y+menu_btn.h-10);
+    if(guess_placed) { retry_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Retry",retry_btn.x+10,retry_btn.y+retry_btn.h-10); }
   };
 
   self.cleanup = function()
   {
-
+    dragger.detach(); dragger = undefined;
+    clicker.detach(); clicker = undefined;
   };
 
   var popForceTuple = function(fx,fy,charges,magnets)
