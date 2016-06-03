@@ -113,7 +113,7 @@ var GamePlayScene = function(game, stage)
     }
     magnets = [];
       m = new Magnet(vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200,vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200)
-      m.draggable = (game_mode == GAME_PLAYGROUND);
+      m.draggable = (game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT);
       dragger.register(m);
       magnets.push(m);
     for(var i = 0; i < 0; i++)
@@ -257,7 +257,7 @@ var GamePlayScene = function(game, stage)
 
     if(filings.dirty || dirty) ifvfield.tick(filings,charges,magnets); filings.dirty = false;
     if(film.dirty    || dirty) hdvfield.tick(film,charges,magnets);  film.dirty = false;
-    if(game_mode == GAME_PLAYGROUND) { if(fullview.dirty || dirty) vfield.tick(fullview,charges,magnets); fullview.dirty = false; }
+    if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT) { if(fullview.dirty || dirty) vfield.tick(fullview,charges,magnets); fullview.dirty = false; }
     for(var i = 0; i < compasses.length; i++)
     {
       if(compasses[i].dirty || dirty) compasses[i].tick();
@@ -312,7 +312,7 @@ var GamePlayScene = function(game, stage)
       ctx.fillRect(charges[i].x,charges[i].y,charges[i].w,charges[i].h);
     //magnets
     for(var i = 0; i < magnets.length; i++)
-      if(game_mode == GAME_PLAYGROUND || guess_placed) magnets[i].draw();
+      if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || guess_placed) magnets[i].draw();
     //compasses
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "18px Open Sans";
@@ -320,22 +320,22 @@ var GamePlayScene = function(game, stage)
     if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
 
-    if(game_mode == GAME_PLAYGROUND) vfield.draw(fullview);
+    if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT) vfield.draw(fullview);
     //film
     if(!ui_toggle) ctx.drawImage(mag_film_dot_img,film.default_x,film.default_y,film.w,film.h);
-    if((!ui_toggle && film.default) || (!film.default && (game_mode == GAME_PLAYGROUND || !film.dragging))) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
+    if((!ui_toggle && film.default) || (!film.default && (game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || !film.dragging))) ctx.drawImage(mag_film_img,film.x,film.y,film.w,film.h);
     if(game_mode == GAME_FIND && film.dragging) ctx.drawImage(mag_film_drop_img,film.x,film.y,film.w,film.h);
-    if(game_mode == GAME_PLAYGROUND || !film.dragging) hdvfield.draw(film);
+    if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || !film.dragging) hdvfield.draw(film);
     //filings
     if(!ui_toggle) ctx.drawImage(iron_filings_dot_img,filings.default_x,filings.default_y,filings.w,filings.h);
     if(!ui_toggle && filings.default) ctx.drawImage(iron_filings_img,filings.x,filings.y,filings.w,filings.h);
     if(filings.dragging) ctx.drawImage(iron_filings_drop_img,filings.x,filings.y,filings.w,filings.h);
-    if(game_mode == GAME_PLAYGROUND || !filings.dragging) ifvfield.draw(filings);
+    if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || !filings.dragging) ifvfield.draw(filings);
     //compasses
     for(var i = 0; i < compasses.length; i++)
     {
       if(!ui_toggle) ctx.drawImage(compass_dot_img,compasses[i].default_x,compasses[i].default_y,compasses[i].w,compasses[i].h);
-      if((!ui_toggle && compasses[i].default) || (!compasses[i].default && (game_mode == GAME_PLAYGROUND || !compasses[i].dragging))) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
+      if((!ui_toggle && compasses[i].default) || (!compasses[i].default && (game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || !compasses[i].dragging))) compasses[i].draw(game_mode != GAME_PLAYGROUND && compasses[i].dragging);
       if(game_mode == GAME_FIND && compasses[i].dragging) ctx.drawImage(compass_drop_img,compasses[i].x,compasses[i].y,compasses[i].w,compasses[i].h);
     }
     //guesses
