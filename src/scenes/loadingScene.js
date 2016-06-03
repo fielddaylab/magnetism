@@ -35,11 +35,14 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/mag_blue.png");
     img_srcs.push("assets/compass.png");
     img_srcs.push("assets/compass_dot.png");
+    img_srcs.push("assets/compass_drop.png");
     img_srcs.push("assets/needle.png");
     img_srcs.push("assets/iron_filings.png");
     img_srcs.push("assets/iron_filings_dot.png");
+    img_srcs.push("assets/iron_filings_drop.png");
     img_srcs.push("assets/mag_film.png");
     img_srcs.push("assets/mag_film_dot.png");
+    img_srcs.push("assets/mag_film_drop.png");
     img_srcs.push("assets/sidebar_tools.png");
     img_srcs.push("assets/sidebar_guess.png");
     img_srcs.push("assets/guess_btn.png");
