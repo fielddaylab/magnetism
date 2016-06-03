@@ -13,6 +13,7 @@ var GamePlayScene = function(game, stage)
   var input_state;
 
   ENUM = 0;
+  var GAME_TUT        = ENUM; ENUM++;
   var GAME_PLAYGROUND = ENUM; ENUM++;
   var GAME_FIND       = ENUM; ENUM++;
   var game_mode;
@@ -67,13 +68,18 @@ var GamePlayScene = function(game, stage)
   var message_bg_disp;
   var earth;
 
+  var cur_tut;
+  var tuts;
+  var tutests;
+
   self.ready = function()
   {
     n_ticks = 0;
     switch(game.start)
     {
-      case 0: game_mode = GAME_PLAYGROUND; break;
-      case 1: game_mode = GAME_FIND; break;
+      case 0: game_mode = GAME_TUT; break;
+      case 1: game_mode = GAME_PLAYGROUND; break;
+      case 2: game_mode = GAME_FIND; break;
     }
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
@@ -192,6 +198,16 @@ var GamePlayScene = function(game, stage)
     guess_n_d = 0;
     guess_s_d = 0;
 
+    cur_tut = 0;
+    var i = 0;
+    tuts = [];
+    tutests = [];
+    tuts[i] = ["Hey!","How ya doin?"];
+    tutests[i] = ffunc;
+    i++;
+
+    if(game_mode == GAME_TUT)
+      displayMessage(tuts[cur_tut]);
     if(game_mode == GAME_PLAYGROUND)
       displayMessage(["This is a playground.","Play around with the tools to see how they behave in the presence of a magnetic field."]);
     if(game_mode == GAME_FIND)
@@ -205,7 +221,7 @@ var GamePlayScene = function(game, stage)
     var dirty = false;
     clicker.flush();
     if(input_state == INPUT_PAUSE) dragger.ignore();
-    else dragger.flush();
+    else { if(dragger) dragger.flush(); }
     for(var i = 0; i < charges.length; i++)
     {
       dirty = (charges[i].dirty || dirty);
@@ -228,6 +244,12 @@ var GamePlayScene = function(game, stage)
 
     if(input_state == INPUT_PAUSE) message_bg_disp = lerp(message_bg_disp,1,0.1);
     else                           message_bg_disp = lerp(message_bg_disp,0,0.1);
+
+    if(game_mode == GAME_TUT && input_state == INPUT_RESUME && tutests[cur_tut]())
+    {
+      cur_tut = (cur_tut+1)%tuts.length;
+      displayMessage(tuts[cur_tut]);
+    }
 
     hit_ui = false;
   };
@@ -789,7 +811,7 @@ var GamePlayScene = function(game, stage)
         self.y = self.default_y;
         self.default = true
       }
-      else
+      else if(self.dragging)
       {
         self.placed = true;
         checkAllPlaced();
@@ -864,7 +886,7 @@ var GamePlayScene = function(game, stage)
         self.y = self.default_y;
         self.default = true;
       }
-      else
+      else if(self.dragging)
       {
         self.placed = true;
         checkAllPlaced();
