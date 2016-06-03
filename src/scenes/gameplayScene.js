@@ -99,7 +99,7 @@ var GamePlayScene = function(game, stage)
     }
     magnets = [];
       m = new Magnet(vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200,vfield.x+vfield.w/2+rand0()*200,vfield.y+vfield.h/2+rand0()*200)
-      m.draggable = true;
+      m.draggable = (game_mode == GAME_PLAYGROUND);
       dragger.register(m);
       magnets.push(m);
     for(var i = 0; i < 0; i++)
@@ -156,7 +156,10 @@ var GamePlayScene = function(game, stage)
 
     input_state = INPUT_RESUME;
 
-    setTimeout(function(){displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);},1000);
+    if(game_mode == GAME_PLAYGROUND)
+      displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);
+    if(game_mode == GAME_FIND)
+      displayMessage(["Hey there","This is great","Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text Really long text ","one more"]);
   };
 
   self.tick = function()
@@ -165,7 +168,8 @@ var GamePlayScene = function(game, stage)
 
     var dirty = false;
     clicker.flush();
-    dragger.flush();
+    if(input_state == INPUT_PAUSE) dragger.ignore();
+    else dragger.flush();
     for(var i = 0; i < charges.length; i++)
     {
       dirty = (charges[i].dirty || dirty);
