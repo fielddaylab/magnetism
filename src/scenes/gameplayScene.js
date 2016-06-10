@@ -348,9 +348,6 @@ var GamePlayScene = function(game, stage)
       compasses[i].dirty = false;
     }
 
-    if(input_state == INPUT_PAUSE) message_bg_disp = lerp(message_bg_disp,1,0.1);
-    else                           message_bg_disp = lerp(message_bg_disp,0,0.1);
-
     if(game_mode == GAME_TUT)
     {
       tutdo[cur_tut]();
@@ -361,6 +358,9 @@ var GamePlayScene = function(game, stage)
         if(tuts[cur_tut] && tuts[cur_tut].length) displayMessage(tuts[cur_tut]);
       }
     }
+
+    if(input_state == INPUT_PAUSE) message_bg_disp = lerp(message_bg_disp,1,0.1);
+    else                           message_bg_disp = lerp(message_bg_disp,0,0.1);
 
     hit_ui = false;
   };
@@ -1101,8 +1101,8 @@ var GamePlayScene = function(game, stage)
   var displayMessage = function(lines)
   {
     input_state = INPUT_PAUSE;
-    if(lines.length > 1) dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){lines.splice(0,1); displayMessage(lines)});
-    else                 dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){input_state = INPUT_RESUME;});
+    if(lines.length > 1) dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ lines.splice(0,1); displayMessage(lines); });
+    else                 dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ input_state = INPUT_RESUME; });
   }
 
 };
