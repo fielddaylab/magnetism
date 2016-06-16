@@ -21,6 +21,22 @@ var sidebar_guess_img;
 var tools_btn_img;
 var guess_btn_img;
 
+var bg_imgs;
+var bg_0_img;
+var bg_1_img;
+var bg_2_img;
+
+var junk_imgs;
+var junk_0_img;
+var junk_1_img;
+var junk_2_img;
+var junk_3_img;
+var junk_4_img;
+
+var junk_big_imgs;
+var junk_big_0_img;
+var junk_big_1_img;
+
 var bake = function()
 {
   var w;
@@ -238,5 +254,21 @@ var bake = function()
 
   tall_img = new Image();
   tall_img.src = "assets/scout.png";
+
+  bg_imgs = [];
+  bg_0_img = new Image(); bg_0_img.src = "assets/bg_0.png"; bg_imgs.push(bg_0_img);
+  bg_1_img = new Image(); bg_1_img.src = "assets/bg_1.png"; bg_imgs.push(bg_1_img);
+  bg_2_img = new Image(); bg_2_img.src = "assets/bg_2.png"; bg_imgs.push(bg_2_img);
+
+  junk_imgs = [];
+  junk_0_img = new Image(); junk_0_img.src = "assets/junk_0.png"; junk_imgs.push(junk_0_img);
+  junk_1_img = new Image(); junk_1_img.src = "assets/junk_1.png"; junk_imgs.push(junk_1_img);
+  junk_2_img = new Image(); junk_2_img.src = "assets/junk_2.png"; junk_imgs.push(junk_2_img);
+  junk_3_img = new Image(); junk_3_img.src = "assets/junk_3.png"; junk_imgs.push(junk_3_img);
+  junk_4_img = new Image(); junk_4_img.src = "assets/junk_4.png"; junk_imgs.push(junk_4_img);
+
+  junk_big_imgs = [];
+  junk_big_0_img = new Image(); junk_big_0_img.src = "assets/junk_big_0.png"; junk_big_imgs.push(junk_big_0_img);
+  junk_big_1_img = new Image(); junk_big_1_img.src = "assets/junk_big_1.png"; junk_big_imgs.push(junk_big_1_img);
 }
 

@@ -48,6 +48,16 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/guess_btn.png");
     img_srcs.push("assets/tools_btn.png");
     img_srcs.push("assets/scout.png");
+    img_srcs.push("assets/bg_0.png");
+    img_srcs.push("assets/bg_1.png");
+    img_srcs.push("assets/bg_2.png");
+    img_srcs.push("assets/junk_0.png");
+    img_srcs.push("assets/junk_1.png");
+    img_srcs.push("assets/junk_2.png");
+    img_srcs.push("assets/junk_3.png");
+    img_srcs.push("assets/junk_4.png");
+    img_srcs.push("assets/junk_big_0.png");
+    img_srcs.push("assets/junk_big_1.png");
     for(var i = 0; i < img_srcs.length; i++)
     {
       images[i] = new Image();
