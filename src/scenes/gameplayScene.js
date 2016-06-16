@@ -75,6 +75,8 @@ var GamePlayScene = function(game, stage)
   var tutdraw;
   var tutests;
 
+  var junks;
+
   self.ready = function()
   {
     n_ticks = 0;
@@ -315,6 +317,19 @@ var GamePlayScene = function(game, stage)
       displayMessage(["This is a playground.","Play around with the tools to see how they behave in the presence of a magnetic field."]);
     if(game_mode == GAME_FIND)
       displayMessage(["Find The Magnet!","You can place each tool somewhere on the dirt.","When ready, place a guess where you think the magnet is!"]);
+
+    junks = [];
+    var h = dc.height;
+    var w = dc.width-sidebar_w;
+    for(var i = 0; i < 20; i++)
+    {
+      var t = Math.random()*twopi;
+      junks[i] = {
+        id:randIntBelow(5),
+        x:w/2 + cos(t)*(w/2)+rand0()*100-15,
+        y:h/2 + sin(t)*(h/2)+rand0()*100-15,
+      };
+    }
   };
 
   self.tick = function()
@@ -367,9 +382,14 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    //sidebar
-    ctx.fillStyle = "#F2C87C";
-    ctx.fillRect(0,0,dc.width,dc.height);
+    ctx.drawImage(bg_0_img,0,0,dc.width,dc.height);
+    ctx.drawImage(bg_1_img,0,0,dc.width,dc.height);
+    ctx.drawImage(bg_2_img,0,0,dc.width,dc.height);
+
+    for(var i = 0; i < junks.length; i++)
+    {
+      ctx.drawImage(junk_imgs[junks[i].id],junks[i].x,junks[i].y,30,30);
+    }
 
     ctx.strokeStyle = "#000000";
     ctx.fillStyle = "#90764A";
