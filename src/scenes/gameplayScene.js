@@ -76,6 +76,7 @@ var GamePlayScene = function(game, stage)
   var tutests;
 
   var junks;
+  var bigjunks;
 
   self.ready = function()
   {
@@ -318,9 +319,9 @@ var GamePlayScene = function(game, stage)
     if(game_mode == GAME_FIND)
       displayMessage(["Find The Magnet!","You can place each tool somewhere on the dirt.","When ready, place a guess where you think the magnet is!"]);
 
-    junks = [];
     var h = dc.height;
     var w = dc.width-sidebar_w;
+    junks = [];
     for(var i = 0; i < 20; i++)
     {
       var t = Math.random()*twopi;
@@ -330,6 +331,17 @@ var GamePlayScene = function(game, stage)
         y:h/2 + sin(t)*(h/2)+rand0()*100-15,
       };
     }
+    bigjunks = [];
+    for(var i = 0; i < 2; i++)
+    {
+      var t = Math.random()*twopi;
+      bigjunks[i] = {
+        id:i,
+        x:w/2 + cos(t)*(w/2)+rand0()*100-50,
+        y:h/2 + sin(t)*(h/2)+rand0()*100-50,
+      };
+    }
+
   };
 
   self.tick = function()
@@ -387,9 +399,9 @@ var GamePlayScene = function(game, stage)
     ctx.drawImage(bg_2_img,0,0,dc.width,dc.height);
 
     for(var i = 0; i < junks.length; i++)
-    {
       ctx.drawImage(junk_imgs[junks[i].id],junks[i].x,junks[i].y,30,30);
-    }
+    for(var i = 0; i < bigjunks.length; i++)
+      ctx.drawImage(junk_big_imgs[bigjunks[i].id],bigjunks[i].x,bigjunks[i].y,100,100);
 
     ctx.strokeStyle = "#000000";
     ctx.fillStyle = "#90764A";
