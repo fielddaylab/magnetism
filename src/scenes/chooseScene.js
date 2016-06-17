@@ -15,15 +15,7 @@ var ChooseScene = function(game, stage)
 
   var btn_s;
   var btn_y;
-  var btn_0_x;
-  var btn_1_x;
-  var btn_2_x;
-  var btn_3_x;
-  var btn_4_x;
-  var btn_5_x;
-  var btn_6_x;
-  var btn_7_x;
-  var btn_8_x;
+  var btn_x;
 
   var section_line_0_y;
   var section_line_1_y;
@@ -35,21 +27,20 @@ var ChooseScene = function(game, stage)
     clicker = new Clicker({source:stage.dispCanv.canvas});
 
     var n_btns = 3;
-    btn_s = (dc.width/(n_btns+2))-20;
+    btn_s = dc.width/(n_btns+2);
     btn_y = (3*dc.height/4)-btn_s/2;
-    btn_0_x = btn_s/2+0*(btn_s+20)+10;
-    btn_1_x = btn_s/2+1*(btn_s+20)+10;
-    btn_2_x = btn_s/2+2*(btn_s+20)+10;
-    btn_3_x = btn_s/2+3*(btn_s+20)+10;
+    btn_x = [];
+    for(var i = 0; i < n_btns; i++)
+      btn_x[i] = btn_s/2+ ( btn_s+ (btn_s/(n_btns-1)))*i;
 
     section_line_0_y = dc.height/3;
     section_line_1_y = dc.height/3+120;
     title_y = dc.height/2-30;
     subtitle_y = btn_y-40;
 
-    btn_tut_game   = new ButtonBox(btn_0_x,btn_y,btn_s,btn_s,function(evt){ game.start = 0; game.setScene(3); });
-    btn_playground = new ButtonBox(btn_1_x,btn_y,btn_s,btn_s,function(evt){ game.start = 1; game.setScene(3); });
-    btn_real_game  = new ButtonBox(btn_2_x,btn_y,btn_s,btn_s,function(evt){ game.start = 2; game.setScene(3); });
+    btn_tut_game   = new ButtonBox(btn_x[0],btn_y,btn_s,btn_s,function(evt){ game.start = 0; game.setScene(3); });
+    btn_playground = new ButtonBox(btn_x[1],btn_y,btn_s,btn_s,function(evt){ game.start = 1; game.setScene(3); });
+    btn_real_game  = new ButtonBox(btn_x[2],btn_y,btn_s,btn_s,function(evt){ game.start = 2; game.setScene(3); });
 
     clicker.register(btn_tut_game);
     clicker.register(btn_playground);
