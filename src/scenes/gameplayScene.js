@@ -238,7 +238,44 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Hey!","I'm going to tell you about magnets.","See those black flakes on the table? Those are just small flakes of iron.","They'll always point toward the end of a magnet (if the magnet is close enough).","Why do they point toward the ends, and not the middle?","Well, the ends of a magnet is where its Poles are located- and it's also where the magnetic effect can be felt the strongest.","What are poles, then?","Well, to keep things simple, let's start by focusing on just the SOUTH end of the magnet..."];
-    tutchar[i] = [0,0,0,0,0,0,0,0];
+    tuts[i] = [
+      "We gotta find those magnets, before Mr. Hart flips out!",
+      "Yeah... I could use a break from digging my pit.",
+      "Don't worry! Mr. Hart must really want those magnets back, because he gave me his special magnet detector kit.",
+      "Yes!! Magnet detector kit!!!",
+      "Wait... what's a magnet detector kit?",
+      "It says here it'll help us get a feel for nearby magnetic fields...",
+      "So it should be able to help us find the ones that Max and Honey buried.",
+      "Oh, awesome!!!",
+      "Mr. Hart showed me how it works. Do you see those black flakes? They're actually tiny iron filings. They'll always align themselves with the field of a magnet.",
+      "Huh. Why do they seem to point toward the ends of the magnet, and not the middle?",
+      "You can think of the direction of a magnetic field as loops coming out of one end of the magnet, and going back into the other.",
+      "Because iron filings will align themselves to these loops, it often looks like they're pointing to one of the poles!",
+      "Poles? What's a pole?",
+      "A pole is where one end of the magnetic field loops exit the magnet (often just at the ends of a long magnet)",
+      "There are two poles on every magnet- a North and a South (if a loop leaves the magnet in one place, it has to come back in somewhere else!)",
+      "And right next to these poles is where the magnetic field can be felt the strongest.",
+      "To find these magnets, we're going to have to learn a bit about these poles...",
+    ];
+    tutchar[i] = [
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+    ];
     tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
@@ -246,7 +283,14 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Now lets bring in a compass to test some things..."];
-    tutchar[i] = [0];
+    tuts[i] = [
+      "First, let's look at the magnet's south pole.",
+      "Here's a compass",
+      ];
+    tutchar[i] = [
+      CHAR_BOY,
+      CHAR_BOY,
+    ];
     tutstart[i] = function() {
       magnets[0].nfx = -100;
       magnets[0].nfy = -100;
@@ -261,7 +305,44 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["See how the compass also points toward the magnet's pole?","Well, *one* end of the compass points to the pole...","A compass is really just a little magnet that's able to rotate without resistance (sometimes it floats in water, or is hung on a string...)","This means it has two poles (North and South), just like every other magnet!","So, which pole is pointing toward the big magnet's South pole?","The answer is the compass' North pole (compasses often have a red needle to represent its north pole, and a white one to represent its south pole).","So, how does the compass decide which needle to point toward which pole?","There are a couple rules that magnets follow:","Rule 1: North attracts South, South attracts North (or, Opposites Attract)","Rule 2: North repels North, South repels South (or, Likes Repel)","Since the part of the magnet on the table is a South pole, it attracts the compass' North pole","Cool- so the North needle of the compass will point toward the South pole of another magnet","Now, let's mix things up."];
-    tutchar[i] = [0,0,0,0,0,0,0,0,0,0,0,0,0];
+    tuts[i] = [
+      "See how the compass points toward the magnet's south pole?",
+      "A compass is really just a tiny magnet that's free to spin whatever direction it wants.",
+      "You can even make your own compass by floating a magnetized needle in water, or hanging it on a string.",
+      "A compass has two poles (North and South! Just like any magnet)",
+      "So which pole of the compass is pointing toward the big magnet's south pole?",
+      "The compass's north pole points to the magnet's south pole.",
+      "Lots of compasses show the North pole by painting it red, and the south painted white.",
+      "Ok, cool. But how does the compass decide which needle to point toward which pole?",
+      "Basically, magnets are good sports- they always follow the rulebook and they never cheat!",
+      "Rule 1: North attracts south, and south attracts north.",
+      "Opposites attract!",
+      "Yep. And Rule 2: North repels north, and south repels south.",
+      "So non-opposites... don't attract?",
+      "They do more than just not attract- they'll push away from each other! Put simply- likes repel.",
+      "Since the part of the magnet on the table is a south pole, it attracts the compass's north pole.",
+      "Oh, I get it! Opposites attract, so the north needle of the compass will always point toward the south pole of another magnet.",
+      "So what happens if I put the compass here?",
+      ];
+    tutchar[i] = [
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_AXE,
+    ]
     tutstart[i] = function() {
       compasses[0].fx = 0.1;
       compasses[0].fy = -0.1;
@@ -276,7 +357,12 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
-    tutchar[i] = [0];
+    tuts[i] = [
+      "You tell me!",
+    ];
+    tutchar[i] = [
+      CHAR_BOY,
+    ]
     tutstart[i] = function(){
       magnets[0].nfx = -0.2;
       magnets[0].nfy = -0.2;
@@ -295,7 +381,30 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Hmmm... this is interesting.","The compass' North pole is pointing AWAY from the magnet's South pole!","But, it's also pointing away from the magnet's North pole...","So if it's supposed to point TOWARD South, and AWAY from North, but those are different directions... which way will it point?","This brings us to our final rule:","Rule 3: A magnet affects its surroundings inversely proportional to its distance- (or, the further away, the weaker the effect)","So the North pole of the compass does still want to point toward South,","but since it is closer to the North end of the magnet, it wants to point away from North even more! (Even if this means also pointing away from South!)","Ok. Let's do one more test."];
-    tutchar[i] = [0,0,0,0,0,0,0,0,0];
+    tuts[i] = [
+      "Ooh... the compass's north pole is pointing AWAY from the magnet's north pole.",
+      "Likes repel!",
+      "But wait... if you look closely, the compass's north pole is pointing away from the magnet's south pole as well... I though opposites attract!",
+      "So, \"likes repel\" says the compass should point up, but \"opposites attract\" say the compass should point down... why is it choosing up?",
+      "Good question! Which brings us to Rule 3: A magnetic field's strength is inversely proportional to its distance.",
+      "HUH?! Um... when did you start speaking \"mad scientist\"?",
+      "Okay, okay. Basically, the further away, the weaker the effect.",
+      "The north pole of the compass still wants to point south...",
+      "but since the compass is closer to the north end of the magnet, it wants to point away from north even more!",
+      "Even if that means also pointing AWAY from south.",
+    ];
+    tutchar[i] = [
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+    ]
     tutstart[i] = function(){
       compasses[0].inert = false;
       compasses[0].dirty = true;
@@ -306,7 +415,12 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
-    tutchar[i] = [0];
+    tuts[i] = [
+      "Ok. So what happens if I put the compass here?",
+      ];
+    tutchar[i] = [
+      CHAR_AXE,
+    ]
     tutstart[i] = function(){
       compasses[0].fx = 0.2;
       compasses[0].fy = -0.2;
@@ -319,7 +433,34 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Its pointing parallel to the magnet!","Because the needle just as close to the North pole of the magnet as it is to the South pole,","It equally wants to point TOWARD South and AWAY from North!", "This illustrates an interesting relationship between compasses and iron filings...","If you pay close attention, the Compass will always point in the same direction as the iron filings!","It will just be pointing toward or away from the magnet depending on which poles are where!","Now, feel free to drag around some compasses to get a feel for how they interact with magnets.","Then, go find my magnets!"];
-    tutchar[i] = [0,0,0,0,0,0,0,0];
+    tuts[i] = [
+      "The compass points parallel to the magnet.",
+      "Oh! Because the compass is equally close to north and south,",
+      "it wants to point away from north just as bad as it wants to point toward south- so it sticks in between!",
+      "Yep, you got it. And check out the iron filings...",
+      "The compass and the iron filings will always align themselves with each other",
+      "The compass's direction along this line is dependent on the locations of the magnet's poles",
+      "Cool!",
+      "Let's practice a little! Go ahead and drag around some compasses to get a feel for how they interact with the magnets.",
+      "We can use the compasses, iron filings, and this magnetic film to find buried treasure!",
+      "er, I mean, Mr. Hart's magnets...",
+      "It says here the magnetic film shows the direction of the magnetic field, and its color shows how close we are to the magnets.",
+      "Yes! Let's do it!",
+    ];
+    tutchar[i] = [
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+    ];
     tutstart[i] = function(){
       compasses[0].inert = false;
       compasses[0].dirty = true;
@@ -416,7 +557,13 @@ var GamePlayScene = function(game, stage)
     if(input_state == INPUT_PAUSE)
     {
       message_bg_disp = lerp(message_bg_disp,1,0.1);
-      char_disp[tutchar[cur_tut][cur_subtut]] = lerp(char_disp[tutchar[cur_tut][cur_subtut]],1,0.1);
+      for(var i = 0; i < char_disp.length; i++)
+      {
+        if(i == tutchar[cur_tut][cur_subtut])
+          char_disp[i] = lerp(char_disp[i],1,0.1);
+        else
+          char_disp[i] = lerp(char_disp[i],0,0.1);
+      }
     }
     else
     {
@@ -511,7 +658,7 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle=grad;
     ctx.fillRect(0, dc.height+10-message_bg_disp*200, dc.width-sidebar_w, 200);
     for(var i = 0; i < char_imgs.length; i++)
-      ctx.drawImage(char_imgs[i], 50, dc.height+10-char_disp[i]*200, 80, 200);
+      ctx.drawImage(char_imgs[i], 20, dc.height+10-char_disp[i]*200, 200, 400);
 
     ctx.fillStyle = "#FFFFFF";
     dom.draw(blurb_f,dc);
@@ -1163,7 +1310,7 @@ var GamePlayScene = function(game, stage)
   }
 
   var blurb_f = 20;
-  var blurb_x = 160;
+  var blurb_x = 180;
   var blurb_h = 150;
   var blurb_y = dc.height-blurb_h;
   var blurb_w = dc.width-sidebar_w-blurb_x;
