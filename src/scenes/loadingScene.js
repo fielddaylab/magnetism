@@ -47,8 +47,9 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/mag_film_drop.png");
     img_srcs.push("assets/sidebar_tools.png");
     img_srcs.push("assets/sidebar_guess.png");
+    img_srcs.push("assets/guess_lbl.png");
+    img_srcs.push("assets/tools_lbl.png");
     img_srcs.push("assets/guess_btn.png");
-    img_srcs.push("assets/tools_btn.png");
     img_srcs.push("assets/scout.png");
     img_srcs.push("assets/bg_0.png");
     img_srcs.push("assets/bg_1.png");

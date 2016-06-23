@@ -32,7 +32,7 @@ var GamePlayScene = function(game, stage)
   var compass_r = 30;
   var fieldview_s = 150;
   var charge_s = 20;
-  var guess_s = 100;
+  var guess_s = 80;
   var btn_h = 60;
   var title_h = 10;
 
@@ -152,16 +152,16 @@ var GamePlayScene = function(game, stage)
     film.vec_l = 1;
     dragger.register(film);
 
-    nguess = new Guess(dc.width-sidebar_w+p,btn_h+title_h+p);
+    nguess = new Guess(dc.width-sidebar_w+p,btn_h+title_h+60+p);
     dragger.register(nguess);
-    sguess = new Guess(dc.width-sidebar_w+p+guess_s+p,btn_h+title_h+p);
+    sguess = new Guess(dc.width-p-guess_s,btn_h+title_h+60+p);
     dragger.register(sguess);
 
     ui_toggle = false;
     guess_placed = false;
     tools_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb                         ,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = false;});
     guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = true;});
-    guess_btn        = new ButtonBox(dc.width-sidebar_w+p,btn_h+title_h+p+guess_s+p,sidebar_w-2*p,btn_h,
+    guess_btn        = new ButtonBox(dc.width-sidebar_w+2*p,btn_h+title_h+20+p+guess_s+p,sidebar_w-4*p,btn_h*2/3,
       function(evt)
       {
         if(!ui_toggle || hit_ui) return;
@@ -411,16 +411,18 @@ var GamePlayScene = function(game, stage)
     else           ctx.drawImage(sidebar_guess_img,dc.width-sidebar_w,0,sidebar_w,dc.height);
 
     var btn_overlap = 15;
-    if(!ui_toggle) ctx.drawImage(tools_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
-    else           ctx.drawImage(guess_btn_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
+    if(!ui_toggle) ctx.drawImage(tools_lbl_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
+    else           ctx.drawImage(guess_lbl_img,dc.width-sidebar_w+sidebar_xb,sidebar_yb,sidebar_w-sidebar_xb,btn_h);
 
     if(!guess_placed && ui_toggle)
     {
-      guess_btn.draw(dc);
-      ctx.fillStyle = "#000000";
-      if(nguess.default && sguess.default) ctx.fillText("Place Your Guesses...",guess_btn.x+10,guess_btn.y+guess_btn.h-10);
-      else if(nguess.default || nguess.dragging || sguess.default || sguess.dragging) ctx.fillText("Place Both Guesses...",guess_btn.x+10,guess_btn.y+guess_btn.h-10);
-      else ctx.fillText("Click to Confirm Guess",guess_btn.x+10,guess_btn.y+guess_btn.h-10);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "12px Open Sans";
+      if(nguess.default && sguess.default)                                            { ctx.fillText("Place Your Guesses..." ,guess_btn.x+10,guess_btn.y+guess_btn.h+20); ctx.globalAlpha = 0.5; }
+      else if(nguess.default || nguess.dragging || sguess.default || sguess.dragging) { ctx.fillText("Place Both Guesses..." ,guess_btn.x+10,guess_btn.y+guess_btn.h+20); ctx.globalAlpha = 0.5; }
+      else                                                                            { ctx.fillText("Click to Confirm Guess",guess_btn.x+10,guess_btn.y+guess_btn.h+20); ctx.globalAlpha = 1; }
+      ctx.drawImage(guess_btn_img,guess_btn.x,guess_btn.y,guess_btn.w,guess_btn.h);
+      ctx.globalAlpha = 1;
     }
 
     //charges
@@ -430,10 +432,8 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < magnets.length; i++)
       if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT || guess_placed) magnets[i].draw();
     //compasses
-    ctx.fillStyle = "#FFFFFF";
     ctx.font = "18px Open Sans";
     ctx.textAlign = "center";
-    if(ui_toggle) ctx.fillText("GUESSES",dc.width-sidebar_w/2,btn_h+30);
     ctx.fillStyle = "#000000";
 
     if(game_mode == GAME_PLAYGROUND || game_mode == GAME_TUT) vfield.draw(fullview);

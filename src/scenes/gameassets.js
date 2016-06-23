@@ -18,7 +18,8 @@ var mag_film_dot_img;
 var mag_film_drop_img;
 var sidebar_tools_img;
 var sidebar_guess_img;
-var tools_btn_img;
+var tools_lbl_img;
+var guess_lbl_img;
 var guess_btn_img;
 
 var bg_imgs;
@@ -237,10 +238,12 @@ var bake = function()
   sidebar_tools_img.src = "assets/sidebar_tools.png";
   sidebar_guess_img = new Image();
   sidebar_guess_img.src = "assets/sidebar_guess.png";
+  guess_lbl_img = new Image();
+  guess_lbl_img.src = "assets/guess_lbl.png";
+  tools_lbl_img = new Image();
+  tools_lbl_img.src = "assets/tools_lbl.png";
   guess_btn_img = new Image();
   guess_btn_img.src = "assets/guess_btn.png";
-  tools_btn_img = new Image();
-  tools_btn_img.src = "assets/tools_btn.png";
 
   tall_img = new Image();
   tall_img.src = "assets/scout.png";
