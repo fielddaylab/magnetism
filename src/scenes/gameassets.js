@@ -22,6 +22,8 @@ var tools_lbl_img;
 var guess_lbl_img;
 var guess_btn_img;
 
+var char_imgs;
+
 var bg_imgs;
 var bg_0_img;
 var bg_1_img;
@@ -245,8 +247,12 @@ var bake = function()
   guess_btn_img = new Image();
   guess_btn_img.src = "assets/guess_btn.png";
 
-  tall_img = new Image();
-  tall_img.src = "assets/scout.png";
+  char_imgs = [];
+  for(var i = 0; i < 7; i++)
+  {
+    char_imgs[i] = new Image();
+    char_imgs[i].src = "assets/chars/char_"+i+".png";
+  }
 
   bg_imgs = [];
   bg_0_img = new Image(); bg_0_img.src = "assets/bg_0.png"; bg_imgs.push(bg_0_img);

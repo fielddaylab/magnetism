@@ -61,6 +61,8 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/junk_4.png");
     img_srcs.push("assets/junk_big_0.png");
     img_srcs.push("assets/junk_big_1.png");
+    for(var i = 0; i < 7; i++)
+      img_srcs.push("assets/chars/char_"+i+".png");
     for(var i = 0; i < img_srcs.length; i++)
     {
       images[i] = new Image();

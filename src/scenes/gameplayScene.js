@@ -18,6 +18,15 @@ var GamePlayScene = function(game, stage)
   var GAME_FIND       = ENUM; ENUM++;
   var game_mode;
 
+  ENUM = 0;
+  var CHAR_BABY  = ENUM; ENUM++;
+  var CHAR_ANNOY = ENUM; ENUM++;
+  var CHAR_AXE   = ENUM; ENUM++;
+  var CHAR_GIRL  = ENUM; ENUM++;
+  var CHAR_TALL  = ENUM; ENUM++;
+  var CHAR_BOY   = ENUM; ENUM++;
+  var CHAR_DAD   = ENUM; ENUM++;
+
   var n_ticks;
 
   var sidebar_w = 210;
@@ -66,10 +75,13 @@ var GamePlayScene = function(game, stage)
   var retry_btn;
   var menu_btn;
   var message_bg_disp;
+  var char_disp;
   var earth;
 
   var cur_tut;
+  var cur_subtut;
   var tuts;
+  var tutchar;
   var tutstart;
   var tutdo;
   var tutdraw;
@@ -196,6 +208,9 @@ var GamePlayScene = function(game, stage)
     clicker.register(retry_btn);
     earth = 0;
     message_bg_disp = 0;
+    char_disp = [];
+    for(var i = 0; i < char_imgs.length; i++)
+      char_disp[i] = 0;
 
     clicker.register(fallback);
     hit_ui = false;
@@ -205,14 +220,17 @@ var GamePlayScene = function(game, stage)
     guess_s_d = 0;
 
     cur_tut = 0;
+    cur_subtut = 0;
     var i = 0;
     tuts = [];
+    tutchar = [];
     tutstart = [];
     tutdo = [];
     tutdraw = [];
     tutests = [];
 
     tuts[i] = [];
+    tutchar[i] = [];
     tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
@@ -220,6 +238,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Hey!","I'm going to tell you about magnets.","See those black flakes on the table? Those are just small flakes of iron.","They'll always point toward the end of a magnet (if the magnet is close enough).","Why do they point toward the ends, and not the middle?","Well, the ends of a magnet is where its Poles are located- and it's also where the magnetic effect can be felt the strongest.","What are poles, then?","Well, to keep things simple, let's start by focusing on just the SOUTH end of the magnet..."];
+    tutchar[i] = [0,0,0,0,0,0,0,0];
     tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
@@ -227,6 +246,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Now lets bring in a compass to test some things..."];
+    tutchar[i] = [0];
     tutstart[i] = function() {
       magnets[0].nfx = -100;
       magnets[0].nfy = -100;
@@ -241,6 +261,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["See how the compass also points toward the magnet's pole?","Well, *one* end of the compass points to the pole...","A compass is really just a little magnet that's able to rotate without resistance (sometimes it floats in water, or is hung on a string...)","This means it has two poles (North and South), just like every other magnet!","So, which pole is pointing toward the big magnet's South pole?","The answer is the compass' North pole (compasses often have a red needle to represent its north pole, and a white one to represent its south pole).","So, how does the compass decide which needle to point toward which pole?","There are a couple rules that magnets follow:","Rule 1: North attracts South, South attracts North (or, Opposites Attract)","Rule 2: North repels North, South repels South (or, Likes Repel)","Since the part of the magnet on the table is a South pole, it attracts the compass' North pole","Cool- so the North needle of the compass will point toward the South pole of another magnet","Now, let's mix things up."];
+    tutchar[i] = [0,0,0,0,0,0,0,0,0,0,0,0,0];
     tutstart[i] = function() {
       compasses[0].fx = 0.1;
       compasses[0].fy = -0.1;
@@ -255,6 +276,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
+    tutchar[i] = [0];
     tutstart[i] = function(){
       magnets[0].nfx = -0.2;
       magnets[0].nfy = -0.2;
@@ -273,6 +295,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Hmmm... this is interesting.","The compass' North pole is pointing AWAY from the magnet's South pole!","But, it's also pointing away from the magnet's North pole...","So if it's supposed to point TOWARD South, and AWAY from North, but those are different directions... which way will it point?","This brings us to our final rule:","Rule 3: A magnet affects its surroundings inversely proportional to its distance- (or, the further away, the weaker the effect)","So the North pole of the compass does still want to point toward South,","but since it is closer to the North end of the magnet, it wants to point away from North even more! (Even if this means also pointing away from South!)","Ok. Let's do one more test."];
+    tutchar[i] = [0,0,0,0,0,0,0,0,0];
     tutstart[i] = function(){
       compasses[0].inert = false;
       compasses[0].dirty = true;
@@ -283,6 +306,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
+    tutchar[i] = [0];
     tutstart[i] = function(){
       compasses[0].fx = 0.2;
       compasses[0].fy = -0.2;
@@ -295,6 +319,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = ["Its pointing parallel to the magnet!","Because the needle just as close to the North pole of the magnet as it is to the South pole,","It equally wants to point TOWARD South and AWAY from North!", "This illustrates an interesting relationship between compasses and iron filings...","If you pay close attention, the Compass will always point in the same direction as the iron filings!","It will just be pointing toward or away from the magnet depending on which poles are where!","Now, feel free to drag around some compasses to get a feel for how they interact with magnets.","Then, go find my magnets!"];
+    tutchar[i] = [0,0,0,0,0,0,0,0];
     tutstart[i] = function(){
       compasses[0].inert = false;
       compasses[0].dirty = true;
@@ -305,6 +330,7 @@ var GamePlayScene = function(game, stage)
     i++;
 
     tuts[i] = [];
+    tutchar[i] = [];
     tutstart[i] = function(){
       compasses[0].draggable = true;
       magnets[0].draggable = true;
@@ -381,13 +407,23 @@ var GamePlayScene = function(game, stage)
       if(input_state == INPUT_RESUME && tutests[cur_tut]())
       {
         cur_tut = (cur_tut+1)%tuts.length;
+        cur_subtut = 0;
         tutstart[cur_tut]();
         if(tuts[cur_tut] && tuts[cur_tut].length) displayMessage(tuts[cur_tut]);
       }
     }
 
-    if(input_state == INPUT_PAUSE) message_bg_disp = lerp(message_bg_disp,1,0.1);
-    else                           message_bg_disp = lerp(message_bg_disp,0,0.1);
+    if(input_state == INPUT_PAUSE)
+    {
+      message_bg_disp = lerp(message_bg_disp,1,0.1);
+      char_disp[tutchar[cur_tut][cur_subtut]] = lerp(char_disp[tutchar[cur_tut][cur_subtut]],1,0.1);
+    }
+    else
+    {
+      message_bg_disp = lerp(message_bg_disp,0,0.1);
+      for(var i = 0; i < char_disp.length; i++)
+        char_disp[i] = lerp(char_disp[i],0,0.1);
+    }
 
     hit_ui = false;
   };
@@ -474,7 +510,8 @@ var GamePlayScene = function(game, stage)
     grad.addColorStop(1,"rgba(0,0,0,0)");
     ctx.fillStyle=grad;
     ctx.fillRect(0, dc.height+10-message_bg_disp*200, dc.width-sidebar_w, 200);
-    ctx.drawImage(tall_img, 50, dc.height+10-message_bg_disp*200, 80, 200);
+    for(var i = 0; i < char_imgs.length; i++)
+      ctx.drawImage(char_imgs[i], 50, dc.height+10-char_disp[i]*200, 80, 200);
 
     ctx.fillStyle = "#FFFFFF";
     dom.draw(blurb_f,dc);
@@ -1133,8 +1170,10 @@ var GamePlayScene = function(game, stage)
   var displayMessage = function(lines)
   {
     input_state = INPUT_PAUSE;
-    if(lines.length > 1) dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ lines.splice(0,1); displayMessage(lines); });
-    else                 dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[0]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ input_state = INPUT_RESUME; });
+    if(cur_subtut < lines.length-1)
+      dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[cur_subtut]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ cur_subtut++; displayMessage(lines); });
+    else
+      dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[cur_subtut]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ cur_subtut = 0; input_state = INPUT_RESUME; });
   }
 
 };
