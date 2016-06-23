@@ -251,7 +251,7 @@ var bake = function()
   for(var i = 0; i < 7; i++)
   {
     char_imgs[i] = new Image();
-    char_imgs[i].src = "assets/chars/char_"+i+".png";
+    char_imgs[i].src = "assets/chars/face/char_"+i+".png";
   }
 
   bg_imgs = [];
