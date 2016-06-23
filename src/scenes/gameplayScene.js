@@ -285,10 +285,8 @@ var GamePlayScene = function(game, stage)
     tuts[i] = ["Now lets bring in a compass to test some things..."];
     tuts[i] = [
       "First, let's look at the magnet's south pole.",
-      "Here's a compass",
       ];
     tutchar[i] = [
-      CHAR_BOY,
       CHAR_BOY,
     ];
     tutstart[i] = function() {
@@ -306,6 +304,7 @@ var GamePlayScene = function(game, stage)
 
     tuts[i] = ["See how the compass also points toward the magnet's pole?","Well, *one* end of the compass points to the pole...","A compass is really just a little magnet that's able to rotate without resistance (sometimes it floats in water, or is hung on a string...)","This means it has two poles (North and South), just like every other magnet!","So, which pole is pointing toward the big magnet's South pole?","The answer is the compass' North pole (compasses often have a red needle to represent its north pole, and a white one to represent its south pole).","So, how does the compass decide which needle to point toward which pole?","There are a couple rules that magnets follow:","Rule 1: North attracts South, South attracts North (or, Opposites Attract)","Rule 2: North repels North, South repels South (or, Likes Repel)","Since the part of the magnet on the table is a South pole, it attracts the compass' North pole","Cool- so the North needle of the compass will point toward the South pole of another magnet","Now, let's mix things up."];
     tuts[i] = [
+      "Here's a compass",
       "See how the compass points toward the magnet's south pole?",
       "A compass is really just a tiny magnet that's free to spin whatever direction it wants.",
       "You can even make your own compass by floating a magnetized needle in water, or hanging it on a string.",
@@ -322,25 +321,24 @@ var GamePlayScene = function(game, stage)
       "They do more than just not attract- they'll push away from each other! Put simply- likes repel.",
       "Since the part of the magnet on the table is a south pole, it attracts the compass's north pole.",
       "Oh, I get it! Opposites attract, so the north needle of the compass will always point toward the south pole of another magnet.",
-      "So what happens if I put the compass here?",
       ];
     tutchar[i] = [
       CHAR_BOY,
       CHAR_BOY,
       CHAR_BOY,
       CHAR_BOY,
-      CHAR_AXE,
-      CHAR_BOY,
       CHAR_BOY,
       CHAR_AXE,
       CHAR_BOY,
       CHAR_BOY,
       CHAR_AXE,
       CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
       CHAR_AXE,
       CHAR_BOY,
       CHAR_BOY,
-      CHAR_AXE,
       CHAR_AXE,
     ]
     tutstart[i] = function() {
@@ -358,9 +356,11 @@ var GamePlayScene = function(game, stage)
 
     tuts[i] = ["Which direction would you expect the compass to point if it were placed where it is currently displayed?"];
     tuts[i] = [
+      "So what happens if I put the compass here?",
       "You tell me!",
     ];
     tutchar[i] = [
+      CHAR_AXE,
       CHAR_BOY,
     ]
     tutstart[i] = function(){
@@ -1310,8 +1310,8 @@ var GamePlayScene = function(game, stage)
   }
 
   var blurb_f = 20;
-  var blurb_x = 180;
-  var blurb_h = 150;
+  var blurb_x = 190;
+  var blurb_h = 120;
   var blurb_y = dc.height-blurb_h;
   var blurb_w = dc.width-sidebar_w-blurb_x;
   var displayMessage = function(lines)
