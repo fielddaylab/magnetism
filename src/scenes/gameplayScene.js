@@ -508,7 +508,7 @@ var GamePlayScene = function(game, stage)
     var h = dc.height;
     var w = dc.width-sidebar_w;
     junks = [];
-    for(var i = 0; i < 20; i++)
+    for(var i = 0; i < 5; i++)
     {
       var t = Math.random()*twopi;
       junks[i] = {
@@ -600,10 +600,13 @@ var GamePlayScene = function(game, stage)
     ctx.drawImage(bg_1_img,0,0,dc.width,dc.height);
     ctx.drawImage(bg_2_img,0,0,dc.width,dc.height);
 
+    var s;
+    s = 50;
     for(var i = 0; i < junks.length; i++)
-      ctx.drawImage(junk_imgs[junks[i].id],junks[i].x,junks[i].y,30,30);
+      ctx.drawImage(junk_imgs[junks[i].id],junks[i].x-s/2,junks[i].y-s/2,s,s);
+    s = 200;
     for(var i = 0; i < bigjunks.length; i++)
-      ctx.drawImage(junk_big_imgs[bigjunks[i].id],bigjunks[i].x,bigjunks[i].y,100,100);
+      ctx.drawImage(junk_big_imgs[bigjunks[i].id],bigjunks[i].x-s/2,bigjunks[i].y-s/2,s,s);
 
     ctx.strokeStyle = "#000000";
     ctx.fillStyle = "#90764A";
