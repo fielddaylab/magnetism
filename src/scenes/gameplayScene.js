@@ -1338,7 +1338,10 @@ var GamePlayScene = function(game, stage)
     for(var i = 0; i < compasses.length && placed; i++)
       placed = compasses[i].placed;
 
-    if(placed) displayMessage(["Now that you've placed all your tools, go to the \"Guess\" tab, and place a guess!"]);
+    if(placed) {
+      displayMessage(["Now that you've placed all your tools, make your guess where the magnet is!"]);
+      ui_toggle = true;
+    }
   }
 
   var blurb_f = 20;
