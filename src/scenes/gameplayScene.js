@@ -575,20 +575,20 @@ var GamePlayScene = function(game, stage)
 
     if(input_state == INPUT_PAUSE)
     {
-      message_bg_disp = lerp(message_bg_disp,1,0.1);
+      message_bg_disp = lerp(message_bg_disp,1,0.2);
       for(var i = 0; i < char_disp.length; i++)
       {
         if(i == tutchar[cur_tut][cur_subtut])
-          char_disp[i] = lerp(char_disp[i],1,0.1);
+          char_disp[i] = lerp(char_disp[i],1,0.2);
         else
-          char_disp[i] = lerp(char_disp[i],0,0.1);
+          char_disp[i] = lerp(char_disp[i],0,0.2);
       }
     }
     else
     {
-      message_bg_disp = lerp(message_bg_disp,0,0.1);
+      message_bg_disp = lerp(message_bg_disp,0,0.2);
       for(var i = 0; i < char_disp.length; i++)
-        char_disp[i] = lerp(char_disp[i],0,0.1);
+        char_disp[i] = lerp(char_disp[i],0,0.2);
     }
 
     hit_ui = false;
@@ -671,20 +671,30 @@ var GamePlayScene = function(game, stage)
 
     ctx.font = blurb_f+"px Open Sans";
 
+    var s = 300;
     var grad = ctx.createLinearGradient(
-      0,dc.height+10+200-message_bg_disp*200,
-      0,dc.height+10-message_bg_disp*200
+      0,dc.height+10+s-message_bg_disp*s,
+      0,dc.height+10-message_bg_disp*s
     );
-    grad.addColorStop(0,"rgba(0,0,0,1)");
-    grad.addColorStop(1,"rgba(0,0,0,0)");
+    grad.addColorStop(0,"rgba(99,228,248,1)");
+    grad.addColorStop(1,"rgba(99,228,248,0)");
     ctx.fillStyle=grad;
-    ctx.fillRect(0, dc.height+10-message_bg_disp*200, dc.width-sidebar_w, 200);
+    ctx.fillRect(0, dc.height+10-message_bg_disp*s, dc.width-sidebar_w+5, s);
     for(var i = 0; i < char_imgs.length; i++)
       ctx.drawImage(char_imgs[i], 20, dc.height+10-char_disp[i]*200, 200, 400);
 
-    ctx.fillStyle = "#FFFFFF";
+    if(input_state == INPUT_PAUSE)
+    {
+      ctx.fillStyle = "#FFFFFF";
+      dc.fillRoundRect(blurb_x-5,blurb_y-5,blurb_w+10,100+10,10);
+      ctx.beginPath();
+      ctx.moveTo(blurb_x+1 ,blurb_y+30);
+      ctx.lineTo(blurb_x-15,blurb_y+50);
+      ctx.lineTo(blurb_x+1 ,blurb_y+50);
+      ctx.fill();
+      ctx.fillStyle = "#000000";
+    }
     dom.draw(blurb_f,dc);
-
     menu_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Menu",menu_btn.x+10,menu_btn.y+menu_btn.h-10);
     if(guess_placed) { retry_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Retry",retry_btn.x+10,retry_btn.y+retry_btn.h-10); }
 
@@ -1335,7 +1345,7 @@ var GamePlayScene = function(game, stage)
   var blurb_x = 190;
   var blurb_h = 120;
   var blurb_y = dc.height-blurb_h;
-  var blurb_w = dc.width-sidebar_w-blurb_x;
+  var blurb_w = dc.width-sidebar_w-blurb_x-20;
   var displayMessage = function(lines)
   {
     input_state = INPUT_PAUSE;
