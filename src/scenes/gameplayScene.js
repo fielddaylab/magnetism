@@ -189,12 +189,9 @@ var GamePlayScene = function(game, stage)
         guess_s_d = sqrt(xd*xd + yd*yd);
         guess_d = guess_n_d+guess_s_d;
         hit_ui = true;
-        var comment;
-        var stats;
-        if(guess_d < 0.5) comment = "Nice Guess!";
-        else              comment = "Let's see how you did:";
-        stats = "You were "+fdisp(guess_n_d)+" away from the north pole, and "+fdisp(guess_s_d)+" away from the south pole. Your total score is "+fdisp(guess_d)+".";
-        displayMessage([comment,stats,"Ok. Bye!"]);
+        var stats = "You were "+fdisp(guess_n_d)+" away from the north pole, and "+fdisp(guess_s_d)+" away from the south pole. Your total score is "+fdisp(guess_d)+".";
+        if(guess_d < 0.5) stats = 'Nice guess! ' + stats;
+        displayMessage([stats,"Ok. Bye!"]);
         magnets[0].draggable = true;
         game_mode = GAME_PLAYGROUND;
       }
