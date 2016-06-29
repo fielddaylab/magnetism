@@ -42,7 +42,7 @@ var GamePlayScene = function(game, stage)
   var fieldview_s = 150;
   var charge_s = 20;
   var guess_s = 80;
-  var btn_h = 60;
+  var btn_h = 53;
   var title_h = 10;
 
   var hit_ui;
