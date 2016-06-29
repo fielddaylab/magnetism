@@ -159,7 +159,7 @@ var GamePlayScene = function(game, stage)
     filings.blurred = true;
     filings.vec_l = 5;
     dragger.register(filings);
-    film = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,515);
+    film = new FieldView(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2-fieldview_s/2,506);
     film.colored = true;
     film.vec_l = 1;
     dragger.register(film);
