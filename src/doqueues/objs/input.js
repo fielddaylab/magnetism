@@ -185,9 +185,10 @@ function ButtonBox(x,y,w,h,callback)
     if(self.down) canv.context.strokeStyle = "#00F400";
     else          canv.context.strokeStyle = "#000000";
 
-    canv.context.fillStyle = "#00F400";
+    canv.context.fillStyle = "#FFFFFF";
 
     canv.context.fillRect(self.x,self.y,self.w,self.h);
+    canv.context.lineWidth = 2;
     canv.context.strokeRect(self.x+0.5,self.y+0.5,self.w,self.h);
   }
 
