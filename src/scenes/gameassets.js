@@ -23,6 +23,13 @@ var guess_lbl_img;
 var guess_btn_img;
 var nice_job_img;
 
+var btn_game_img;
+var btn_playground_img;
+var btn_tutorial_img;
+var comic_img;
+var menu_grad_img;
+var menu_logo_img;
+
 var char_imgs;
 
 var bg_imgs;
@@ -250,6 +257,19 @@ var bake = function()
 
   nice_job_img = new Image();
   nice_job_img.src = "assets/nicejob.png";
+
+  btn_game_img = new Image();
+  btn_game_img.src = "assets/btn_game.png";
+  btn_playground_img = new Image();
+  btn_playground_img.src = "assets/btn_playground.png";
+  btn_tutorial_img = new Image();
+  btn_tutorial_img.src = "assets/btn_tutorial.png";
+  comic_img = new Image();
+  comic_img.src = "assets/comic.png";
+  menu_grad_img = new Image();
+  menu_grad_img.src = "assets/menu/menu_gradient.png";
+  menu_logo_img = new Image();
+  menu_logo_img.src = "assets/menu/menu_logo.png";
 
   char_imgs = [];
   for(var i = 0; i < 7; i++)
