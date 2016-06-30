@@ -46,6 +46,7 @@ var GamePlayScene = function(game, stage)
   var title_h = 10;
 
   var hit_ui;
+  var end_screen;
   var dragger;
   var clicker;
 
@@ -74,6 +75,8 @@ var GamePlayScene = function(game, stage)
   var guess_btn;
   var retry_btn;
   var menu_btn;
+  var modal_retry_btn;
+  var modal_menu_btn;
   var message_bg_disp;
   var char_disp;
   var earth;
@@ -191,18 +194,22 @@ var GamePlayScene = function(game, stage)
         hit_ui = true;
         var stats = "You were "+fdisp(guess_n_d*22)+"cm away from the north pole, and "+fdisp(guess_s_d*22)+"cm away from the south pole. Your total score is "+fdisp(guess_d*22)+"cm.";
         if(guess_d < 0.5) stats = 'Nice guess! ' + stats;
-        displayMessage([stats,"Ok. Bye!"]);
+        displayMessage([stats,"END_SCREEN","Your Score: "+fdisp(guess_d*22)+"cm"]);
         magnets[0].draggable = true;
         game_mode = GAME_PLAYGROUND;
       }
     );
     menu_btn = new ButtonBox(10,10,100,30,function(evt){game.setScene(3);});
     retry_btn = new ButtonBox(130,10,100,30,function(evt){if(!guess_placed) return; game.setScene(4);});
+    modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
+    modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
     clicker.register(menu_btn);
     clicker.register(retry_btn);
+    clicker.register(modal_menu_btn);
+    clicker.register(modal_retry_btn);
     earth = 0;
     message_bg_disp = 0;
     char_disp = [];
@@ -211,6 +218,7 @@ var GamePlayScene = function(game, stage)
 
     clicker.register(fallback);
     hit_ui = false;
+    end_screen = false;
 
     input_state = INPUT_RESUME;
     guess_n_d = 0;
@@ -700,6 +708,37 @@ var GamePlayScene = function(game, stage)
     if(game_mode == GAME_TUT)
     {
       tutdraw[cur_tut]();
+    }
+
+    if (end_screen) {
+      var w = 520;
+      var h = 300;
+      var img_w = 340;
+      var img_h = img_w * 858 / 924;
+
+      ctx.fillStyle = "rgba(50,100,255,0.4)";
+      ctx.fillRect(0, 0, dc.width, dc.height);
+      ctx.fillStyle = "white";
+      ctx.fillRect((dc.width - w) / 2, (dc.height - h) / 2 + 70, w, h);
+      ctx.drawImage(nice_job_img, (dc.width - img_w) / 2, 25, img_w, img_h);
+
+      ctx.textAlign = "center";
+      ctx.font = "25px Open Sans";
+      ctx.fillStyle = "black";
+      ctx.fillText("Nice guess!", dc.width / 2, 380);
+      ctx.font = "20px Open Sans";
+      ctx.fillText(end_screen, dc.width / 2, 415);
+
+      ctx.fillStyle = "rgb(86,160,171)";
+      ctx.fillRect(modal_menu_btn.x, modal_menu_btn.y + 7, modal_menu_btn.w, modal_menu_btn.h);
+      ctx.fillRect(modal_retry_btn.x, modal_retry_btn.y + 7, modal_retry_btn.w, modal_retry_btn.h);
+      ctx.fillStyle = "rgb(140,216,226)";
+      ctx.fillRect(modal_menu_btn.x, modal_menu_btn.y, modal_menu_btn.w, modal_menu_btn.h);
+      ctx.fillRect(modal_retry_btn.x, modal_retry_btn.y, modal_retry_btn.w, modal_retry_btn.h);
+
+      ctx.fillStyle = "white";
+      ctx.fillText("Play Again!", modal_retry_btn.x + modal_retry_btn.w / 2, modal_retry_btn.y + 28);
+      ctx.fillText("Back to Menu", modal_menu_btn.x + modal_menu_btn.w / 2, modal_menu_btn.y + 28);
     }
   };
 
@@ -1350,6 +1389,12 @@ var GamePlayScene = function(game, stage)
   var blurb_w = dc.width-sidebar_w-blurb_x-20;
   var displayMessage = function(lines)
   {
+    if (lines[cur_subtut] === 'END_SCREEN') {
+      end_screen = lines[cur_subtut+1];
+      input_state = INPUT_RESUME;
+      return;
+    }
+
     input_state = INPUT_PAUSE;
     if(cur_subtut < lines.length-1)
       dom.popDismissableMessage(textToLines(dc, blurb_f+"px Open Sans", blurb_w-20, lines[cur_subtut]),blurb_x+10,blurb_y,blurb_w-20,blurb_h,function(){ cur_subtut++; displayMessage(lines); });

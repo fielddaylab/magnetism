@@ -21,6 +21,7 @@ var sidebar_guess_img;
 var tools_lbl_img;
 var guess_lbl_img;
 var guess_btn_img;
+var nice_job_img;
 
 var char_imgs;
 
@@ -246,6 +247,9 @@ var bake = function()
   tools_lbl_img.src = "assets/tools_lbl.png";
   guess_btn_img = new Image();
   guess_btn_img.src = "assets/guess_btn.png";
+
+  nice_job_img = new Image();
+  nice_job_img.src = "assets/nicejob.png";
 
   char_imgs = [];
   for(var i = 0; i < 7; i++)
