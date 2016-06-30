@@ -508,9 +508,16 @@ var GamePlayScene = function(game, stage)
     i++;
 
     if(game_mode == GAME_PLAYGROUND)
-      displayMessage(["This is a playground.","Play around with the tools to see how they behave in the presence of a magnetic field."]);
+      displayMessage([
+        "Time to practice our superpowers!",
+        "Play around with the tools and see how they act around the magnetic field.",
+        "You can move the magnet, too!",
+      ]);
     if(game_mode == GAME_FIND)
-      displayMessage(["Find The Magnet!","You can place each tool somewhere on the dirt.","When ready, place a guess where you think the magnet is!"]);
+      displayMessage([
+        "Honey said there was a magnet somewhere around here!",
+        "You can place each tool somewhere in the dirt. Then guess where you think the magnet is!",
+        ]);
 
     var h = dc.height;
     var w = dc.width-sidebar_w;
@@ -585,7 +592,10 @@ var GamePlayScene = function(game, stage)
       message_bg_disp = lerp(message_bg_disp,1,0.2);
       for(var i = 0; i < char_disp.length; i++)
       {
-        if(i == tutchar[cur_tut][cur_subtut])
+        if(
+          (tutchar[cur_tut][cur_subtut] == undefined && i == CHAR_BOY) ||
+          i == tutchar[cur_tut][cur_subtut]
+          )
           char_disp[i] = lerp(char_disp[i],1,0.2);
         else
           char_disp[i] = lerp(char_disp[i],0,0.2);
