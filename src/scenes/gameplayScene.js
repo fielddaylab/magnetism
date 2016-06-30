@@ -196,8 +196,8 @@ var GamePlayScene = function(game, stage)
         game_mode = GAME_PLAYGROUND;
       }
     );
-    menu_btn = new ButtonBox(10,10,100,30,function(evt){game.setScene(2);});
-    retry_btn = new ButtonBox(130,10,100,30,function(evt){if(!guess_placed) return; game.setScene(3);});
+    menu_btn = new ButtonBox(10,10,100,30,function(evt){game.setScene(3);});
+    retry_btn = new ButtonBox(130,10,100,30,function(evt){if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);

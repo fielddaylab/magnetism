@@ -38,9 +38,9 @@ var ChooseScene = function(game, stage)
     title_y = dc.height/2-30;
     subtitle_y = btn_y-40;
 
-    btn_tut_game   = new ButtonBox(btn_x[0],btn_y,btn_s,btn_s,function(evt){ game.start = 0; game.setScene(3); });
-    btn_playground = new ButtonBox(btn_x[1],btn_y,btn_s,btn_s,function(evt){ game.start = 1; game.setScene(3); });
-    btn_real_game  = new ButtonBox(btn_x[2],btn_y,btn_s,btn_s,function(evt){ game.start = 2; game.setScene(3); });
+    btn_tut_game   = new ButtonBox(btn_x[0],btn_y,btn_s,btn_s,function(evt){ game.start = 0; game.setScene(4); });
+    btn_playground = new ButtonBox(btn_x[1],btn_y,btn_s,btn_s,function(evt){ game.start = 1; game.setScene(4); });
+    btn_real_game  = new ButtonBox(btn_x[2],btn_y,btn_s,btn_s,function(evt){ game.start = 2; game.setScene(4); });
 
     clicker.register(btn_tut_game);
     clicker.register(btn_playground);
