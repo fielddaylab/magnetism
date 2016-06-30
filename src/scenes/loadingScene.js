@@ -105,9 +105,15 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/junk_4.png");
     img_srcs.push("assets/junk_big_0.png");
     img_srcs.push("assets/junk_big_1.png");
+    img_srcs.push("assets/btn_game.png");
+    img_srcs.push("assets/btn_playground.png");
+    img_srcs.push("assets/btn_tutorial.png");
+    img_srcs.push("assets/comic.png");
+    img_srcs.push("assets/menu/menu_gradient.png");
+    img_srcs.push("assets/menu/menu_logo.png");
     for(var i = 0; i < 7; i++)
       img_srcs.push("assets/chars/face/char_"+i+".png");
-    for(var i = 0; i < 0; i++)
+    for(var i = 0; i < 3; i++)
       img_srcs.push("assets/comic/comic_"+i+".png");
     for(var i = 0; i < img_srcs.length; i++)
     {
