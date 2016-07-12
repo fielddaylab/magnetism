@@ -84,6 +84,7 @@ var GamePlayScene = function(game, stage)
   var cur_subtut;
   var tuts;
   var tutchar;
+  var tutstate;
   var tutstart;
   var tutdo;
   var tutdraw;
@@ -174,7 +175,7 @@ var GamePlayScene = function(game, stage)
     ui_toggle = false;
     guess_placed = false;
     tools_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb                         ,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = false;});
-    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){ui_toggle = true;});
+    guess_toggle_btn = new ButtonBox(dc.width-sidebar_w+sidebar_xb+(sidebar_w-sidebar_xb)/2,sidebar_yb,(sidebar_w-sidebar_xb)/2,btn_h-sidebar_yb,function(evt){if(game_mode != GAME_FIND) return; ui_toggle = true;});
     guess_btn        = new ButtonBox(dc.width-sidebar_w+2*p,btn_h+title_h+20+p+guess_s+p,sidebar_w-4*p,btn_h*2/3,
       function(evt)
       {
@@ -226,6 +227,7 @@ var GamePlayScene = function(game, stage)
     var i = 0;
     tuts = [];
     tutchar = [];
+    tutstate = [];
     tutstart = [];
     tutdo = [];
     tutdraw = [];
@@ -233,6 +235,7 @@ var GamePlayScene = function(game, stage)
 
     tuts[i] = [];
     tutchar[i] = [];
+    tutstate[i] = {};
     tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
@@ -252,6 +255,46 @@ var GamePlayScene = function(game, stage)
       "That's our first tool!",
       "Um... a bunch of little black flecks? How's that gonna help?",
       "Haha man... wait 'til you see this. Try moving the magnet around a little.",
+    ];
+    tutchar[i] = [
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_AXE,
+      CHAR_BOY,
+      CHAR_AXE,
+      CHAR_BOY,
+    ];
+    tutstate[i] = {mag_nx:0,mag_ny:0,mag_sx:0,mag_sy:0,};
+    tutstart[i] = function()
+    {
+      tutstate[cur_tut].mag_nx = magnets[0].nx;
+      tutstate[cur_tut].mag_ny = magnets[0].ny;
+      tutstate[cur_tut].mag_sx = magnets[0].sx;
+      tutstate[cur_tut].mag_sy = magnets[0].sy;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = function() {
+      var m = magnets[0];
+      var r =
+        !m.dragging && !m.ndragging && !m.sdragging &&
+        (
+          tutstate[cur_tut].mag_nx != m.nx ||
+          tutstate[cur_tut].mag_ny != m.ny ||
+          tutstate[cur_tut].mag_sx != m.sx ||
+          tutstate[cur_tut].mag_sy != m.sy
+        );
+      return r;
+    };
+    i++;
+
+    tuts[i] = [
       "WHOA! What just happened?",
       "Those black flecks are actually iron filings.",
       "They line up with the magnetic field around the magnet!",
@@ -269,18 +312,6 @@ var GamePlayScene = function(game, stage)
       "Totally! There's a whole bunch of compasses.",
     ];
     tutchar[i] = [
-      CHAR_BOY,
-      CHAR_AXE,
-      CHAR_BOY,
-      CHAR_AXE,
-      CHAR_AXE,
-      CHAR_BOY,
-      CHAR_BOY,
-      CHAR_AXE,
-      CHAR_AXE,
-      CHAR_BOY,
-      CHAR_AXE,
-      CHAR_BOY,
       CHAR_AXE,
       CHAR_BOY,
       CHAR_BOY,
@@ -297,6 +328,7 @@ var GamePlayScene = function(game, stage)
       CHAR_AXE,
       CHAR_BOY,
     ];
+    tutstate[i] = {};
     tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
@@ -313,6 +345,7 @@ var GamePlayScene = function(game, stage)
       CHAR_BOY,
       CHAR_AXE,
     ];
+    tutstate[i] = {};
     tutstart[i] = function() {
       magnets[0].nfx = -100;
       magnets[0].nfy = -100;
@@ -323,7 +356,13 @@ var GamePlayScene = function(game, stage)
     };
     tutdo[i] = noop;
     tutdraw[i] = noop;
-    tutests[i] = tfunc;
+    tutests[i] = function() {
+      for(var i = 0; i < compasses.length; i++)
+      {
+        if(!compasses[i].dragging && !compasses[i].default) return true;
+      }
+      return false;
+    };
     i++;
 
     tuts[i] = [
@@ -364,13 +403,24 @@ var GamePlayScene = function(game, stage)
       CHAR_BOY,
       CHAR_AXE,
     ]
+    tutstate[i] = {};
     tutstart[i] = function() {
-      compasses[0].fx = 0.1;
-      compasses[0].fy = -0.1;
-      compasses[0].orientFromField();
-      compasses[0].inert = false;
-      compasses[0].default = false;
-      compasses[0].draggable = false;
+      var c;
+      c = compasses[0];
+      c.fx = 0.1;
+      c.fy = -0.1;
+      c.orientFromField();
+      c.inert = false;
+      c.default = false;
+      c.draggable = false;
+      for(var i = 1; i < compasses.length; i++)
+      {
+        c = compasses[i];
+        c.x = c.default_x;
+        c.y = c.default_y;
+        c.inert = true;
+        c.default = true;
+      }
     };
     tutdo[i] = noop;
     tutdraw[i] = noop;
@@ -383,6 +433,7 @@ var GamePlayScene = function(game, stage)
     tutchar[i] = [
       CHAR_AXE,
     ]
+    tutstate[i] = {};
     tutstart[i] = function(){
       magnets[0].nfx = -0.2;
       magnets[0].nfy = -0.2;
@@ -422,6 +473,7 @@ var GamePlayScene = function(game, stage)
       CHAR_BOY,
       CHAR_AXE,
     ]
+    tutstate[i] = {};
     tutstart[i] = function(){
       compasses[0].inert = false;
       compasses[0].dirty = true;
@@ -437,6 +489,7 @@ var GamePlayScene = function(game, stage)
     tutchar[i] = [
       CHAR_AXE,
     ]
+    tutstate[i] = {};
     tutstart[i] = function(){
       compasses[0].fx = 0.2;
       compasses[0].fy = -0.2;
@@ -460,11 +513,6 @@ var GamePlayScene = function(game, stage)
       "It looks like... a green square thingy?",
       "Haha, good try. That's magnetic film!",
       "Drag it out onto the yard and see what happens.",
-      "The film shows the magnetic field. It changes color as we get closer to the magnet!",
-      "Yes!! We can use the iron filings, the compasses, and the magnetic film to find BURIED TREASURE!!!",
-      "Wait, buried treasure?",
-      "Oh... um, I mean, Mr. Hart's magnets. Why, what'd I say?",
-      "Never mind...",
     ];
     tutchar[i] = [
       CHAR_BOY,
@@ -478,16 +526,33 @@ var GamePlayScene = function(game, stage)
       CHAR_AXE,
       CHAR_BOY,
       CHAR_BOY,
+    ];
+    tutstate[i] = {};
+    tutstart[i] = function(){
+      compasses[0].inert = false;
+      compasses[0].dirty = true;
+    };
+    tutdo[i] = noop;
+    tutdraw[i] = noop;
+    tutests[i] = function() { return !film.dragging && !film.inert; }
+    i++;
+
+    tuts[i] = [
+      "The film shows the magnetic field. It changes color as we get closer to the magnet!",
+      "Yes!! We can use the iron filings, the compasses, and the magnetic film to find BURIED TREASURE!!!",
+      "Wait, buried treasure?",
+      "Oh... um, I mean, Mr. Hart's magnets. Why, what'd I say?",
+      "Never mind...",
+    ];
+    tutchar[i] = [
       CHAR_BOY,
       CHAR_AXE,
       CHAR_BOY,
       CHAR_AXE,
       CHAR_BOY,
     ];
-    tutstart[i] = function(){
-      compasses[0].inert = false;
-      compasses[0].dirty = true;
-    };
+    tutstate[i] = {};
+    tutstart[i] = noop;
     tutdo[i] = noop;
     tutdraw[i] = noop;
     tutests[i] = tfunc;
@@ -495,6 +560,7 @@ var GamePlayScene = function(game, stage)
 
     tuts[i] = [];
     tutchar[i] = [];
+    tutstate[i] = {};
     tutstart[i] = function(){
       compasses[0].draggable = true;
       magnets[0].draggable = true;
