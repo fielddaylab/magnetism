@@ -775,7 +775,10 @@ var GamePlayScene = function(game, stage)
       ctx.fillStyle = "#000000";
     }
     dom.draw(blurb_f,dc);
-    menu_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Menu",menu_btn.x+10,menu_btn.y+menu_btn.h-10);
+    ctx.fillStyle = "#FFFFFF";
+    dc.fillRoundRect(menu_btn.x+10,menu_btn.y,menu_btn.w-20,menu_btn.h,15);
+    ctx.fillStyle = "#000000";
+    ctx.fillText("Menu",menu_btn.x+20,menu_btn.y+menu_btn.h-8);
 
     if(game_mode == GAME_TUT)
     {
