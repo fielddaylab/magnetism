@@ -33,8 +33,8 @@ var ChooseScene = function(game, stage)
     title_y = dc.height/2-30;
 
     btn_tut        = new ButtonBox(btn_x[1],btn_y,btn_s,btn_s,function(evt){ game.start = 0; game.setScene(4); }); btn_tut.img = btn_tutorial_img;          clicker.register(btn_tut);
-    btn_game       = new ButtonBox(btn_x[2],btn_y,btn_s,btn_s,function(evt){ game.start = 1; game.setScene(4); }); btn_game.img = btn_game_img;             clicker.register(btn_game);
-    btn_playground = new ButtonBox(btn_x[3],btn_y,btn_s,btn_s,function(evt){ game.start = 2; game.setScene(4); }); btn_playground.img = btn_playground_img; clicker.register(btn_playground);
+    btn_game       = new ButtonBox(btn_x[2],btn_y,btn_s,btn_s,function(evt){ game.start = 2; game.setScene(4); }); btn_game.img = btn_game_img;             clicker.register(btn_game);
+    btn_playground = new ButtonBox(btn_x[3],btn_y,btn_s,btn_s,function(evt){ game.start = 1; game.setScene(4); }); btn_playground.img = btn_playground_img; clicker.register(btn_playground);
   };
 
   self.tick = function()

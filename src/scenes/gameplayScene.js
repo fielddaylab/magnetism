@@ -73,7 +73,6 @@ var GamePlayScene = function(game, stage)
   var tools_toggle_btn;
   var guess_toggle_btn;
   var guess_btn;
-  var retry_btn;
   var menu_btn;
   var modal_retry_btn;
   var modal_menu_btn;
@@ -200,14 +199,12 @@ var GamePlayScene = function(game, stage)
       }
     );
     menu_btn = new ButtonBox(10,10,100,30,function(evt){game.setScene(3);});
-    retry_btn = new ButtonBox(130,10,100,30,function(evt){if(!guess_placed) return; game.setScene(4);});
     modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
     clicker.register(menu_btn);
-    clicker.register(retry_btn);
     clicker.register(modal_menu_btn);
     clicker.register(modal_retry_btn);
     earth = 0;
@@ -713,7 +710,6 @@ var GamePlayScene = function(game, stage)
     }
     dom.draw(blurb_f,dc);
     menu_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Menu",menu_btn.x+10,menu_btn.y+menu_btn.h-10);
-    if(guess_placed) { retry_btn.draw(dc); ctx.fillStyle = "#000000"; ctx.fillText("Retry",retry_btn.x+10,retry_btn.y+retry_btn.h-10); }
 
     if(game_mode == GAME_TUT)
     {
