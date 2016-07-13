@@ -761,7 +761,7 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle=grad;
     ctx.fillRect(0, dc.height+10-message_bg_disp*s, dc.width-sidebar_w+5, s);
     for(var i = 0; i < char_imgs.length; i++)
-      ctx.drawImage(char_imgs[i], 20, dc.height+10-char_disp[i]*200, 200, 400);
+      ctx.drawImage(char_imgs[i], 20, dc.height+10-char_disp[i]*200, 200, 200*(710/396));
 
     if(input_state == INPUT_PAUSE)
     {
