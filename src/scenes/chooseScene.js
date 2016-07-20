@@ -57,7 +57,7 @@ var ChooseScene = function(game, stage)
     dc.drawLine(0,section_line_y,dc.width,section_line_y);
     ctx.textAlign = "right";
     ctx.font = "60px SueEllen";
-    ctx.fillText("Magnetism!".split("").join(space+space),dc.width-20,section_line_y-40);
+    ctx.fillText("Magnet Hunt!".split("").join(space+space),dc.width-20,section_line_y-40);
 
     ctx.textAlign = "center";
     ctx.font = "20px Open Sans";
