@@ -682,8 +682,8 @@ var GamePlayScene = function(game, stage)
 
     var s;
     s = 50;
-    for(var i = 0; i < junks.length; i++)
-      ctx.drawImage(junk_imgs[junks[i].id],junks[i].x-s/2,junks[i].y-s/2,s,s);
+    //for(var i = 0; i < junks.length; i++)
+      //ctx.drawImage(junk_imgs[junks[i].id],junks[i].x-s/2,junks[i].y-s/2,s,s);
     s = 200;
     for(var i = 0; i < bigjunks.length; i++)
       ctx.drawImage(junk_big_imgs[bigjunks[i].id],bigjunks[i].x-s/2,bigjunks[i].y-s/2,s,s);
