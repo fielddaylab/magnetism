@@ -111,6 +111,8 @@ var LoadingScene = function(game, stage)
     img_srcs.push("assets/comic.png");
     img_srcs.push("assets/menu/menu_gradient.png");
     img_srcs.push("assets/menu/menu_logo.png");
+    img_srcs.push("assets/star-empty.png");
+    img_srcs.push("assets/star-filled.png");
     for(var i = 0; i < 7; i++)
       img_srcs.push("assets/chars/face/char_"+i+".png");
     for(var i = 0; i < 3; i++)

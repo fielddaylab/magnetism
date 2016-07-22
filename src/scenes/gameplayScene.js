@@ -192,9 +192,15 @@ var GamePlayScene = function(game, stage)
         guess_s_d = sqrt(xd*xd + yd*yd);
         guess_d = guess_n_d+guess_s_d;
         hit_ui = true;
-        var stats = "You were "+fdisp(guess_n_d*22)+"cm away from the north pole, and "+fdisp(guess_s_d*22)+"cm away from the south pole. Your total score is "+fdisp(guess_d*22)+"cm.";
-        if(guess_d < 0.5) stats = 'Nice guess! ' + stats;
-        displayMessage([stats,"END_SCREEN","Your Score: "+fdisp(guess_d*22)+"cm"]);
+        var cm = guess_d*22;
+        var stats = "You were "+fdisp(guess_n_d*22)+"cm away from the north pole, and "+fdisp(guess_s_d*22)+"cm away from the south pole. Your total score is "+fdisp(cm)+"cm.";
+        var stars = 1;
+        if (cm <= 15) stars++; // 2 stars
+        if (cm <= 11) stars++; // 3 stars
+        if (cm <=  4) stars++; // 4 stars
+        if (cm <=  1) stars++; // 5 stars
+        if(stars >= 3) stats = 'Nice guess! ' + stats;
+        displayMessage([stats,"END_SCREEN",stars]);
         magnets[0].draggable = true;
         game_mode = GAME_PLAYGROUND;
       }
@@ -802,7 +808,12 @@ var GamePlayScene = function(game, stage)
       ctx.fillStyle = "black";
       ctx.fillText("Nice guess!", dc.width / 2, 380);
       ctx.font = "20px Open Sans";
-      ctx.fillText(end_screen, dc.width / 2, 415);
+      // end_screen is a number 1 through 5
+      ctx.drawImage(end_screen >= 1 ? star_filled_img : star_empty_img, dc.width / 2 - 100 - 13, 408, 26, 26);
+      ctx.drawImage(end_screen >= 2 ? star_filled_img : star_empty_img, dc.width / 2 -  50 - 13, 408, 26, 26);
+      ctx.drawImage(end_screen >= 3 ? star_filled_img : star_empty_img, dc.width / 2       - 13, 408, 26, 26);
+      ctx.drawImage(end_screen >= 4 ? star_filled_img : star_empty_img, dc.width / 2 +  50 - 13, 408, 26, 26);
+      ctx.drawImage(end_screen >= 5 ? star_filled_img : star_empty_img, dc.width / 2 + 100 - 13, 408, 26, 26);
 
       ctx.fillStyle = "rgb(86,160,171)";
       ctx.fillRect(modal_menu_btn.x, modal_menu_btn.y + 7, modal_menu_btn.w, modal_menu_btn.h);

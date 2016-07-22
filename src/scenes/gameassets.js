@@ -30,6 +30,9 @@ var comic_img;
 var menu_grad_img;
 var menu_logo_img;
 
+var star_empty_img;
+var star_filled_img;
+
 var char_imgs;
 
 var bg_imgs;
@@ -270,6 +273,11 @@ var bake = function()
   menu_grad_img.src = "assets/menu/menu_gradient.png";
   menu_logo_img = new Image();
   menu_logo_img.src = "assets/menu/menu_logo.png";
+
+  star_empty_img = new Image();
+  star_empty_img.src = "assets/star-empty.png";
+  star_filled_img = new Image();
+  star_filled_img.src = "assets/star-filled.png";
 
   char_imgs = [];
   for(var i = 0; i < 7; i++)
