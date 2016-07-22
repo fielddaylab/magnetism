@@ -369,7 +369,7 @@ var GamePlayScene = function(game, stage)
       "So, a compass is just a tiny magnet that's allowed to spin freely.",
       "A compass is a magnet?? Does that mean the compass has poles, too?",
       "Yeah, it does!",
-      "The north pole is red, and the south pole is white.",
+      "The north pole is red, and the south pole is blue.",
       "Take a look. Which pole of the compass is pointing at our magnet?",
       "Hmm... the red side, so that means... the north pole!",
       "Right!",
