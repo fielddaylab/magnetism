@@ -285,7 +285,15 @@ var GamePlayScene = function(game, stage)
       tutstate[cur_tut].mag_sy = magnets[0].sy;
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      if (input_state != INPUT_RESUME) return;
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Try moving the magnet!', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = function() {
       var m = magnets[0];
       var r =
