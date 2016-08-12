@@ -136,7 +136,6 @@ var LoadingScene = function(game, stage)
     var old_allow_play = allow_play;
     if(window.screen.width < 880+buffer || window.screen.height < 660+buffer) allow_play = false;
     else allow_play = true;
-    allow_play = false;
     if(old_allow_play && !allow_play)
     {
       var sc = document.getElementById("stage_container");
