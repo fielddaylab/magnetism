@@ -57,14 +57,12 @@ var g;
 var d;
 function begin()
 {
-  var w = 1024;
-  var h = 768;
-  w = 880;
-  h = 660;
+  var w = 880;
+  var h = 660;
   var content          = document.getElementById("BrainPOPsnapArea");
   var stage_container  = document.getElementById("stage_container");
-  content.style.width          = w; content.style.height          = h;
-  stage_container.style.width  = w; stage_container.style.height  = h;
+  content.style.width          = w+"px"; content.style.height          = h+"px";
+  stage_container.style.width  = w+"px"; stage_container.style.height  = h+"px";
 
   g = new Game({width:w,height:h,container:"stage_container"});
   g.begin();
