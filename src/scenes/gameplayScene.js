@@ -201,6 +201,7 @@ var GamePlayScene = function(game, stage)
         if (cm <=  1) stars++; // 5 stars
         if(stars >= 3) stats = 'Nice guess! ' + stats;
         displayMessage([stats,"END_SCREEN",stars]);
+        ga('send', 'event', 'magnetism_level', 'complete', 1, stars);
         magnets[0].draggable = true;
         game_mode = GAME_PLAYGROUND;
       }
@@ -660,6 +661,7 @@ var GamePlayScene = function(game, stage)
         cur_tut = (cur_tut+1)%tuts.length;
         cur_subtut = 0;
         tutstart[cur_tut]();
+        if(cur_tut == tuts.length-1) ga('send', 'event', 'magnetism_level', 'complete', 0, 0);
         if(tuts[cur_tut] && tuts[cur_tut].length) displayMessage(tuts[cur_tut]);
       }
     }
