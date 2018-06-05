@@ -93,6 +93,8 @@ var GamePlayScene = function(game, stage)
   var junks;
   var bigjunks;
 
+  var mySlog;
+
   self.ready = function()
   {
     n_ticks = 0;
@@ -105,6 +107,7 @@ var GamePlayScene = function(game, stage)
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
+    mySlog = new slog("MAGNET", 1);
 
     dom = new CanvDom(dc);
     fallback = {x:0,y:0,w:dc.width,h:dc.height,click:function(evt){if(!hit_ui)dom.click(evt);}};
