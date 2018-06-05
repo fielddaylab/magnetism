@@ -93,11 +93,86 @@ var GamePlayScene = function(game, stage)
   var junks;
   var bigjunks;
 
+  //logging variables
   var mySlog;
+  
+  var dragStartTime;
+  var dragEndTime;
+  var numToolsUsed = 0;
+  var dragLocation = {x:null, y:null};
+  var numPoleDrags = 0;
+  var guessScore = {northDist:null, southDist:null};
+  var numCompasses = 0;
+  var ironFilingsUsed = false;
+  var magnetFilmUsed = false;
+  var levelStartTime;
+  var levelEndTime;
+  var numLevels = 0;
+
+  //log functions
+  var log_drag_tool = function(type, time, loc, num)
+  {
+    var log_data =
+    {
+      event:"DRAG_TOOL",
+      event_data_complex:{
+        toolType:type,
+        dragTime:time,
+        location:loc,
+        toolNum:num
+      }
+    };
+    
+    log_data.event_data_complex = JSON.stringify(log_data.event_data_complex);
+    mySlog.log(log_data);
+    //console.log(log_data);
+  }
+
+  var log_drag_pole = function(pole, time, loc, num, dist, numTools)
+  {
+    var log_data =
+    {
+      event:"DRAG_POLE",
+      event_data_complex:{
+        poleType:pole,
+        dragTime:time,
+        location:loc,
+        numTimesMoved:num,
+        distToPole:dist,
+        numToolsUsed:numTools
+      }
+    };
+    
+    log_data.event_data_complex = JSON.stringify(log_data.event_data_complex);
+    mySlog.log(log_data);
+    //console.log(log_data);
+  }
+
+  var log_level_complete = function(score, numComp, filingsUsed, filmUsed, time, numlvls, numPoleMoves)
+  {
+    var log_data =
+    {
+      event:"COMPLETE",
+      event_data_complex:{
+        guessScore:score,
+        numCompasses:numComp,
+        ironFilingsUsed:filingsUsed,
+        magneticFilmUsed:filmUsed,
+        levelTime:time,
+        numLevels:numlvls,
+        numTimesPolesMoved:numPoleMoves
+      }
+    };
+    
+    log_data.event_data_complex = JSON.stringify(log_data.event_data_complex);
+    mySlog.log(log_data);
+    //console.log(log_data);
+  }
 
   self.ready = function()
   {
     n_ticks = 0;
+    levelStartTime = new Date().getTime();
     switch(game.start)
     {
       case 0: game_mode = GAME_TUT; break;
@@ -206,6 +281,16 @@ var GamePlayScene = function(game, stage)
         displayMessage([stats,"END_SCREEN",stars]);
         ga('send', 'event', 'magnetism_level', 'complete', 1, stars);
         magnets[0].draggable = true;
+
+        numLevels++;
+        levelEndTime = new Date().getTime();
+        guessScore.northDist = guess_n_d*22;
+        guessScore.southDist = guess_s_d*22;
+        log_level_complete(guessScore, numCompasses, filings.placed, film.placed, (levelEndTime - levelStartTime) / 1000, numLevels, numPoleDrags);
+        numToolsUsed = 0;
+        numPoleDrags = 0;
+        numCompasses = 0;
+
         game_mode = GAME_PLAYGROUND;
       }
     );
@@ -1175,7 +1260,6 @@ var GamePlayScene = function(game, stage)
         if(dist > 10) return;
         else self.dragging = true;
       }
-
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -1308,6 +1392,7 @@ var GamePlayScene = function(game, stage)
       if(!self.draggable || hit_ui || (self.default && ui_toggle)) return;
       if(game_mode == GAME_FIND && self.placed) return;
       self.dragging = true;
+      dragStartTime = new Date().getTime();
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -1332,9 +1417,18 @@ var GamePlayScene = function(game, stage)
       }
       else if(self.dragging)
       {
+        if(game_mode == GAME_FIND && !self.placed) {
+          numToolsUsed++;
+          numCompasses++;
+          dragEndTime = new Date().getTime();
+          dragLocation.x = self.x;
+          dragLocation.y = self.y;
+          log_drag_tool("COMPASS", (dragEndTime - dragStartTime) / 1000, dragLocation, numToolsUsed);
+        }
         self.placed = true;
         checkAllPlaced();
       }
+
       self.dragging = false;
     }
   }
@@ -1383,6 +1477,7 @@ var GamePlayScene = function(game, stage)
       if(!self.draggable || hit_ui || (self.default && ui_toggle)) return;
       if(game_mode == GAME_FIND && self.placed) return;
       self.dragging = true;
+      dragStartTime = new Date().getTime();
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -1407,6 +1502,17 @@ var GamePlayScene = function(game, stage)
       }
       else if(self.dragging)
       {
+        if(game_mode == GAME_FIND && !self.placed) {
+          numToolsUsed++;
+          dragEndTime = new Date().getTime();
+          dragLocation.x = self.x;
+          dragLocation.y = self.y;
+          if (self === filings) {
+            log_drag_tool("IRON_FILINGS", (dragEndTime - dragStartTime) / 1000, dragLocation, numToolsUsed);
+          } else if (self === film) {
+            log_drag_tool("MAGNETIC_FILM", (dragEndTime - dragStartTime) / 1000, dragLocation, numToolsUsed);
+          }
+        }
         self.placed = true;
         checkAllPlaced();
       }
@@ -1441,6 +1547,7 @@ var GamePlayScene = function(game, stage)
     {
       if(!self.draggable || hit_ui || (self.default && !ui_toggle)) return;
       self.dragging = true;
+      dragStartTime = new Date().getTime();
       self.drag(evt);
     }
     self.drag = function(evt)
@@ -1462,6 +1569,27 @@ var GamePlayScene = function(game, stage)
         self.x = self.default_x;
         self.y = self.default_y;
         self.default = true;
+      } else {
+        if(game_mode == GAME_FIND && ui_toggle) {
+          numPoleDrags++;
+          dragEndTime = new Date().getTime();
+          dragLocation.x = self.x;
+          dragLocation.y = self.y;
+          var xd;
+          var yd;
+          var dist;
+          if (self === nguess) {
+            xd = magnets[0].nfx-nguess.fx;
+            yd = magnets[0].nfy-nguess.fy;
+            dist = sqrt(xd*xd + yd*yd);
+            log_drag_pole("POLE_NORTH", (dragEndTime - dragStartTime) / 1000, dragLocation, numPoleDrags, dist, numToolsUsed);
+          } else if (self === sguess) {
+            xd = magnets[0].sfx-sguess.fx;
+            yd = magnets[0].sfy-sguess.fy;
+            dist = sqrt(xd*xd + yd*yd);
+            log_drag_pole("POLE_SOUTH", (dragEndTime - dragStartTime) / 1000, dragLocation, numPoleDrags, dist, numToolsUsed);
+          }
+        }
       }
       self.dragging = false;
     }
