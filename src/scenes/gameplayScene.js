@@ -108,6 +108,7 @@ var GamePlayScene = function(game, stage)
   var levelStartTime;
   var levelEndTime;
   var numLevels = 0;
+  var numDrags = 0;
 
   //log functions
   var log_drag_tool = function(type, time, loc, num)
@@ -161,6 +162,37 @@ var GamePlayScene = function(game, stage)
         levelTime:time,
         numLevels:numlvls,
         numTimesPolesMoved:numPoleMoves
+      }
+    };
+    
+    log_data.event_data_complex = JSON.stringify(log_data.event_data_complex);
+    mySlog.log(log_data);
+    //console.log(log_data);
+  }
+
+  var log_playground_exit = function(time, numDrags)
+  {
+    var log_data =
+    {
+      event:"PLAYGROUND_EXIT",
+      event_data_complex:{
+        timeSpent:time,
+        numThingsDragged:numDrags
+      }
+    };
+    
+    log_data.event_data_complex = JSON.stringify(log_data.event_data_complex);
+    mySlog.log(log_data);
+    //console.log(log_data);
+  }
+
+  var log_tutorial_exit = function(time)
+  {
+    var log_data =
+    {
+      event:"TUTORIAL_EXIT",
+      event_data_complex:{
+        timeSpent:time,
       }
     };
     
@@ -294,7 +326,16 @@ var GamePlayScene = function(game, stage)
         game_mode = GAME_PLAYGROUND;
       }
     );
-    menu_btn = new ButtonBox(10,10,100,30,function(evt){game.setScene(3);});
+    menu_btn = new ButtonBox(10,10,100,30,function(evt){ 
+      levelEndTime = new Date().getTime();
+      if (game_mode == GAME_TUT) {
+        log_tutorial_exit((levelEndTime - levelStartTime) / 1000);
+      } else if (game_mode == GAME_PLAYGROUND) {
+        log_playground_exit((levelEndTime - levelStartTime) / 1000, numDrags);
+      }
+      numDrags = 0;
+      game.setScene(3);
+    });
     modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
@@ -1315,6 +1356,7 @@ var GamePlayScene = function(game, stage)
     }
     self.dragFinish = function()
     {
+      numDrags++;
       self.dragging = false;
       self.ndragging = false;
       self.sdragging = false;
@@ -1420,10 +1462,13 @@ var GamePlayScene = function(game, stage)
         if(game_mode == GAME_FIND && !self.placed) {
           numToolsUsed++;
           numCompasses++;
+          numDrags++;
           dragEndTime = new Date().getTime();
           dragLocation.x = self.x;
           dragLocation.y = self.y;
           log_drag_tool("COMPASS", (dragEndTime - dragStartTime) / 1000, dragLocation, numToolsUsed);
+        } else {
+          numDrags++;
         }
         self.placed = true;
         checkAllPlaced();
@@ -1512,6 +1557,8 @@ var GamePlayScene = function(game, stage)
           } else if (self === film) {
             log_drag_tool("MAGNETIC_FILM", (dragEndTime - dragStartTime) / 1000, dragLocation, numToolsUsed);
           }
+        } else {
+          numDrags++;
         }
         self.placed = true;
         checkAllPlaced();
@@ -1589,6 +1636,8 @@ var GamePlayScene = function(game, stage)
             dist = sqrt(xd*xd + yd*yd);
             log_drag_pole("POLE_SOUTH", (dragEndTime - dragStartTime) / 1000, dragLocation, numPoleDrags, dist, numToolsUsed);
           }
+        } else {
+          numDrags++;
         }
       }
       self.dragging = false;
