@@ -115,8 +115,11 @@ var GamePlayScene = function(game, stage)
   {
     var log_data =
     {
-      event:"DRAG_TOOL",
+      level:game_mode,
+      event:"CUSTOM",
+      event_custom:1,
       event_data_complex:{
+        event_custom:"DRAG_TOOL",
         toolType:type,
         dragTime:time,
         location:loc,
@@ -133,8 +136,11 @@ var GamePlayScene = function(game, stage)
   {
     var log_data =
     {
-      event:"DRAG_POLE",
+      level:game_mode,
+      event:"CUSTOM",
+      event_custom:2,
       event_data_complex:{
+        event_custom:"DRAG_POLE",
         poleType:pole,
         dragTime:time,
         location:loc,
@@ -153,6 +159,7 @@ var GamePlayScene = function(game, stage)
   {
     var log_data =
     {
+      level:game_mode,
       event:"COMPLETE",
       event_data_complex:{
         guessScore:score,
@@ -174,8 +181,11 @@ var GamePlayScene = function(game, stage)
   {
     var log_data =
     {
-      event:"PLAYGROUND_EXIT",
+      level:game_mode,
+      event:"CUSTOM",
+      event_custom:3,
       event_data_complex:{
+        event_custom:"PLAYGROUND_EXIT",
         timeSpent:time,
         numThingsDragged:numDrags
       }
@@ -190,8 +200,11 @@ var GamePlayScene = function(game, stage)
   {
     var log_data =
     {
-      event:"TUTORIAL_EXIT",
+      level:game_mode,
+      event:"CUSTOM",
+      event_custom:4,
       event_data_complex:{
+        event_custom:"TUTORIAL_EXIT",
         timeSpent:time,
       }
     };
