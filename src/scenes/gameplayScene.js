@@ -1,3 +1,5 @@
+var attempt = 1;
+var mySlog = new slog("MAGNET", 1);
 var GamePlayScene = function(game, stage)
 {
   var self = this;
@@ -70,6 +72,9 @@ var GamePlayScene = function(game, stage)
   var guess_n_d;
   var guess_s_d;
   var guess_d;
+  var south_pole_to_north_guess_distance;
+  var south_pole_to_north_guess_distance;
+  var guess_d_opp;
   var tools_toggle_btn;
   var guess_toggle_btn;
   var guess_btn;
@@ -94,7 +99,7 @@ var GamePlayScene = function(game, stage)
   var bigjunks;
 
   //logging variables
-  var mySlog;
+  //var mySlog;
   
   var dragStartTime;
   var dragEndTime;
@@ -109,13 +114,15 @@ var GamePlayScene = function(game, stage)
   var levelEndTime;
   var numLevels = 0;
   var numDrags = 0;
+  var magnetLocation = {xNorth:null, yNorth:null, xSouth:null, ySouth:null};
+  var guessScoreIfSwitched = {northPoleToSouthGuess:null, southPoleToNorthGuess:null};
 
   //log functions
   var log_drag_tool = function(type, time, loc, num)
   {
     var log_data =
     {
-      level:game_mode,
+      level:attempt,
       event:"CUSTOM",
       event_custom:1,
       event_data_complex:{
@@ -136,7 +143,7 @@ var GamePlayScene = function(game, stage)
   {
     var log_data =
     {
-      level:game_mode,
+      level:attempt,
       event:"CUSTOM",
       event_custom:2,
       event_data_complex:{
@@ -155,20 +162,22 @@ var GamePlayScene = function(game, stage)
     //console.log(log_data);
   }
 
-  var log_level_complete = function(score, numComp, filingsUsed, filmUsed, time, numlvls, numPoleMoves)
+  var log_level_complete = function(score, numComp, filingsUsed, filmUsed, time, numlvls, numPoleMoves, magloc, switchedPoleScore)
   {
     var log_data =
     {
-      level:game_mode,
+      level:attempt,
       event:"COMPLETE",
       event_data_complex:{
         guessScore:score,
+        guessScoreIfSwitched:switchedPoleScore,
         numCompasses:numComp,
         ironFilingsUsed:filingsUsed,
         magneticFilmUsed:filmUsed,
         levelTime:time,
         numLevels:numlvls,
-        numTimesPolesMoved:numPoleMoves
+        numTimesPolesMoved:numPoleMoves,
+        magnetLocation:magloc
       }
     };
     
@@ -227,7 +236,7 @@ var GamePlayScene = function(game, stage)
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
     clicker = new Clicker({source:stage.dispCanv.canvas});
-    mySlog = new slog("MAGNET", 1);
+    if(game_mode == GAME_FIND) attempt ++;
 
     dom = new CanvDom(dc);
     fallback = {x:0,y:0,w:dc.width,h:dc.height,click:function(evt){if(!hit_ui)dom.click(evt);}};
@@ -314,6 +323,16 @@ var GamePlayScene = function(game, stage)
         yd = magnets[0].sfy-sguess.fy;
         guess_s_d = sqrt(xd*xd + yd*yd);
         guess_d = guess_n_d+guess_s_d;
+        //calculate score if poles switched
+        var xd_opp
+        var yd_opp
+        xd_opp = magnets[0].nfx-sguess.fx;
+        yd_opp = magnets[0].nfy-sguess.fy;
+        north_pole_to_south_guess_distance = sqrt(xd_opp*xd_opp + yd_opp*yd_opp);
+        xd_opp = magnets[0].sfx-nguess.fx;
+        yd_opp = magnets[0].sfy-nguess.fy;
+        south_pole_to_north_guess_distance = sqrt(xd_opp*xd_opp + yd_opp*yd_opp);
+        guess_d_opp = north_pole_to_south_guess_distance+south_pole_to_north_guess_distance;
         hit_ui = true;
         var cm = guess_d*22;
         var stats = "You were "+fdisp(guess_n_d*22)+"cm away from the north pole, and "+fdisp(guess_s_d*22)+"cm away from the south pole. Your total score is "+fdisp(cm)+"cm.";
@@ -331,7 +350,13 @@ var GamePlayScene = function(game, stage)
         levelEndTime = new Date().getTime();
         guessScore.northDist = guess_n_d*22;
         guessScore.southDist = guess_s_d*22;
-        log_level_complete(guessScore, numCompasses, filings.placed, film.placed, (levelEndTime - levelStartTime) / 1000, numLevels, numPoleDrags);
+        guessScoreIfSwitched.northPoleToSouthGuess = north_pole_to_south_guess_distance * 22;
+        guessScoreIfSwitched.southPoleToNorthGuess = south_pole_to_north_guess_distance * 22;
+        magnetLocation.xNorth = magnets[0].nx;
+        magnetLocation.yNorth = magnets[0].ny;
+        magnetLocation.xSouth = magnets[0].sx;
+        magnetLocation.ySouth = magnets[0].sy;
+        log_level_complete(guessScore, numCompasses, filings.placed, film.placed, (levelEndTime - levelStartTime) / 1000, numLevels, numPoleDrags, magnetLocation, guessScoreIfSwitched);
         numToolsUsed = 0;
         numPoleDrags = 0;
         numCompasses = 0;
