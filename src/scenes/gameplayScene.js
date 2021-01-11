@@ -1,5 +1,5 @@
 var attempt = 1;
-var mySlog = new slog("MAGNET", 1);
+var mySlog = new slog("MAGNET", 2);
 var GamePlayScene = function(game, stage)
 {
   var self = this;
