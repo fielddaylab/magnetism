@@ -513,7 +513,7 @@ var GamePlayScene = function(game, stage)
     tutstate[i] = {};
     tutstart[i] = noop;
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+	tutdraw[i] = noop;
     tutests[i] = tfunc;
     i++;
 
@@ -537,7 +537,15 @@ var GamePlayScene = function(game, stage)
       magnets[0].orientFromField();
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      if (input_state != INPUT_RESUME) return;
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Drag out a compass!', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = function() {
       for(var i = 0; i < compasses.length; i++)
       {
@@ -715,7 +723,15 @@ var GamePlayScene = function(game, stage)
       compasses[0].dirty = true;
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      if (input_state != INPUT_RESUME) return;
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Drag out the magnetic film!', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = function() { return !film.dragging && !film.inert; }
     i++;
 
@@ -736,7 +752,7 @@ var GamePlayScene = function(game, stage)
     tutstate[i] = {};
     tutstart[i] = noop;
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+	tutdraw[i] = noop;
     tutests[i] = tfunc;
     i++;
 
@@ -748,7 +764,14 @@ var GamePlayScene = function(game, stage)
       magnets[0].draggable = true;
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Press Menu to continue', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = ffunc;
     i++;
 
