@@ -1079,6 +1079,7 @@ var GamePlayScene = function(game, stage)
     }
 
     if (end_screen) {
+      canPressNext = false;
       var w = 520;
       var h = 300;
       var img_w = 340;
