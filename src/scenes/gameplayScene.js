@@ -374,6 +374,7 @@ var GamePlayScene = function(game, stage)
       numDrags = 0;
       game.setScene(3);
     });
+    
     modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
@@ -513,7 +514,7 @@ var GamePlayScene = function(game, stage)
     tutstate[i] = {};
     tutstart[i] = noop;
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+	tutdraw[i] = noop;
     tutests[i] = tfunc;
     i++;
 
@@ -537,7 +538,15 @@ var GamePlayScene = function(game, stage)
       magnets[0].orientFromField();
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      if (input_state != INPUT_RESUME) return;
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Drag out a compass!', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = function() {
       for(var i = 0; i < compasses.length; i++)
       {
@@ -715,7 +724,15 @@ var GamePlayScene = function(game, stage)
       compasses[0].dirty = true;
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      if (input_state != INPUT_RESUME) return;
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Drag out the magnetic film!', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = function() { return !film.dragging && !film.inert; }
     i++;
 
@@ -736,7 +753,7 @@ var GamePlayScene = function(game, stage)
     tutstate[i] = {};
     tutstart[i] = noop;
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+	tutdraw[i] = noop;
     tutests[i] = tfunc;
     i++;
 
@@ -748,21 +765,31 @@ var GamePlayScene = function(game, stage)
       magnets[0].draggable = true;
     };
     tutdo[i] = noop;
-    tutdraw[i] = noop;
+    tutdraw[i] = function(){
+      ctx.fillStyle = 'white';
+      ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
+      ctx.font = "18px Open Sans";
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.fillText('Press \"Menu\" to continue', (dc.width - sidebar_w) / 2, dc.height - 30);
+    };
     tutests[i] = ffunc;
     i++;
 
-    if(game_mode == GAME_PLAYGROUND)
+    if(game_mode == GAME_PLAYGROUND){
       displayMessage([
         "Time to practice our superpowers!",
         "Play around with the tools and see how they act around the magnetic field.",
         "You can move the magnet, too!",
       ]);
-    if(game_mode == GAME_FIND)
+    }
+    
+    if(game_mode == GAME_FIND){
       displayMessage([
         "Honey said there was a magnet somewhere around here!",
         "You can place each tool somewhere in the dirt. Then guess where you think the magnet is!",
         ]);
+    }
 
     var h = dc.height;
     var w = dc.width-sidebar_w;
@@ -962,6 +989,18 @@ var GamePlayScene = function(game, stage)
     dc.fillRoundRect(menu_btn.x+10,menu_btn.y,menu_btn.w-20,menu_btn.h,15);
     ctx.fillStyle = "#000000";
     ctx.fillText("MENU",menu_btn.x+20,menu_btn.y+menu_btn.h-8);
+
+    //Playground continue text
+    if ((game_mode == GAME_PLAYGROUND) && (input_state != INPUT_PAUSE)) 
+    {
+      	ctx.fillStyle = 'white';
+      	ctx.fillRect((dc.width - sidebar_w - 300) / 2 - 40, dc.height - 55, 380, 40);
+      	ctx.font = "18px Open Sans";
+      	ctx.fillStyle = 'black';
+      	ctx.textAlign = 'center';
+      	ctx.fillText("Press \"Menu\" when you're done practicing!", (dc.width - sidebar_w) / 2, dc.height - 30);
+    }
+
 
     if(game_mode == GAME_TUT)
     {
