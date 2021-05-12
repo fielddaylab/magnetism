@@ -374,7 +374,6 @@ var GamePlayScene = function(game, stage)
       numDrags = 0;
       game.setScene(3);
     });
- 
     
     modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
