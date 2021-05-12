@@ -84,7 +84,6 @@ var GamePlayScene = function(game, stage)
   var message_bg_disp;
   var char_disp;
   var earth;
-  var canPressNext = false; //should the "next" button be pressable and drawn
 
   var cur_tut;
   var cur_subtut;
@@ -375,29 +374,7 @@ var GamePlayScene = function(game, stage)
       numDrags = 0;
       game.setScene(3);
     });
-    
-    canPressNext = false;
-    next_btn = new ButtonBox(565,10,100,30, function(evt)
-    {
-        if (!canPressNext) return; //don't activate the next button
-        
-        canPressNext = false; //button was just clicked, deactivate it
-        
-    	numDrags = 0;
-    	if (game_mode == GAME_TUT)
-    	{
-    		game.start = 1;
-    		game.setScene(4);
-    		displayMessage([]);
-    	}
-    	else if (game_mode == GAME_PLAYGROUND)
-    	{
-    		game.start = 2;
-    		game.setScene(4);
-    		displayMessage([]);
-    	}
-    });
-    
+ 
     
     modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
@@ -405,9 +382,6 @@ var GamePlayScene = function(game, stage)
     clicker.register(guess_toggle_btn);
     clicker.register(guess_btn);
     clicker.register(menu_btn);
-    
-    clicker.register(next_btn);
-    
     clicker.register(modal_menu_btn);
     clicker.register(modal_retry_btn);
     earth = 0;
@@ -793,13 +767,12 @@ var GamePlayScene = function(game, stage)
     };
     tutdo[i] = noop;
     tutdraw[i] = function(){
-      canPressNext = true;
       ctx.fillStyle = 'white';
       ctx.fillRect((dc.width - sidebar_w - 300) / 2, dc.height - 55, 300, 40);
       ctx.font = "18px Open Sans";
       ctx.fillStyle = 'black';
       ctx.textAlign = 'center';
-      ctx.fillText('Press \"Next\" to continue', (dc.width - sidebar_w) / 2, dc.height - 30);
+      ctx.fillText('Press \"Menu\" to continue', (dc.width - sidebar_w) / 2, dc.height - 30);
     };
     tutests[i] = ffunc;
     i++;
@@ -1015,62 +988,19 @@ var GamePlayScene = function(game, stage)
     dom.draw(blurb_f,dc);
     ctx.fillStyle = "#FFFFFF";
     dc.fillRoundRect(menu_btn.x+10,menu_btn.y,menu_btn.w-20,menu_btn.h,15);
-    
-    //draw next button outline
-    if (canPressNext) dc.fillRoundRect(next_btn.x+5,menu_btn.y,menu_btn.w-20,menu_btn.h,15);
-    
     ctx.fillStyle = "#000000";
     ctx.fillText("MENU",menu_btn.x+20,menu_btn.y+menu_btn.h-8);
-    
-    //text on next button
-	if (canPressNext) ctx.fillText("NEXT",next_btn.x+20,menu_btn.y+menu_btn.h-8);
-    
-    //Playground next button and continue text
+
+    //Playground continue text
     if ((game_mode == GAME_PLAYGROUND) && (input_state != INPUT_PAUSE)) 
     {
-    	canPressNext = true;
       	ctx.fillStyle = 'white';
       	ctx.fillRect((dc.width - sidebar_w - 300) / 2 - 40, dc.height - 55, 380, 40);
       	ctx.font = "18px Open Sans";
       	ctx.fillStyle = 'black';
       	ctx.textAlign = 'center';
-      	ctx.fillText("Press \"Next\" when you're done practicing!", (dc.width - sidebar_w) / 2, dc.height - 30);
+      	ctx.fillText("Press \"Menu\" when you're done practicing!", (dc.width - sidebar_w) / 2, dc.height - 30);
     }
-    
-    //Draw states for debugging
-    /*switch(input_state)
-    {
-    	case (INPUT_PAUSE):
-    	{
-    		ctx.fillText("input_pause",menu_btn.x+20,menu_btn.y+menu_btn.h+25);
-    		break;
-    	}
-    	case (INPUT_RESUME):
-    	{
-    		ctx.fillText("input_resume",menu_btn.x+20,menu_btn.y+menu_btn.h+25);
-    		break;
-    	}
-    }
-    switch(game_mode)
-    {
-    	case(GAME_TUT):
-    	{
-    		ctx.fillText("game_tut",menu_btn.x+20,menu_btn.y+menu_btn.h+50);
-    		break;
-    	}
-    	case(GAME_PLAYGROUND):
-    	{
-    		ctx.fillText("game_playground",menu_btn.x+20,menu_btn.y+menu_btn.h+50);
-    		break;
-    	}
-    	case(GAME_FIND):
-    	{
-    		ctx.fillText("game_find",menu_btn.x+20,menu_btn.y+menu_btn.h+50);
-    		break;
-    	}
-    }*/
-    
-   
 
 
     if(game_mode == GAME_TUT)
@@ -1079,7 +1009,6 @@ var GamePlayScene = function(game, stage)
     }
 
     if (end_screen) {
-      canPressNext = false;
       var w = 520;
       var h = 300;
       var img_w = 340;
