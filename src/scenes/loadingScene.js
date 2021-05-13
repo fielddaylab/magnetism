@@ -36,8 +36,22 @@ var LoadingScene = function(game, stage)
     n_imgs_loaded++;
   };
 
+  //Lol API stuff
+  function LoLApi (messageName, payloadObj) {
+    parent.postMessage({
+        message: messageName,
+        payload: JSON.stringify(payloadObj)
+    }, 
+'*')};
+
   self.ready = function()
   {
+    //Tell LoL API game is ready
+    LoLApi('gameIsReady', { 
+    aspectRatio: "4:3",
+    resolution: "640x480",
+    });
+
     allow_play = true;
 
     pad = 20;

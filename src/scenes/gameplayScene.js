@@ -117,6 +117,72 @@ var GamePlayScene = function(game, stage)
   var magnetLocation = {xNorth:null, yNorth:null, xSouth:null, ySouth:null};
   var guessScoreIfSwitched = {northPoleToSouthGuess:null, southPoleToNorthGuess:null};
 
+  
+  //LoLAPI stuff
+  window.addEventListener("message", function (msg) 
+  {
+    console.log('[PARENT => UNITY]', msg)
+
+    switch (msg.data.messageName) 
+    {
+      case 'pause':
+      {
+        gamePaused = true;
+        break;
+      }
+      case 'resume':
+      {
+        gamePaused = false;
+        break;
+      }
+    }
+  });
+
+  function LoLApi (messageName, payloadObj) 
+  {
+    parent.postMessage({
+        message: messageName,
+        payload: JSON.stringify(payloadObj)
+    }, '*')
+  };
+
+  var gamePaused = false;
+  var tutProgressPoints = 0;
+  var playProgressPoints = 0;
+  var maxPlayPoints = 26;
+  var maxProgress = 30;
+  var addedPoints = false;
+
+  function setTutProgress(newPoints)
+  {
+    //first time player is reaching this part of the tutorial
+    if (newPoints > tutProgressPoints)
+    {
+        tutProgressPoints = newPoints;
+        sendPlayerProgress();
+    }
+  }
+  
+  //player completed level, increase progress by # of stars
+  function increasePlayProgressPoints(pointsToAdd)
+  {
+    playProgressPoints = min(playProgressPoints + pointsToAdd, maxPlayPoints);
+    sendPlayerProgress();
+  }
+  
+  //Send the current progress to the LoL API
+  function sendPlayerProgress()
+  {
+    var currProgress = min((tutProgressPoints + playProgressPoints), maxProgress);
+    LoLApi('progress', {currentProgress: currProgress, maximumProgress: maxProgress});
+  }
+
+  function endGame()
+  {
+    LoLApi("complete", {});
+  }
+
+
   //log functions
   var log_drag_tool = function(type, time, loc, num)
   {
@@ -225,13 +291,14 @@ var GamePlayScene = function(game, stage)
 
   self.ready = function()
   {
+    window.parent.postMessage({message: "gameIsReady"});
     n_ticks = 0;
     levelStartTime = new Date().getTime();
     switch(game.start)
     {
       case 0: game_mode = GAME_TUT; break;
       case 1: game_mode = GAME_PLAYGROUND; break;
-      case 2: game_mode = GAME_FIND; break;
+      case 2: game_mode = GAME_FIND; addedPoints = false; break;
     }
 
     dragger = new Dragger({source:stage.dispCanv.canvas});
@@ -375,7 +442,13 @@ var GamePlayScene = function(game, stage)
       game.setScene(3);
     });
     
-    modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){if(!end_screen) return; game.setScene(3);});
+    modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){
+    if(!end_screen) 
+      return; 
+    game.setScene(3);
+    if (currentProgress >= maximumProgress)
+      endGame(); //player has done the tutorial, and played the game for a while, pressing menu ends the game
+    });
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
     clicker.register(guess_toggle_btn);
@@ -512,9 +585,11 @@ var GamePlayScene = function(game, stage)
       CHAR_BOY,
     ];
     tutstate[i] = {};
-    tutstart[i] = noop;
+    tutstart[i] = function(){
+      setTutProgress(1);
+    };
     tutdo[i] = noop;
-	tutdraw[i] = noop;
+    tutdraw[i] = noop;
     tutests[i] = tfunc;
     i++;
 
@@ -595,7 +670,8 @@ var GamePlayScene = function(game, stage)
       CHAR_AXE,
     ]
     tutstate[i] = {};
-    tutstart[i] = function() {
+    tutstart[i] = function() {   
+      setTutProgress(2);
       var c;
       c = compasses[0];
       c.fx = 0.1;
@@ -751,7 +827,9 @@ var GamePlayScene = function(game, stage)
       CHAR_BOY,
     ];
     tutstate[i] = {};
-    tutstart[i] = noop;
+    tutstart[i] = function(){
+      setTutProgress(3);
+    };
     tutdo[i] = noop;
 	tutdraw[i] = noop;
     tutests[i] = tfunc;
@@ -761,6 +839,7 @@ var GamePlayScene = function(game, stage)
     tutchar[i] = [];
     tutstate[i] = {};
     tutstart[i] = function(){
+      setTutProgress(4);
       compasses[0].draggable = true;
       magnets[0].draggable = true;
     };
@@ -813,11 +892,12 @@ var GamePlayScene = function(game, stage)
         y:h/2 + sin(t)*(h/2)+rand0()*100-50,
       };
     }
-
   };
 
   self.tick = function()
   {
+    if (gamePaused) //don't do anything if the game is paused
+      return
     n_ticks++;
 
     var dirty = false;
@@ -886,6 +966,8 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
+    if (gamePaused) //Don't draw anything or let the player interact
+      return;
     ctx.drawImage(bg_0_img,0,0,dc.width,dc.height);
     ctx.drawImage(bg_1_img,0,0,dc.width,dc.height);
     ctx.drawImage(bg_2_img,0,0,dc.width,dc.height);
@@ -990,6 +1072,9 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#000000";
     ctx.fillText("MENU",menu_btn.x+20,menu_btn.y+menu_btn.h-8);
 
+    //Debug for testing progress
+    ctx.fillText(min((tutProgressPoints + playProgressPoints), maxProgress),menu_btn.x+20,menu_btn.y+menu_btn.h+30);
+
     //Playground continue text
     if ((game_mode == GAME_PLAYGROUND) && (input_state != INPUT_PAUSE)) 
     {
@@ -1030,6 +1115,13 @@ var GamePlayScene = function(game, stage)
       ctx.drawImage(end_screen >= 3 ? star_filled_img : star_empty_img, dc.width / 2       - 13, 408, 26, 26);
       ctx.drawImage(end_screen >= 4 ? star_filled_img : star_empty_img, dc.width / 2 +  50 - 13, 408, 26, 26);
       ctx.drawImage(end_screen >= 5 ? star_filled_img : star_empty_img, dc.width / 2 + 100 - 13, 408, 26, 26);
+      
+      //Increase progress points by # of stars
+      if (!addedPoints)
+      {
+        increasePlayProgressPoints(end_screen);
+        addedPoints = true; //only increase points once per play, not every frame
+      }
 
       ctx.fillStyle = "rgb(86,160,171)";
       ctx.fillRect(modal_menu_btn.x, modal_menu_btn.y + 7, modal_menu_btn.w, modal_menu_btn.h);
