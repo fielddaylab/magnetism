@@ -968,8 +968,6 @@ var GamePlayScene = function(game, stage)
 
   self.draw = function()
   {
-    if (gamePaused) //Don't draw anything or let the player interact
-      return;
     ctx.drawImage(bg_0_img,0,0,dc.width,dc.height);
     ctx.drawImage(bg_1_img,0,0,dc.width,dc.height);
     ctx.drawImage(bg_2_img,0,0,dc.width,dc.height);
