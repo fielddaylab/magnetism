@@ -37,20 +37,23 @@ var LoadingScene = function(game, stage)
   };
 
   //Lol API stuff
-  function LoLApi (messageName, payloadObj) {
-    parent.postMessage({
-        message: messageName,
-        payload: JSON.stringify(payloadObj)
-    }, 
-'*')};
+  function LoLApi (messageName, payloadObj) 
+  {
+    msg = {
+      "message": messageName,
+      "payload": JSON.stringify(payloadObj)
+    };
+    parent.postMessage(msg,'*');
+  };
 
   self.ready = function()
   {
-    //Tell LoL API game is ready
-    LoLApi('gameIsReady', { 
-    aspectRatio: "4:3",
-    resolution: "640x480",
+    LoLApi("gameIsReady", { 
+      aspectRatio: "16:9",
+      resolution: "880x660",
     });
+
+    console.log("Game Is Ready");
 
     allow_play = true;
 

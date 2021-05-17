@@ -121,7 +121,8 @@ var GamePlayScene = function(game, stage)
   //LoLAPI stuff
   window.addEventListener("message", function (msg) 
   {
-    console.log('[PARENT => UNITY]', msg)
+    console.log('[PARENT => UNITY]', msg);
+    console.log("Hey we got something!");
 
     switch (msg.data.messageName) 
     {
@@ -149,8 +150,9 @@ var GamePlayScene = function(game, stage)
   var gamePaused = false;
   var tutProgressPoints = 0;
   var playProgressPoints = 0;
+  var currProgress = 0;
   var maxPlayPoints = 26;
-  var maxProgress = 30;
+  var maxProgress = 29;
   var addedPoints = false;
 
   function setTutProgress(newPoints)
@@ -173,13 +175,14 @@ var GamePlayScene = function(game, stage)
   //Send the current progress to the LoL API
   function sendPlayerProgress()
   {
-    var currProgress = min((tutProgressPoints + playProgressPoints), maxProgress);
-    LoLApi('progress', {currentProgress: currProgress, maximumProgress: maxProgress});
+    currProgress = min((tutProgressPoints + playProgressPoints), maxProgress);
+    LoLApi('progress', {score: 0, currentProgress: currProgress, maximumProgress: maxProgress});
   }
 
-  function endGame()
+  function checkEndGame()
   {
-    LoLApi("complete", {});
+    if (currProgress >= maxProgress)
+      LoLApi("complete", {});
   }
 
 
@@ -291,7 +294,6 @@ var GamePlayScene = function(game, stage)
 
   self.ready = function()
   {
-    window.parent.postMessage({message: "gameIsReady"});
     n_ticks = 0;
     levelStartTime = new Date().getTime();
     switch(game.start)
@@ -442,12 +444,12 @@ var GamePlayScene = function(game, stage)
       game.setScene(3);
     });
     
-    modal_menu_btn = new ButtonBox(500,475,160,40,function(evt){
-    if(!end_screen) 
-      return; 
-    game.setScene(3);
-    if (currentProgress >= maximumProgress)
-      endGame(); //player has done the tutorial, and played the game for a while, pressing menu ends the game
+    modal_menu_btn = new ButtonBox(500,475,160,40,function(evt)
+    {
+      if(!end_screen) 
+        return; 
+      checkEndGame(); //player has done the tutorial, and played the game for a while, pressing menu ends the game
+      game.setScene(3);
     });
     modal_retry_btn = new ButtonBox(220,475,160,40,function(evt){if(!end_screen) return; if(!guess_placed) return; game.setScene(4);});
     clicker.register(tools_toggle_btn);
@@ -1072,8 +1074,8 @@ var GamePlayScene = function(game, stage)
     ctx.fillStyle = "#000000";
     ctx.fillText("MENU",menu_btn.x+20,menu_btn.y+menu_btn.h-8);
 
-    //Debug for testing progress
-    ctx.fillText(min((tutProgressPoints + playProgressPoints), maxProgress),menu_btn.x+20,menu_btn.y+menu_btn.h+30);
+    //Debug: draw currentProgress for testing progress
+    //ctx.fillText(min((tutProgressPoints + playProgressPoints), maxProgress),menu_btn.x+20,menu_btn.y+menu_btn.h+30);
 
     //Playground continue text
     if ((game_mode == GAME_PLAYGROUND) && (input_state != INPUT_PAUSE)) 
