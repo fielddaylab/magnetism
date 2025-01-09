@@ -6,4 +6,4 @@ run:
 	open ./index.html
 
 deploy-test:
-	rsync -vrc * tyg@theyardgames.org:/httpdocs/game/magnetism/test --exclude-from rsync-exclude
+	rsync -vrc * tyg@theyardgames.org:/httpdocs/game/magnetism/test
